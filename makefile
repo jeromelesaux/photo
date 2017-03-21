@@ -16,7 +16,7 @@ EXEC=photoexif
 
 VERSION=1
 BUILD_TIME=`date +%FT%T%z`
-PACKAGES :=
+PACKAGES := github.com/xiam/exif
 
 
 LIBS= 
