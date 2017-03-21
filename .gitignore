@@ -1,0 +1,13 @@
+# Created by .ignore support plugin (hsz.mobi)
+/.idea/compiler.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/workspace.xml
+/.idea/encodings.xml
+/.idea/libraries/GOPATH__photo_.xml
+/photo.iml
+Supprimerait .gitignore
+Supprimerait .idea/
+Supprimerait photo.iml
+Supprimerait photoexif-1
