@@ -6,49 +6,72 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 </head>
 <body>
+
+Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue"  >
+<button type="button" name="Search folder" onclick="submitSearch()" value="Search folder">Search Folder</button>
+<br>
+Submit all folders to scan <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder">Scan Folder</button>
+
+
+
 <div>
-    <input class="search-input form-control"></input>
+    <input class="search-input form-control">
 </div>
+
+
 
 <div id="jstree">
 </div>
 
 
 <script>
-    $(function () {
+   function submitSearch() {
+       $(function () {
 
-        $(".search-input").keyup(function () {
+           $.jstree.destroy();
 
-            var searchString = $(this).val();
-            console.log(searchString);
-            $('#jstree').jstree('search', searchString);
-        });
+           $(".search-input").keyup(function () {
 
-        $.ajax({
-            dataType: "json",
-            url: "browse?value=/home/jlesaux/Documents/Work/Livraison",
-            type: 'GET',
-            success: function (jsondata, codeHttp) {
-                console.log(codeHttp);
-                console.log(jsondata);
-                if (codeHttp == 'success') {
-                    $('#jstree').jstree({
-                        'core': {
-                            'data': jsondata
-                        },
-                        "checkbox": {
-                            "keep_selected_style": false
-                        },
-                        "search": {
-                            "case_insensitive": true,
-                            "show_only_matches": true
-                        },
-                        "plugins": ["checkbox","search"]
-                    });
-                }
-            }
-        });
-    });
+               var searchString = $(this).val();
+           //    console.log(searchString);
+               $('#jstree').jstree('search', searchString);
+           });
+           var folderValue =$("#folderValue").val();
+         //  console.log(folderValue);
+
+           $.ajax({
+               dataType: "json",
+               url: "browse?value=" + folderValue,
+               type: 'GET',
+               success: function (jsondata, codeHttp) {
+                   console.log(codeHttp);
+                   console.log(jsondata);
+                   if (codeHttp == 'success') {
+                       $('#jstree').jstree({
+                           'core': {
+                               'data': jsondata
+                           },
+                           "checkbox": {
+                               "keep_selected_style": false
+                           },
+                           "search": {
+                               "case_insensitive": true,
+                               "show_only_matches": true
+                           },
+                           "plugins": ["checkbox", "search"]
+                       });
+                   }
+               }
+           });
+       });
+   }
+
+   function submitScan() {
+
+       var checked = $('#jstree').jstree(true).get_selected();
+
+       console.log(checked);
+   }
 </script>
 
 </body>

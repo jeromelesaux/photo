@@ -3,7 +3,6 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
-	"os/user"
 	"path/filepath"
 	"photo/exifhandler"
 	"photo/folder"
@@ -14,23 +13,24 @@ import (
 )
 
 func Browse(w http.ResponseWriter, r *http.Request) {
-	usr, _ := user.Current()
+	//usr, _ := user.Current()
 	starttime := time.Now()
 	directorypath := r.URL.Query().Get("value")
-	if directorypath == "" {
-		directorypath = usr.HomeDir
-	} else {
-		if directorypath[len(directorypath)-1] != '/' {
-			directorypath += "/"
-		}
-	}
-
 	response := &modele.DirectoryItemResponse{
 		Name:             "Root",
 		Path:             "browse?value=" + directorypath,
 		JstreeAttributes: modele.NewJSTreeAttribute(),
 		Directories:      make([]*modele.DirectoryItemResponse, 0),
 	}
+	if directorypath == "" {
+		JsonAsResponse(w, response)
+		return
+	} else {
+		if directorypath[len(directorypath)-1] != '/' {
+			directorypath += "/"
+		}
+	}
+
 	filepath.Walk(directorypath, folder.ScanDirectory(response))
 	logger.Log("Scan directory completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	JsonAsResponse(w, response)
