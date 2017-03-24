@@ -25,6 +25,17 @@ type FileExtension struct {
 	Extensions []string
 }
 
+type DirectoryItemResponse struct {
+	Name        string                 `json:"text"`
+	Path        string                 `json:"href"`
+	Directories []*DirectoryItemResponse `json:"nodes,omitempty"`
+	Parent      *DirectoryItemResponse   `json:"-"`
+	Deep int `json:"-"`
+}
+
+
+
+
 const VERSION = "1.0Beta"
 
 var mut sync.Mutex

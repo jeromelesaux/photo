@@ -3,12 +3,35 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 	"photo/exifhandler"
+	"photo/folder"
 	"photo/logger"
 	"photo/modele"
 	"strconv"
 	"time"
+	"os/user"
 )
+
+func Browse(w http.ResponseWriter, r *http.Request) {
+	usr, _ := user.Current()
+	starttime := time.Now()
+	directorypath := r.URL.Query().Get("value")
+	if directorypath == "" {
+		directorypath = usr.HomeDir
+	} else {
+		if directorypath[len(directorypath)-1] != '/' {
+			directorypath += "/"
+		}
+	}
+
+	response := &modele.DirectoryItemResponse{
+		Directories: make([]*modele.DirectoryItemResponse, 0),
+	}
+	filepath.Walk(directorypath, folder.ScanDirectory(response))
+	logger.Log("Scan directory completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	JsonAsResponse(w, response)
+}
 
 func GetFileInformations(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()

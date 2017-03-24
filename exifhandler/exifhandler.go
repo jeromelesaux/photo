@@ -47,11 +47,11 @@ var Tags = make([]*modele.TagsPhoto, 0)
 
 func GetPhotosInformations(directorypath string, conf modele.FileExtension) []*modele.TagsPhoto {
 	Tags = Tags[:0]
-	filepath.Walk(directorypath, ScanFile(conf))
+	filepath.Walk(directorypath, ScanExifFile(conf))
 	return Tags
 }
 
-func ScanFile(fileExtension modele.FileExtension) filepath.WalkFunc {
+func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {

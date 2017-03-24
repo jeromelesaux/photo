@@ -11,8 +11,9 @@ GOARCH=amd64
 #GOARCH=arm
 GOARM=7
 
-
-EXEC=photoexif
+EXEC=photo
+EXEC1=photoexif
+EXEC2=photocontroller
 
 VERSION=1
 BUILD_TIME=`date +%FT%T%z`
@@ -23,16 +24,27 @@ LIBS=
 
 LDFLAGS=	
 
-.DEFAULT_GOAL:= $(EXEC)
+.DEFAULT_GOAL:= $(EXEC2)
 
-$(EXEC): organize $(SOURCES)
+
+$(EXEC2): organize $(SOURCES)  ${EXEC1}
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
-		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC}-${VERSION} $(SOURCEDIR)/photoexif/main.go;\
+		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
 		else\
-            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC}-${VERSION} $(SOURCEDIR)/photoexif/main.go;\
+            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
         fi
-		@echo "    ${EXEC}-${VERSION} generated."
+		@echo "    ${EXEC2}-${VERSION} generated."
+
+
+$(EXEC1): organize $(SOURCES)
+		@echo "    Compilation des sources ${BUILD_TIME}"
+		@if  [ "arm" = "${GOARCH}" ]; then\
+		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
+		else\
+            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
+        fi
+		@echo "    ${EXEC1}-${VERSION} generated."
 
 deps: init
 		@echo "    Download packages"
@@ -46,17 +58,19 @@ init: clean
 		@echo "    Init of the project"
 
 execute:
-		./${EXEC}-${VERSION}
+		./${EXEC1}-${VERSION}  -httpport 3000
+		./${EXEC2}-${VERSION}  -httpport 3001
 
 clean:
-		@if [ -f "${EXEC}-${VERSION}" ] ; then rm ${EXEC}-${VERSION} ; fi
+		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi
+		@if [ -f "${EXEC2}-${VERSION}" ] ; then rm ${EXEC2}-${VERSION} ; fi
 		@echo "    Nettoyage effectuee"
 
-package:  ${EXEC} swagger
-		@zip -r ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip ./${EXEC}-${VERSION} resources
+package:  ${EXEC1} ${EXEC2} swagger
+		@zip -r ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip ./${EXEC1}-${VERSION} ./${EXEC2}-${VERSION} resources
 		@echo "    Archive ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip created"
 
-audit:   ${EXEC}
+audit:   ${EXEC1}
 		@go tool vet -all -shadow ./
 		@echo "    Audit effectue"
 
