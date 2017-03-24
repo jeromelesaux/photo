@@ -25,16 +25,24 @@ type FileExtension struct {
 	Extensions []string
 }
 
-type DirectoryItemResponse struct {
-	Name        string                 `json:"text"`
-	Path        string                 `json:"href"`
-	Directories []*DirectoryItemResponse `json:"nodes,omitempty"`
-	Parent      *DirectoryItemResponse   `json:"-"`
-	Deep int `json:"-"`
+type JSTreeAttribute struct {
+	Opened   bool `json:"opened"`
+	Disabled bool `json:"disabled"`
+	Selected bool `json:"selected"`
 }
 
+func NewJSTreeAttribute() *JSTreeAttribute {
+	return &JSTreeAttribute{Opened: false, Disabled: false, Selected: false}
+}
 
-
+type DirectoryItemResponse struct {
+	Name             string                   `json:"text"`
+	Path             string                   `json:"id"`
+	Directories      []*DirectoryItemResponse `json:"children"`
+	Parent           *DirectoryItemResponse   `json:"-"`
+	Deep             int                      `json:"-"`
+	JstreeAttributes *JSTreeAttribute         `json:"state"`
+}
 
 const VERSION = "1.0Beta"
 

@@ -1,25 +1,55 @@
 <html>
 <head>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 </head>
 <body>
-<div id="treeview_json"></div>
+<div>
+    <input class="search-input form-control"></input>
+</div>
 
- <script>
-     $(function () { $('#treeview_json').jstree(); });
+<div id="jstree">
+</div>
 
-     $('#treeview_json').on("changed.jstree", function (e, data) {
-         console.log(data.selected);
-     });
 
-     $('button').on('click', function () {
-         $('#jstree').jstree(true).select_node('child_node_1');
-         $('#jstree').jstree('select_node', 'child_node_1');
-         $.jstree.reference('#jstree').select_node('child_node_1');
-     });
- </script>
+<script>
+    $(function () {
+
+        $(".search-input").keyup(function () {
+
+            var searchString = $(this).val();
+            console.log(searchString);
+            $('#jstree').jstree('search', searchString);
+        });
+
+        $.ajax({
+            dataType: "json",
+            url: "browse?value=/home/jlesaux/Documents/Work/Livraison",
+            type: 'GET',
+            success: function (jsondata, codeHttp) {
+                console.log(codeHttp);
+                console.log(jsondata);
+                if (codeHttp == 'success') {
+                    $('#jstree').jstree({
+                        'core': {
+                            'data': jsondata
+                        },
+                        "checkbox": {
+                            "keep_selected_style": false
+                        },
+                        "search": {
+                            "case_insensitive": true,
+                            "show_only_matches": true
+                        },
+                        "plugins": ["checkbox","search"]
+                    });
+                }
+            }
+        });
+    });
+</script>
+
 </body>
 </html>
