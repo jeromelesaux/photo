@@ -13,3 +13,7 @@ func Log(message string) {
 func Logf(message string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, "%s : "+message, time.Now().Format(time.RFC3339), args)
 }
+
+func LogLn(a ...interface{}) {
+	fmt.Fprintln(os.Stderr, a)
+}

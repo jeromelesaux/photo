@@ -7,11 +7,11 @@
 </head>
 <body>
 
-Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue"  >
+Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue">
 <button type="button" name="Search folder" onclick="submitSearch()" value="Search folder">Search Folder</button>
 <br>
-Submit all folders to scan <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder">Scan Folder</button>
-
+Submit all folders to scan
+<button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder">Scan Folder</button>
 
 
 <div>
@@ -19,63 +19,83 @@ Submit all folders to scan <button type="button" name="Scan folder" onclick="sub
 </div>
 
 
-
-<div id="jstree">
-</div>
+<div id="jstree"></div>
 
 
 <script>
-   function submitSearch() {
-       $(function () {
+    $(".search-input").keyup(function () {
 
-           $.jstree.destroy();
+        var searchString = $(this).val();
+        //    console.log(searchString);
+        $('#jstree').jstree('search', searchString);
+    });
 
-           $(".search-input").keyup(function () {
+    function submitSearch() {
+        $(function () {
 
-               var searchString = $(this).val();
-           //    console.log(searchString);
-               $('#jstree').jstree('search', searchString);
-           });
-           var folderValue =$("#folderValue").val();
-         //  console.log(folderValue);
 
-           $.ajax({
-               dataType: "json",
-               url: "browse?value=" + folderValue,
-               type: 'GET',
-               success: function (jsondata, codeHttp) {
-                   console.log(codeHttp);
-                   console.log(jsondata.error_message);
-                   if (jsondata.error_message != null ) {
-                       alert(jsondata.error_message);
-                   }   else {
-                       if (codeHttp == 'success') {
-                           $('#jstree').jstree({
-                               'core': {
-                                   'data': jsondata
-                               },
-                               "checkbox": {
-                                   "keep_selected_style": false
-                               },
-                               "search": {
-                                   "case_insensitive": true,
-                                   "show_only_matches": true
-                               },
-                               "plugins": ["checkbox", "search"]
-                           });
-                       }
-                   }
-               }
-           });
-       });
-   }
 
-   function submitScan() {
+            var folderValue = $("#folderValue").val();
+            //  console.log(folderValue);
 
-       var checked = $('#jstree').jstree(true).get_selected();
+            $.ajax({
+                dataType: "json",
+                url: "browse?value=" + folderValue,
+                type: 'GET',
+                success: function (jsondata, codeHttp) {
+                    console.log(codeHttp);
+                    if (jsondata.error_message != null) {
+                        alert(jsondata.error_message);
+                    } else {
+                        if (codeHttp == 'success') {
+                            $('#jstree').jstree("destroy");
+                            $('#jstree').jstree({
+                                'core': {
+                                    'data': jsondata,
+                                    'check_callback' : true,
+                                },
+                                "checkbox": {
+                                    "keep_selected_style": false
+                                },
+                                "search": {
+                                    "case_insensitive": true,
+                                    "show_only_matches": true
+                                },
+                                "plugins": ["checkbox", "search","crrm"]
+                            });
+                        }
+                    }
+                }
+            });
+        });
+    }
 
-       console.log(checked);
-   }
+    function submitScan() {
+
+        var checked = $('#jstree').jstree(true).get_selected();
+        var a = [];
+        for (i = 0; i < checked.length; i++) {
+            var o = new Object();
+            o = checked[i];
+            a[i] = o;
+        }
+        var body = new Object();
+        body.folders_toscan = a;
+        var jsondata = JSON.stringify(body);
+        console.log(jsondata);
+        $.ajax({
+            dataType: "json",
+            url: "scan",
+            type: 'POST',
+            data: jsondata,
+            success: function (responsedata, codeHttp) {
+                if (codeHttp == "success") {
+                    alert(responsedata);
+                }
+            }
+        });
+        console.log(checked);
+    }
 </script>
 
 </body>

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
+	"photo/client"
 	"photo/exifhandler"
 	"photo/folder"
 	"photo/logger"
@@ -18,7 +19,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 	directorypath := r.URL.Query().Get("value")
 	response := &modele.DirectoryItemResponse{
 		Name:             "Root",
-		Path:             "browse?value=" + directorypath,
+		Path:             directorypath,
 		JstreeAttributes: modele.NewJSTreeAttribute(),
 		Directories:      make([]*modele.DirectoryItemResponse, 0),
 	}
@@ -32,7 +33,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := filepath.Walk(directorypath, folder.ScanDirectory(response))
-	if err != nil {
+	if err != nil && err.Error() != "" {
 		response.Message = err.Error()
 		logger.Log(err.Error())
 	}
@@ -41,12 +42,24 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 }
 
 func ScanFolders(w http.ResponseWriter, r *http.Request) {
+	conf := modele.GetConfiguration()
+	folders := &modele.FolderToScan{}
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
 	}
-	//json.NewDecoder(r.Body).Decode(list)
-	JsonAsResponse(w, "ok")
+
+	err := json.NewDecoder(r.Body).Decode(folders)
+	logger.LogLn(&folders)
+	var response string
+	if err != nil {
+		response = err.Error()
+	} else {
+		response = "Scans launched."
+	}
+	go client.ScanFoldersClient(folders.Folders,conf)
+
+	JsonAsResponse(w, response)
 }
 
 func GetFileInformations(w http.ResponseWriter, r *http.Request) {

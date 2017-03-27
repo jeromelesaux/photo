@@ -14,6 +14,10 @@ import (
 
 func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 	data, err := exif.Read(filePath)
+	if err != nil {
+		logger.Log(err.Error())
+		return &modele.TagsPhoto{}, err
+	}
 	sum, err := hash.Md5Sum(filePath)
 	abspath, err := filepath.Abs(filePath)
 	filename := path.Base(filePath)
@@ -26,8 +30,10 @@ func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 		}, err
 	}
 	logger.Log("---------START----------")
-	for key, val := range data.Tags {
-		logger.Log(key + " = " + val)
+	if data != nil {
+		for key, val := range data.Tags {
+			logger.Log(key + " = " + val)
+		}
 	}
 
 	logger.Log("---------END----------")
@@ -49,6 +55,7 @@ func GetPhotosInformations(directorypath string, conf modele.FileExtension) ([]*
 	Tags = Tags[:0]
 	err := filepath.Walk(directorypath, ScanExifFile(conf))
 	return Tags, err
+
 }
 
 func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
@@ -64,7 +71,9 @@ func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
 				if strings.HasSuffix(f, d) {
 					logger.Log("Found file " + f)
 					tags, _ := GetPhotoInformations(path)
-					Tags = append(Tags, tags)
+					if tags.Filename != "" {
+						Tags = append(Tags, tags)
+					}
 				}
 			}
 		}

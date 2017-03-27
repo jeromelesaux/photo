@@ -27,7 +27,7 @@ func ScanDirectory(r *modele.DirectoryItemResponse) filepath.WalkFunc {
 			//logger.Logf("currenDeep:%d\n",strings.Count(currentpath, "/") )
 			current := &modele.DirectoryItemResponse{
 				Name:             f,
-				Path:             "/browse?value=" + currentpath,
+				Path:             currentpath,
 				Directories:      make([]*modele.DirectoryItemResponse, 0),
 				Parent:           r,
 				JstreeAttributes: modele.NewJSTreeAttribute(),
