@@ -17,8 +17,9 @@ type TagsPhoto struct {
 }
 
 type PhotoResponse struct {
-	Version string       `json:"version"`
-	Photos  []*TagsPhoto `json:"photos"`
+	Message string `json:"error_message,omitempty"`
+	Version string        `json:"version"`
+	Photos  []*TagsPhoto  `json:"photos"`
 }
 
 type FileExtension struct {
@@ -35,7 +36,9 @@ func NewJSTreeAttribute() *JSTreeAttribute {
 	return &JSTreeAttribute{Opened: false, Disabled: false, Selected: false}
 }
 
+
 type DirectoryItemResponse struct {
+	Message          string            `json:"error_message,omitempty"`
 	Name             string                   `json:"text"`
 	Path             string                   `json:"id"`
 	Directories      []*DirectoryItemResponse `json:"children"`

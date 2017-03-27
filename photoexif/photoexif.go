@@ -27,10 +27,18 @@ func main() {
 	}
 	flag.Parse()
 	if *photopath != "" {
-		response.Photos = append(response.Photos, exifhandler.GetPhotoInformations(*photopath))
+		pinfos, err := exifhandler.GetPhotoInformations(*photopath)
+		if err != nil {
+			logger.Logf("Error with message :%s", err.Error())
+		}
+		response.Photos = append(response.Photos, pinfos)
 	} else {
 		if *directorypath != "" {
-			response.Photos = exifhandler.GetPhotosInformations(*directorypath, conf)
+			pinfos, err := exifhandler.GetPhotosInformations(*directorypath, conf)
+			if err != nil {
+				logger.Logf("Error with message :%s", err.Error())
+			}
+			response.Photos = pinfos
 		} else {
 			if *httpport != "" {
 				http.HandleFunc("/file", routes.GetFileInformations)

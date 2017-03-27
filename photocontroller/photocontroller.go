@@ -15,6 +15,7 @@ func main() {
 
 	if *httpport != "" {
 		http.HandleFunc("/browse", routes.Browse)
+		http.HandleFunc("/scan", routes.ScanFolders)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

@@ -45,21 +45,25 @@ Submit all folders to scan <button type="button" name="Scan folder" onclick="sub
                type: 'GET',
                success: function (jsondata, codeHttp) {
                    console.log(codeHttp);
-                   console.log(jsondata);
-                   if (codeHttp == 'success') {
-                       $('#jstree').jstree({
-                           'core': {
-                               'data': jsondata
-                           },
-                           "checkbox": {
-                               "keep_selected_style": false
-                           },
-                           "search": {
-                               "case_insensitive": true,
-                               "show_only_matches": true
-                           },
-                           "plugins": ["checkbox", "search"]
-                       });
+                   console.log(jsondata.error_message);
+                   if (jsondata.error_message != null ) {
+                       alert(jsondata.error_message);
+                   }   else {
+                       if (codeHttp == 'success') {
+                           $('#jstree').jstree({
+                               'core': {
+                                   'data': jsondata
+                               },
+                               "checkbox": {
+                                   "keep_selected_style": false
+                               },
+                               "search": {
+                                   "case_insensitive": true,
+                                   "show_only_matches": true
+                               },
+                               "plugins": ["checkbox", "search"]
+                           });
+                       }
                    }
                }
            });

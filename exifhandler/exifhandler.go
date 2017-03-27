@@ -12,10 +12,10 @@ import (
 	"strings"
 )
 
-func GetPhotoInformations(filePath string) *modele.TagsPhoto {
+func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 	data, err := exif.Read(filePath)
-	sum, _ := hash.Md5Sum(filePath)
-	abspath, _ := filepath.Abs(filePath)
+	sum, err := hash.Md5Sum(filePath)
+	abspath, err := filepath.Abs(filePath)
 	filename := path.Base(filePath)
 	if err != nil {
 		logger.Log(err.Error())
@@ -23,7 +23,7 @@ func GetPhotoInformations(filePath string) *modele.TagsPhoto {
 			Filename: filename,
 			Filepath: abspath,
 			Md5Sum:   sum,
-		}
+		}, err
 	}
 	logger.Log("---------START----------")
 	for key, val := range data.Tags {
@@ -33,22 +33,22 @@ func GetPhotoInformations(filePath string) *modele.TagsPhoto {
 	logger.Log("---------END----------")
 	if err != nil {
 		logger.Log(err.Error())
-		return &modele.TagsPhoto{}
+		return &modele.TagsPhoto{}, err
 	}
 	return &modele.TagsPhoto{
 		Filename: filename,
 		Filepath: abspath,
 		Tags:     data.Tags,
 		Md5Sum:   sum,
-	}
+	}, err
 }
 
 var Tags = make([]*modele.TagsPhoto, 0)
 
-func GetPhotosInformations(directorypath string, conf modele.FileExtension) []*modele.TagsPhoto {
+func GetPhotosInformations(directorypath string, conf modele.FileExtension) ([]*modele.TagsPhoto, error) {
 	Tags = Tags[:0]
-	filepath.Walk(directorypath, ScanExifFile(conf))
-	return Tags
+	err := filepath.Walk(directorypath, ScanExifFile(conf))
+	return Tags, err
 }
 
 func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
@@ -63,7 +63,8 @@ func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
 			for _, d := range fileExtension.Extensions {
 				if strings.HasSuffix(f, d) {
 					logger.Log("Found file " + f)
-					Tags = append(Tags, GetPhotoInformations(path))
+					tags, _ := GetPhotoInformations(path)
+					Tags = append(Tags, tags)
 				}
 			}
 		}

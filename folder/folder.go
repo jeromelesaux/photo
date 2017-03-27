@@ -15,7 +15,7 @@ func ScanDirectory(r *modele.DirectoryItemResponse) filepath.WalkFunc {
 
 		if err != nil {
 			logger.Log(err.Error())
-			return nil
+			return err
 		}
 		if info.IsDir() {
 			currentpath := path

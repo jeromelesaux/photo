@@ -31,9 +31,22 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	filepath.Walk(directorypath, folder.ScanDirectory(response))
+	err := filepath.Walk(directorypath, folder.ScanDirectory(response))
+	if err != nil {
+		response.Message = err.Error()
+		logger.Log(err.Error())
+	}
 	logger.Log("Scan directory completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	JsonAsResponse(w, response)
+}
+
+func ScanFolders(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	//json.NewDecoder(r.Body).Decode(list)
+	JsonAsResponse(w, "ok")
 }
 
 func GetFileInformations(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +57,11 @@ func GetFileInformations(w http.ResponseWriter, r *http.Request) {
 		Version: modele.VERSION,
 		Photos:  make([]*modele.TagsPhoto, 0),
 	}
-	response.Photos = append(response.Photos, exifhandler.GetPhotoInformations(filepath))
+	pinfos, err := exifhandler.GetPhotoInformations(filepath)
+	response.Photos = append(response.Photos, pinfos)
+	if err != nil {
+		response.Message = err.Error()
+	}
 	logger.Log("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	logger.Log(strconv.Itoa(len(response.Photos)) + " images found")
 	JsonAsResponse(w, response)
@@ -58,7 +75,11 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 	}
 	directorypath := r.URL.Query().Get("value")
 	logger.Log("directory to scan " + directorypath)
-	response.Photos = exifhandler.GetPhotosInformations(directorypath, modele.LoadConfigurationAtOnce())
+	pinfos, err := exifhandler.GetPhotosInformations(directorypath, modele.LoadConfigurationAtOnce())
+	response.Photos = pinfos
+	if err != nil {
+		response.Message = err.Error()
+	}
 	logger.Log("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	logger.Log(strconv.Itoa(len(response.Photos)) + " images found")
 	JsonAsResponse(w, response)
