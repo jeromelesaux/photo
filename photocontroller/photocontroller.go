@@ -19,6 +19,9 @@ func main() {
 		modele.LoadPhotoExifConfiguration(*configurationfile)
 		http.HandleFunc("/browse", routes.Browse)
 		http.HandleFunc("/scan", routes.ScanFolders)
+		http.HandleFunc("/queryextension", routes.QueryExtension)
+		http.HandleFunc("/queryfilename", routes.QueryFilename)
+		http.HandleFunc("/queryall", routes.QueryAll)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

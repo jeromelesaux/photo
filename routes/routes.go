@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
-	"photo/webclient"
+	"photo/database"
 	"photo/exifhandler"
 	"photo/folder"
 	"photo/logger"
 	"photo/modele"
+	"photo/webclient"
 	"strconv"
 	"time"
 )
@@ -27,7 +28,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, response)
 		return
 	} else {
-		if directorypath[len(directorypath)-1] != '/' {
+		if directorypath[len(directorypath) - 1] != '/' {
 			directorypath += "/"
 		}
 	}
@@ -57,7 +58,7 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 	} else {
 		response = "Scans launched."
 	}
-	go webclient.ScanFoldersClient(folders.Folders,conf)
+	go webclient.ScanFoldersClient(folders.Folders, conf)
 
 	JsonAsResponse(w, response)
 }
@@ -96,6 +97,41 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 	logger.Log("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	logger.Log(strconv.Itoa(len(response.Photos)) + " images found")
 	JsonAsResponse(w, response)
+}
+
+func QueryExtension(w http.ResponseWriter, r *http.Request) {
+	starttime := time.Now()
+	filename := r.URL.Query().Get("value")
+	response, err := database.QueryExtenstion(filename)
+	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	if err != nil {
+		JsonAsResponse(w, err)
+	} else {
+		JsonAsResponse(w, response)
+	}
+}
+
+func QueryFilename(w http.ResponseWriter, r *http.Request) {
+	starttime := time.Now()
+	filename := r.URL.Query().Get("value")
+	response, err := database.QueryFilename(filename)
+	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	if err != nil {
+		JsonAsResponse(w, err)
+	} else {
+		JsonAsResponse(w, response)
+	}
+}
+
+func QueryAll(w http.ResponseWriter, r *http.Request) {
+	starttime := time.Now()
+	response, err := database.QueryAll()
+	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	if err != nil {
+		JsonAsResponse(w, err)
+	} else {
+		JsonAsResponse(w, response)
+	}
 }
 
 func JsonAsResponse(w http.ResponseWriter, o interface{}) {

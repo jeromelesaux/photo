@@ -13,14 +13,18 @@ import (
 )
 
 func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
-	data, err := exif.Read(filePath)
-	if err != nil {
-		logger.Log(err.Error())
-		return &modele.TagsPhoto{}, err
-	}
-	sum, err := hash.Md5Sum(filePath)
 	abspath, err := filepath.Abs(filePath)
 	filename := path.Base(filePath)
+	sum, err := hash.Md5Sum(filePath)
+	if err != nil {
+		return &modele.TagsPhoto{
+			Filename: filename,
+			Filepath: abspath,
+			Md5Sum:   sum,
+		}, err
+	}
+
+	data, err := exif.Read(filePath)
 	if err != nil {
 		logger.Log(err.Error())
 		return &modele.TagsPhoto{
@@ -29,6 +33,7 @@ func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 			Md5Sum:   sum,
 		}, err
 	}
+
 	logger.Log("---------START----------")
 	if data != nil {
 		for key, val := range data.Tags {
