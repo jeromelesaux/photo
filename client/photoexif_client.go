@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"photo/database"
 )
 
 //var traitmentChan = make(chan int, 10)
@@ -65,8 +66,11 @@ func ScanFoldersClient(remotepaths []string, conf *modele.Configuration) {
 	}
 
 	go func() {
-
 		for pr := range photoResponseChan {
+			err := database.InsertNewData(pr)
+			if err != nil {
+				logger.Log("Error insert data with error"+err.Error())
+			}
 			logger.Log("message received")
 			logger.LogLn(*pr)
 		}

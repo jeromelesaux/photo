@@ -17,7 +17,7 @@ EXEC2=photocontroller
 
 VERSION=1
 BUILD_TIME=`date +%FT%T%z`
-PACKAGES := github.com/xiam/exif
+PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db
 
 
 LIBS= 
