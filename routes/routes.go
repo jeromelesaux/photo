@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
-	"photo/client"
+	"photo/webclient"
 	"photo/exifhandler"
 	"photo/folder"
 	"photo/logger"
@@ -57,7 +57,7 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 	} else {
 		response = "Scans launched."
 	}
-	go client.ScanFoldersClient(folders.Folders,conf)
+	go webclient.ScanFoldersClient(folders.Folders,conf)
 
 	JsonAsResponse(w, response)
 }

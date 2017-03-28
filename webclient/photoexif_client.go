@@ -1,4 +1,4 @@
-package client
+package webclient
 
 import (
 	"photo/logger"
