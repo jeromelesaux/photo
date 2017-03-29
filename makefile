@@ -46,6 +46,10 @@ $(EXEC1): organize $(SOURCES)
         fi
 		@echo "    ${EXEC1}-${VERSION} generated."
 
+test: $(EXEC1) $(EXEC2)
+		@GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go test ./...
+		@echo " Tests OK."
+
 deps: init
 		@echo "    Download packages"
 		@$(foreach element,$(PACKAGES),go get -d -v $(element);)

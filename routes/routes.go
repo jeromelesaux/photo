@@ -28,7 +28,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, response)
 		return
 	} else {
-		if directorypath[len(directorypath) - 1] != '/' {
+		if directorypath[len(directorypath)-1] != '/' {
 			directorypath += "/"
 		}
 	}
@@ -111,11 +111,11 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func QueryExif (w http.ResponseWriter, r *http.Request) {
+func QueryExif(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	pattern := r.URL.Query().Get("value")
 	exiftag := r.URL.Query().Get("exif")
-	response, err := database.QueryExifTag(pattern,exiftag)
+	response, err := database.QueryExifTag(pattern, exiftag)
 	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)

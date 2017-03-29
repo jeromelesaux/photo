@@ -12,7 +12,7 @@ type Configuration struct {
 	PhotoExifUrl    string `json:"photoexif_url"`
 	PhotoExifPort   int    `json:"photoexif_port"`
 	PhotoExifAction string `json:"photoexif_action"`
-	DatabasePath string `json:"database_path"`
+	DatabasePath    string `json:"database_path"`
 }
 
 type TagsPhoto struct {
