@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-var previousDirectory int
 
 func ScanDirectory(r *modele.DirectoryItemResponse) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {

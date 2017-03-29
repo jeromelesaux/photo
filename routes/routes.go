@@ -65,13 +65,13 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 
 func GetFileInformations(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
-	filepath := r.URL.Query().Get("value")
-	logger.Log("file to scan " + filepath)
+	filepathValue := r.URL.Query().Get("value")
+	logger.Log("file to scan " + filepathValue)
 	response := &modele.PhotoResponse{
 		Version: modele.VERSION,
 		Photos:  make([]*modele.TagsPhoto, 0),
 	}
-	pinfos, err := exifhandler.GetPhotoInformations(filepath)
+	pinfos, err := exifhandler.GetPhotoInformations(filepathValue)
 	response.Photos = append(response.Photos, pinfos)
 	if err != nil {
 		response.Message = err.Error()

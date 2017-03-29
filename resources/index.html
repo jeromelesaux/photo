@@ -79,11 +79,11 @@ Submit all folders to scan
         var checked = $('#jstree').jstree(true).get_selected();
         var a = [];
         for (i = 0; i < checked.length; i++) {
-            var o = new Object();
+            var o = {};
             o = checked[i];
             a[i] = o;
         }
-        var body = new Object();
+        var body = {};
         body.folders_toscan = a;
         var jsondata = JSON.stringify(body);
         console.log(jsondata);

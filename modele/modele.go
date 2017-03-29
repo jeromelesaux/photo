@@ -59,7 +59,6 @@ const VERSION = "1.0Beta"
 
 var confFileExtensionMut sync.Mutex
 var confPhotoExifMut sync.Mutex
-var doConfOnce sync.Once
 var configuration *Configuration
 
 func LoadPhotoExifConfiguration(configurationPathfile string) *Configuration {

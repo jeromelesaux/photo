@@ -44,14 +44,14 @@ func openDB() (*db.DB, error) {
 
 func createIndexes() error {
 	var err error
-	var db *db.DB
+	var databaseCI *db.DB
 	executeDBIndexes.Do(func() {
-		db, err = openDB()
+		databaseCI, err = openDB()
 		if err != nil {
 			logger.Log("Cannot use database with error : " + err.Error())
 			return
 		}
-		feeds := db.Use(DBCOLLECTION)
+		feeds := databaseCI.Use(DBCOLLECTION)
 
 		if err := feeds.Index([]string{"Filename"}); err != nil {
 			logger.Log("Error while indexing Filename with error : " + err.Error())
@@ -108,13 +108,13 @@ func SplitAll(pattern string) []string {
 }
 
 func InsertNewData(response *modele.PhotoResponse) error {
-	db, err := openDB()
+	databaseForInsert, err := openDB()
 	if err != nil {
 		logger.Log("Cannot use database with error : " + err.Error())
 		return err
 	}
 
-	feeds := db.Use(DBCOLLECTION)
+	feeds := databaseForInsert.Use(DBCOLLECTION)
 	for _, item := range response.Photos {
 		id, err := feeds.Insert(map[string]interface{}{
 			"Filename": item.Filename,
