@@ -21,6 +21,7 @@ func main() {
 		http.HandleFunc("/scan", routes.ScanFolders)
 		http.HandleFunc("/queryextension", routes.QueryExtension)
 		http.HandleFunc("/queryfilename", routes.QueryFilename)
+		http.HandleFunc("/queryexif",routes.QueryExif)
 		http.HandleFunc("/queryall", routes.QueryAll)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))

@@ -111,6 +111,19 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func QueryExif (w http.ResponseWriter, r *http.Request) {
+	starttime := time.Now()
+	pattern := r.URL.Query().Get("value")
+	exiftag := r.URL.Query().Get("exif")
+	response, err := database.QueryExifTag(pattern,exiftag)
+	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	if err != nil {
+		JsonAsResponse(w, err)
+	} else {
+		JsonAsResponse(w, response)
+	}
+}
+
 func QueryFilename(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	filename := r.URL.Query().Get("value")

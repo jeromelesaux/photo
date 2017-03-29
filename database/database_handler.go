@@ -144,7 +144,7 @@ func QueryAll() (map[string]interface{}, error) {
 	dataquery, err := openDB()
 	if err != nil {
 		logger.Log("Cannot use database with error : " + err.Error())
-		return nil, err
+		return response, err
 	}
 
 	feeds := dataquery.Use(DBCOLLECTION)
@@ -180,7 +180,7 @@ func QueryExtenstion(pattern string) (map[string]interface{}, error) {
 	dataquery, err := openDB()
 	if err != nil {
 		logger.Log("Cannot use database with error : " + err.Error())
-		return nil, err
+		return response, err
 	}
 
 	feeds := dataquery.Use(DBCOLLECTION)
@@ -220,7 +220,7 @@ func QueryFilename(pattern string) (map[string]interface{}, error) {
 	dataquery, err := openDB()
 	if err != nil {
 		logger.Log("Cannot use database with error : " + err.Error())
-		return nil, err
+		return response, err
 	}
 
 	feeds := dataquery.Use(DBCOLLECTION)
@@ -267,4 +267,42 @@ func QueryFilename(pattern string) (map[string]interface{}, error) {
 	})
 	logger.Logf("request returns %d results\n",len(response))
 	return response, nil
+}
+
+func QueryExifTag(pattern string,exiftag string) (map[string]interface{}, error) {
+
+	response := make(map[string]interface{}, 0)
+	dataquery, err := openDB()
+	if err != nil {
+		logger.Log("Cannot use database with error : " + err.Error())
+		return response, err
+	}
+
+	feeds := dataquery.Use(DBCOLLECTION)
+	feeds.ForEachDoc(func(id int,docContent []byte)(willMoveOn bool) {
+		var a map[string]interface{}
+		err := json.Unmarshal(docContent, &a)
+		if err != nil {
+			logger.Log("Error while unmarshalling document with error : " + err.Error())
+			return false
+		}
+		if a["ExifTags"] != nil {
+			for key,val := range a["ExifTags"].(map[string]interface{}) {
+				if strings.Contains(strings.ToLower(key),strings.ToLower(exiftag)){
+					if strings.Contains(strings.ToLower(val.(string)),strings.ToLower(pattern)){
+						response[a["Md5sum"].(string)] = a["ExifTags"]
+						if response[a["Md5sum"].(string)] == nil {
+							response[a["Md5sum"].(string)] =make(map[string]interface{},0)
+						}
+						response[a["Md5sum"].(string)].(map[string]interface{})["Filename"] = a["Filename"]
+						response[a["Md5sum"].(string)].(map[string]interface{})["Filepath"] = a["Filepath"]
+					}
+				}
+			}
+		}
+		return true
+		return false
+	})
+	logger.Logf("request returns %d results\n",len(response))
+	return response,nil
 }
