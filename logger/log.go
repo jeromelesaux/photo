@@ -6,14 +6,15 @@ import (
 	"time"
 )
 
-func Log(message string) {
-	fmt.Fprintf(os.Stderr, "%s : %s\n", time.Now().Format(time.RFC3339), message)
+func Log(message string) (int,error){
+	return fmt.Fprintf(os.Stderr, "%s : %s\n", time.Now().Format(time.RFC3339), message)
 }
 
-func Logf(message string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, "%s : "+message, time.Now().Format(time.RFC3339), args)
+func Logf(message string, args ...interface{}) (int,error){
+	formattedMessage := fmt.Sprintf(message,args...)
+	return fmt.Fprintf(os.Stderr, "%s : "+formattedMessage, time.Now().Format(time.RFC3339))
 }
 
-func LogLn(a ...interface{}) {
-	fmt.Fprintln(os.Stderr, a)
+func LogLn(a ...interface{}) (int,error){
+	return fmt.Fprintln(os.Stderr, a)
 }

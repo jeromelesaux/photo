@@ -20,7 +20,7 @@ func openDB() (*db.DB, error) {
 	var err error
 	createDB.Do(func() {
 		collectionExists := false
-		database, err = db.OpenDB("database_photo.db")
+		database, err = db.OpenDB(modele.GetConfiguration().DatabasePath)
 		if err != nil {
 			logger.Log("Error while creating database with error : " + err.Error())
 			return
@@ -193,7 +193,7 @@ func QueryExtenstion(pattern string) (map[string]interface{}, error) {
 	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
 		logger.Log("Error while querying with error :" + err.Error())
 	}
-	logger.Logf("request returns %d results\n",len(queryResult))
+	logger.Logf("request returns %d results for extenstion %s\n",len(queryResult), pattern)
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
@@ -265,7 +265,7 @@ func QueryFilename(pattern string) (map[string]interface{}, error) {
 		return true
 		return false
 	})
-	logger.Logf("request returns %d results\n",len(response))
+	logger.Logf("request returns %d results for filename %s\n",len(response),pattern)
 	return response, nil
 }
 
@@ -303,6 +303,6 @@ func QueryExifTag(pattern string,exiftag string) (map[string]interface{}, error)
 		return true
 		return false
 	})
-	logger.Logf("request returns %d results\n",len(response))
+	logger.Logf("request returns %d results for pattern %s and exif tag %s\n",len(response), pattern,exiftag)
 	return response,nil
 }
