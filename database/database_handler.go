@@ -3,13 +3,13 @@ package database
 import (
 	"encoding/json"
 	"github.com/HouzuoGuo/tiedot/db"
+	"github.com/pkg/errors"
 	"path/filepath"
 	"photo/logger"
 	"photo/modele"
 	"strconv"
 	"strings"
 	"sync"
-	"github.com/pkg/errors"
 )
 
 var createDB sync.Once
@@ -23,8 +23,9 @@ func openDB() (*db.DB, error) {
 	createDB.Do(func() {
 		collectionExists := false
 		databasePath := modele.GetConfiguration().DatabasePath
-		if databasePath == nil {
-			return errors.New("No database path defined")
+		if databasePath == "" {
+			err = errors.New("No database path defined")
+			return
 		}
 		database, err = db.OpenDB(databasePath)
 		if err != nil {

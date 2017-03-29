@@ -10,22 +10,21 @@ import (
 	"photo/database"
 	"photo/slavehandler"
 	"strconv"
-	"sync"
+
 	"time"
 )
 
 //var traitmentChan = make(chan int, 10)
 var photoResponseChan = make(chan *modele.PhotoResponse)
 
-func scanExifClient(remotePath string, salve *slavehandler.Slave, wg *sync.WaitGroup) {
+func scanExifClient(remotePath string, salve *slavehandler.Slave) {
 	var startTime time.Time
 
 	defer func() {
 		endTime := time.Now()
 		computeDuration := endTime.Sub(startTime)
 		logger.Logf("Job done in %f seconds\n", computeDuration.Minutes())
-		wg.Done()
-		//<-traitmentChan
+
 	}()
 	startTime = time.Now()
 	logger.Log(remotePath + " started to scan ")
@@ -63,18 +62,19 @@ func ScanFoldersClient(remotepaths []string, conf *modele.Configuration) {
 		logger.Log("No slave registered, skip action")
 		return
 	}
-	wg := new(sync.WaitGroup)
+
 	for _, remotepath := range remotepaths {
 		logger.Log("Sending to traitment " + remotepath)
 		//traitmentChan <- 1
 		for _, slave := range slavesConfig.Slaves {
-			wg.Add(1)
-			go scanExifClient(remotepath, slave, wg)
+			go scanExifClient(remotepath, slave)
 		}
 	}
 
 	go func() {
-		for pr := range photoResponseChan {
+		for {
+			var pr *modele.PhotoResponse
+			pr = <-photoResponseChan
 			if len(pr.Photos) > 0 {
 				err := database.InsertNewData(pr)
 				if err != nil {
@@ -83,10 +83,10 @@ func ScanFoldersClient(remotepaths []string, conf *modele.Configuration) {
 			}
 			logger.Log("message received")
 			logger.LogLn(*pr)
+
 		}
 	}()
 	go func() {
-		wg.Wait()
 		//close(photoResponseChan)
 		logger.Log("Traitment ended")
 		return
