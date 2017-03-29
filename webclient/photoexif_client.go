@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"photo/database"
+	"photo/slavehandler"
 	"strconv"
 	"sync"
 	"time"
@@ -16,7 +17,7 @@ import (
 //var traitmentChan = make(chan int, 10)
 var photoResponseChan = make(chan *modele.PhotoResponse)
 
-func scanExifClient(remotePath string, conf *modele.Configuration, wg *sync.WaitGroup) {
+func scanExifClient(remotePath string, salve *slavehandler.Slave, wg *sync.WaitGroup) {
 	var startTime time.Time
 
 	defer func() {
@@ -29,7 +30,7 @@ func scanExifClient(remotePath string, conf *modele.Configuration, wg *sync.Wait
 	startTime = time.Now()
 	logger.Log(remotePath + " started to scan ")
 	client := &http.Client{}
-	uri := fmt.Sprintf("%s:%d%s?value=%s", conf.PhotoExifUrl, conf.PhotoExifPort, conf.PhotoExifAction, remotePath)
+	uri := fmt.Sprintf("%s:%d%s?value=%s", salve.Url, salve.Port, salve.Action, remotePath)
 	request, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		logger.Log("error with : " + err.Error())
@@ -57,12 +58,19 @@ func scanExifClient(remotePath string, conf *modele.Configuration, wg *sync.Wait
 }
 
 func ScanFoldersClient(remotepaths []string, conf *modele.Configuration) {
+	slavesConfig := slavehandler.GetSlaves()
+	if len(slavesConfig.Slaves) == 0 {
+		logger.Log("No slave registered, skip action")
+		return
+	}
 	wg := new(sync.WaitGroup)
 	for _, remotepath := range remotepaths {
 		logger.Log("Sending to traitment " + remotepath)
 		//traitmentChan <- 1
-		wg.Add(1)
-		go scanExifClient(remotepath, conf, wg)
+		for _, slave := range slavesConfig.Slaves {
+			wg.Add(1)
+			go scanExifClient(remotepath, slave, wg)
+		}
 	}
 
 	go func() {

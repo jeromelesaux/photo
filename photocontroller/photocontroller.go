@@ -17,6 +17,7 @@ func main() {
 
 	if *httpport != "" && *configurationfile != "" {
 		modele.LoadPhotoExifConfiguration(*configurationfile)
+		http.HandleFunc("/register", routes.RegisterSlave)
 		http.HandleFunc("/browse", routes.Browse)
 		http.HandleFunc("/scan", routes.ScanFolders)
 		http.HandleFunc("/queryextension", routes.QueryExtension)

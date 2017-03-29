@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"photo/database"
@@ -9,10 +10,32 @@ import (
 	"photo/folder"
 	"photo/logger"
 	"photo/modele"
+	"photo/slavehandler"
 	"photo/webclient"
 	"strconv"
 	"time"
 )
+
+func RegisterSlave(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	defer r.Body.Close()
+
+	slave := &slavehandler.Slave{}
+	err := json.NewDecoder(r.Body).Decode(slave)
+	if err != nil {
+		logger.Log("Cannot not decode body received for registering with error " + err.Error())
+		body, _ := ioutil.ReadAll(r.Body)
+		logger.Log("Body received : " + string(body))
+		http.Error(w, "Cannot not decode body received for registering", 400)
+		return
+	}
+	slavehandler.AddSlave(slave)
+	logger.LogLn(*slave, "is registered")
+	JsonAsResponse(w, "ok")
+}
 
 func Browse(w http.ResponseWriter, r *http.Request) {
 	//usr, _ := user.Current()

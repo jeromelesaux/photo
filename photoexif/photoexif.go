@@ -10,6 +10,7 @@ import (
 	"photo/logger"
 	"photo/modele"
 	"photo/routes"
+	"photo/slavehandler"
 	"strconv"
 	"time"
 )
@@ -17,6 +18,7 @@ import (
 var photopath = flag.String("photopath", "", "photo path to analyze")
 var directorypath = flag.String("directorypath", "", "directory path to scan.")
 var httpport = flag.String("httpport", "", "listening at http://localhost:httpport")
+var masteruri = flag.String("masteruri", "", "uri of the master to register ex: -masteruri http://localhost:3001/register")
 
 func main() {
 	conf := modele.LoadConfigurationAtOnce()
@@ -41,6 +43,17 @@ func main() {
 			response.Photos = pinfos
 		} else {
 			if *httpport != "" {
+				if *masteruri != "" {
+					port, err := strconv.Atoi(*httpport)
+					if err != nil {
+						logger.Log("Error : " + err.Error())
+						return
+					}
+					go slavehandler.RegisterToMaster(*masteruri, port, "/directory")
+				} else {
+					logger.Log("masteruri is mandatary, don't start")
+					return
+				}
 				http.HandleFunc("/file", routes.GetFileInformations)
 				http.HandleFunc("/directory", routes.GetDirectoryInformations)
 				log.Fatal(http.ListenAndServe(":"+*httpport, nil))
