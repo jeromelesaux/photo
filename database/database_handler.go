@@ -224,31 +224,47 @@ func QueryFilename(pattern string) (map[string]interface{}, error) {
 	}
 
 	feeds := dataquery.Use(DBCOLLECTION)
-	queryResult := make(map[int]struct{})
-	var query interface{}
 
-	json.Unmarshal([]byte(`[{"eq": "`+pattern+`", "in": ["Filenames"]}]`), &query)
-	//json.Unmarshal([]byte(`["all"]`), &query)
-	logger.LogLn(query)
-	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
-		logger.Log("Error while querying with error :" + err.Error())
-	}
-	logger.Logf("request returns %d results\n",len(queryResult))
-	for id := range queryResult {
-		readBack, err := feeds.Read(id)
+
+	feeds.ForEachDoc(func(id int,docContent []byte)(willMoveOn bool) {
+		var a map[string]interface{}
+		err := json.Unmarshal(docContent,&a)
 		if err != nil {
-			logger.Log("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
-		} else {
-			//logger.LogLn(readBack)
-			response[readBack["Md5sum"].(string)] = readBack["ExifTags"]
-			if readBack["ExifTags"] == nil {
-				response[readBack["Md5sum"].(string)] = make(map[string]interface{},0)
+			logger.Log("Error while unmarshalling document with error : "+err.Error())
+			return false
+		}
+		
+		for _,val := range a["Filenames"].([]interface{}){
+			if strings.Contains(strings.ToLower(val.(string)),strings.ToLower(pattern)) {
+				//logger.LogLn("Document",id,"is",string(docContent))
+				response[a["Md5sum"].(string)] = a["ExifTags"]
+				if response[a["Md5sum"].(string)] == nil {
+					response[a["Md5sum"].(string)] =make(map[string]interface{},0)
+				}
+				response[a["Md5sum"].(string)].(map[string]interface{})["Filename"] = a["Filename"]
+				response[a["Md5sum"].(string)].(map[string]interface{})["Filepath"] = a["Filepath"]
+
 			}
-			response[readBack["Md5sum"].(string)].(map[string]interface{})["Filename"] = readBack["Filename"]
-			response[readBack["Md5sum"].(string)].(map[string]interface{})["Filepath"] = readBack["Filepath"]
+
+		}
+		for _,val := range a["Filepaths"].([]interface{}){
+			if strings.Contains(strings.ToLower(val.(string)),strings.ToLower(pattern)) {
+				//logger.LogLn("Document",id,"is",string(docContent))
+				response[a["Md5sum"].(string)] = a["ExifTags"]
+				if response[a["Md5sum"].(string)] == nil {
+					response[a["Md5sum"].(string)] =make(map[string]interface{},0)
+				}
+				response[a["Md5sum"].(string)].(map[string]interface{})["Filename"] = a["Filename"]
+				response[a["Md5sum"].(string)].(map[string]interface{})["Filepath"] = a["Filepath"]
+
+			}
+
 		}
 
-	}
-
+		//logger.LogLn("Document",id,"is",string(docContent))
+		return true
+		return false
+	})
+	logger.Logf("request returns %d results\n",len(response))
 	return response, nil
 }
