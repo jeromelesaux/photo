@@ -126,7 +126,7 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	filename := r.URL.Query().Get("value")
 	response, err := database.QueryExtenstion(filename)
-	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Log("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -139,7 +139,7 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 	pattern := r.URL.Query().Get("value")
 	exiftag := r.URL.Query().Get("exif")
 	response, err := database.QueryExifTag(pattern, exiftag)
-	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Log("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -162,7 +162,7 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 func QueryAll(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	response, err := database.QueryAll()
-	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Log("QueryAll completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
