@@ -16,5 +16,6 @@ func Logf(message string, args ...interface{}) (int, error) {
 }
 
 func LogLn(a ...interface{}) (int, error) {
-	return fmt.Fprintln(os.Stderr, a)
+	currentTime := fmt.Sprintf("%s : ", time.Now().Format(time.RFC3339))
+	return fmt.Fprintln(os.Stderr, currentTime, a)
 }

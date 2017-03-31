@@ -43,7 +43,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 	directorypath := r.URL.Query().Get("value")
 	response := &modele.DirectoryItemResponse{
 		Name:             "Root",
-		Path:             directorypath,
+		Path:             "#",
 		JstreeAttributes: modele.NewJSTreeAttribute(),
 		Directories:      make([]*modele.DirectoryItemResponse, 0),
 	}

@@ -52,7 +52,6 @@ Submit all folders to scan
                             
                             $('#jstree').jstree({
                                 'core': {
-                                    'data': jsondata,
                                     'check_callback' : true
                                 },
                                 "checkbox": {
@@ -64,8 +63,8 @@ Submit all folders to scan
                                 },
                                 "plugins": ["checkbox", "search"]
                             });
-//                            $("#jstree").jstree(true).settings.core.data = jsondata;
-//                            $("#jstree").jstree(true).refresh();
+                            $("#jstree").jstree(true).settings.core.data = jsondata;
+                            $("#jstree").jstree(true).refresh();
 //                            $("#jstree").jstree(true).redraw(true);
                         }
                     }
