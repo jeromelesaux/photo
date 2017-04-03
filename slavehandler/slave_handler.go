@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"photo/logger"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -26,6 +25,49 @@ type SlavesConfiguration struct {
 
 var slavesConfiguration *SlavesConfiguration
 var slavesConfigLock sync.Mutex
+var slaveIp string
+var slaveMacAddress string
+
+func GetSlaveIPMacAddess() (error, string, string) {
+
+	if slaveIp == "" {
+		interfaces, err := net.Interfaces()
+		if err != nil {
+			logger.Log("no local internet interfaces found with error " + err.Error())
+			return err, "", ""
+		}
+		for _, i := range interfaces {
+			if addrs, err := i.Addrs(); err != nil {
+				logger.Log("no local addresses internet interfaces found with error " + err.Error())
+				return err, "", ""
+			} else {
+				for _, addr := range addrs {
+					var ip net.IP
+
+					switch v := addr.(type) {
+					case *net.IPNet:
+
+						ip = v.IP
+					case *net.IPAddr:
+						ip = v.IP
+					}
+					if ip.To4() != nil && !ip.IsLoopback() {
+						slaveIp = ip.To4().String()
+						if netInterface, err := net.InterfaceByName(i.Name); err != nil {
+							logger.Log("Error while getting interfaceByName with error: " + err.Error())
+							return err, slaveIp, slaveMacAddress
+						} else {
+							slaveMacAddress = netInterface.HardwareAddr.String()
+							return nil, slaveIp, slaveMacAddress
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil, slaveIp, slaveMacAddress
+
+}
 
 func GetSlaves() *SlavesConfiguration {
 	if slavesConfiguration == nil {
@@ -71,60 +113,39 @@ func (s *SlavesConfiguration) saveConfiguration() error {
 
 func RegisterToMaster(masterUri string, localPort int, localAction string) {
 	go func() {
-		processid := strconv.Itoa(os.Getpid())
 		for {
 			logger.Log("Attempt to register to " + masterUri)
-			interfaces, err := net.Interfaces()
-			if err != nil {
-				logger.Log("no local internet interfaces found with error " + err.Error())
-				return
-			}
-			for _, i := range interfaces {
-				addrs, err := i.Addrs()
-				if err != nil {
-					logger.Log("no local addresses internet interfaces found with error " + err.Error())
-					return
+			if err, ip, macAddress := GetSlaveIPMacAddess(); err != nil {
+				logger.Log("not enable to get local ip and macaddress")
+			} else {
+				conf := &Slave{
+					Url:    "http://" + ip,
+					Port:   localPort,
+					Name:   macAddress,
+					Action: localAction,
 				}
-				for _, addr := range addrs {
-					var ip net.IP
 
-					switch v := addr.(type) {
-					case *net.IPNet:
-						ip = v.IP
-					case *net.IPAddr:
-						ip = v.IP
-					}
-					if ip.To4() != nil {
-						conf := &Slave{
-							Url:    "http://" + ip.To4().String(),
-							Port:   localPort,
-							Name:   "photoexif-" + processid,
-							Action: localAction,
-						}
-
-						body, _ := json.Marshal(conf)
-						logger.LogLn("Body to send ", *conf)
-						response, err := http.Post(masterUri, "application/json", bytes.NewBuffer(body))
-						if err == nil {
-							msg, _ := ioutil.ReadAll(response.Body)
-							if response.StatusCode != 200 {
-								logger.Log("Bad response from master " + masterUri + " with response " + string(msg))
-							} else {
-								if string(msg) != "ok" {
-									logger.Log("Bad response from master " + masterUri + " with response " + string(msg))
-								} else {
-									logger.Log("Ok registered to " + masterUri + " with response " + string(msg))
-								}
-							}
-							response.Body.Close()
+				body, _ := json.Marshal(conf)
+				logger.LogLn("Body to send ", *conf)
+				response, err := http.Post(masterUri, "application/json", bytes.NewBuffer(body))
+				if err == nil {
+					msg, _ := ioutil.ReadAll(response.Body)
+					if response.StatusCode != 200 {
+						logger.Log("Bad response from master " + masterUri + " with response " + string(msg))
+					} else {
+						errorMsg := string(msg)
+						if errorMsg != "\"ok\"" {
+							logger.Log("Bad response from master " + masterUri + " with response " + errorMsg)
 						} else {
-							logger.Log("Error while registering to " + masterUri + " with error " + err.Error())
+							logger.Log("Ok registered to " + masterUri + " with response " + errorMsg)
 						}
-
 					}
+					response.Body.Close()
+				} else {
+					logger.Log("Error while registering to " + masterUri + " with error " + err.Error())
 				}
-
 			}
+
 			time.Sleep(time.Second * 30)
 		}
 	}()

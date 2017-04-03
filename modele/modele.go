@@ -12,6 +12,11 @@ type Configuration struct {
 	DatabasePath string `json:"database_path"`
 }
 
+type RegisteredSlave struct {
+	MachineId string `json:"machineId"`
+	Ip        string `json:"ipv4"`
+}
+
 type TagsPhoto struct {
 	Tags     map[string]string `json:"tags"`
 	Md5Sum   string            `json:"md5sum"`
@@ -20,9 +25,10 @@ type TagsPhoto struct {
 }
 
 type PhotoResponse struct {
-	Message string       `json:"error_message,omitempty"`
-	Version string       `json:"version"`
-	Photos  []*TagsPhoto `json:"photos"`
+	Message   string       `json:"error_message,omitempty"`
+	Version   string       `json:"version"`
+	MachineId string       `json:"machine"`
+	Photos    []*TagsPhoto `json:"photos"`
 }
 
 type FileExtension struct {
@@ -30,7 +36,8 @@ type FileExtension struct {
 }
 
 type FolderToScan struct {
-	Folders []string `json:"folders_toscan"`
+	MachineId string   `json:"machineid"`
+	Folders   []string `json:"folders_toscan"`
 }
 
 type JSTreeAttribute struct {
@@ -50,6 +57,7 @@ type DirectoryItemResponse struct {
 	Directories      []*DirectoryItemResponse `json:"children"`
 	Parent           *DirectoryItemResponse   `json:"-"`
 	Deep             int                      `json:"-"`
+	MachineId        string                   `json:"machineid"`
 	JstreeAttributes *JSTreeAttribute         `json:"state"`
 }
 

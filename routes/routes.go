@@ -16,6 +16,16 @@ import (
 	"time"
 )
 
+func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
+	conf := slavehandler.GetSlaves()
+	message := make([]modele.RegisteredSlave, 0)
+	for _, slave := range conf.Slaves {
+		message = append(message, modele.RegisteredSlave{MachineId: slave.Name, Ip: slave.Url})
+	}
+	logger.LogLn("Ask for registered slave machines", message)
+	JsonAsResponse(w, message)
+}
+
 func RegisterSlave(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
@@ -41,9 +51,12 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 	//usr, _ := user.Current()
 	starttime := time.Now()
 	directorypath := r.URL.Query().Get("value")
+	machineId := r.URL.Query().Get("machineId")
+	logger.Log("Browse directory " + directorypath + " machineid " + machineId)
 	response := &modele.DirectoryItemResponse{
 		Name:             "Root",
 		Path:             "#",
+		MachineId:        machineId,
 		JstreeAttributes: modele.NewJSTreeAttribute(),
 		Directories:      make([]*modele.DirectoryItemResponse, 0),
 	}
@@ -81,7 +94,7 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 	} else {
 		response = "Scans launched."
 	}
-	go webclient.ScanFoldersClient(folders.Folders, conf)
+	go webclient.ScanFoldersClient(folders.Folders, folders.MachineId, conf)
 
 	JsonAsResponse(w, response)
 }

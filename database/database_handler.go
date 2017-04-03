@@ -60,6 +60,10 @@ func createIndexes() error {
 		}
 		feeds := databaseCI.Use(DBPHOTOCOLLECTION)
 
+		if err := feeds.Index([]string{"MachineId"}); err != nil {
+			logger.Log("Error while indexing MachineId with error : " + err.Error())
+			return
+		}
 		if err := feeds.Index([]string{"Filename"}); err != nil {
 			logger.Log("Error while indexing Filename with error : " + err.Error())
 			return
@@ -124,6 +128,7 @@ func InsertNewData(response *modele.PhotoResponse) error {
 	feeds := databaseForInsert.Use(DBPHOTOCOLLECTION)
 	for _, item := range response.Photos {
 		id, err := feeds.Insert(map[string]interface{}{
+			"MachineId": response.MachineId,
 			"Filename":  item.Filename,
 			"Filenames": SplitAll(item.Filename),
 			"Filepath":  item.Filepath,

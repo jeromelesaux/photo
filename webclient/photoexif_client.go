@@ -56,7 +56,7 @@ func scanExifClient(remotePath string, salve *slavehandler.Slave) {
 	return
 }
 
-func ScanFoldersClient(remotepaths []string, conf *modele.Configuration) {
+func ScanFoldersClient(remotepaths []string, slaveid string, conf *modele.Configuration) {
 	slavesConfig := slavehandler.GetSlaves()
 	if len(slavesConfig.Slaves) == 0 {
 		logger.Log("No slave registered, skip action")
@@ -66,7 +66,8 @@ func ScanFoldersClient(remotepaths []string, conf *modele.Configuration) {
 	for _, remotepath := range remotepaths {
 		logger.Log("Sending to traitment " + remotepath)
 		//traitmentChan <- 1
-		for _, slave := range slavesConfig.Slaves {
+		if slave := slavesConfig.Slaves[slaveid]; slave != nil {
+			logger.Log("Exec search to " + slave.Name + " address " + slave.Url + " for directory " + remotepath)
 			go scanExifClient(remotepath, slave)
 		}
 	}

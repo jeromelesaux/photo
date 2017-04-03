@@ -4,102 +4,192 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
 </head>
 <body>
+<div class="container">
+    <div id="content">
+        <ul class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#home" data-toggle="tab">Wellcome</a></li>
+            <li><a href="#scantab" data-toggle="tab">Scan Directories</a></li>
+            <li><a href="#search" data-toggle="tab">Search Photos</a></li>
+        </ul>
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="home">
+                Registered machines :
+                <ul id="machineList" class="list-group"></ul>
+                <button type="button" name="refresh" onclick="getRegisteredMachines()" value="refresh" class="btn btn-primary start">
+                    <span>refresh</span>
+                </button>
+            </div>
 
-Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue">
-<button type="button" name="Search folder" onclick="submitSearch()" value="Search folder">Search Folder</button>
-<br>
-Submit all folders to scan
-<button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder">Scan Folder</button>
+            <div class="tab-pane" id="scantab">
+                <div class="form-group">
+                    <label for="activeMachineList">Select one machine:</label>
+                    <select class="form-control" id="activeMachineList">
+                    </select>
+                </div>
+                <form class="form-inline">
+                    <div class="form-group">
+                        Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue" class="form-control">
+                        <button type="button" name="Search folder" onclick="submitSearch()" value="Search folder" class="btn btn-primary start">
+                            <span>Search Folder</span>
+                        </button>
+                    </div>
+                    <br>
+                    Submit all folders to scan
+                    <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder" class="btn btn-primary start">
+                        <span>Scan Folder</span>
+                    </button>
+                </form>
+                <div>
+                    <input class="search-input form-control">
+                </div>
+                <div id="jstree"></div>
+            </div>
+            <div class="tab-pane" id="search">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="offset8">Enter extension image file to search :<input type="text" id="extensionValue" name="extensionValue"
+                                                                                          class="form-control"></div>
+                        <br>
+                        <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue" name="exifTagValue"
+                                                                                                class="form-control"></div>
+                        <br>
+                        <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue" name="exifValue"
+                                                                                                  class="form-control"></div>
+                        <br>
+                        <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images" class="btn btn-primary start">
+                            <span>Search Images</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <script>
 
 
-<div>
-    <input class="search-input form-control">
-</div>
+
+                function submitImagesSearch() {
+                    $(function () {
+                    });
+                }
+
+                function getRegisteredMachines() {
+                    $(function () {
+                        $.ajax({
+                            dataType: "json",
+                            url: "/registeredslaves",
+                            type: 'GET',
+                            success: function (jsondata, codeHttp) {
+                                //console.log(jsondata);
+                                var listContainer = $("#machineList");
+                                var selectPicker = $("#activeMachineList");
+                                // event.preventDefault();
+                                for (i = 0; i < jsondata.length; i++) {
+                                    console.log("adding " + jsondata[i].ipv4);
+                                    listContainer.prepend('<li class="list-group-item">' + jsondata[i].ipv4 + '</li>');
+                                    selectPicker.append('<option value="' + jsondata[i].machineId + '">' + jsondata[i].ipv4 + '</option>');
+                                }
+                            }
+                        });
+                    });
+                }
 
 
-<div id="jstree"></div>
+                $(".search-input").keyup(function () {
+                    var searchString = $(this).val();
+                    //    console.log(searchString);
+                    $('#jstree').jstree('search', searchString);
+                });
+
+                var MachineID = "";
+
+                $("#activeMachineList").on("click", function() {
+                   $('#activeMachineList option').prop('selected', function () {
+                       MachineID = $(this).val();
+                       alert(MachineID);
+                   })});
 
 
-<script>
-    $(".search-input").keyup(function () {
-
-        var searchString = $(this).val();
-        //    console.log(searchString);
-        $('#jstree').jstree('search', searchString);
-    });
-
-    function submitSearch() {
-        $(function () {
+                function submitSearch() {
+                    $(function () {
 
 
+                        var folderValue = $("#folderValue").val();
+                        if (MachineID == "") {
+                            alert("Please select a machine before");
+                        } else {
+                            console.log(MachineID);
+                            $.ajax({
+                                dataType: "json",
+                                url: "browse?value=" + folderValue + "&machineId=" + MachineID,
+                                type: 'GET',
+                                success: function (jsondata, codeHttp) {
+                                    console.log(codeHttp);
+                                    if (jsondata.error_message != null) {
+                                        alert(jsondata.error_message);
+                                    } else {
+                                        if (codeHttp == 'success') {
 
-            var folderValue = $("#folderValue").val();
-            //  console.log(folderValue);
 
-            $.ajax({
-                dataType: "json",
-                url: "browse?value=" + folderValue,
-                type: 'GET',
-                success: function (jsondata, codeHttp) {
-                    console.log(codeHttp);
-                    if (jsondata.error_message != null) {
-                        alert(jsondata.error_message);
-                    } else {
-                        if (codeHttp == 'success') {
-
-                            
-                            $('#jstree').jstree({
-                                'core': {
-                                    'check_callback' : true
-                                },
-                                "checkbox": {
-                                    "keep_selected_style": false
-                                },
-                                "search": {
-                                    "case_insensitive": true,
-                                    "show_only_matches": true
-                                },
-                                "plugins": ["checkbox", "search"]
-                            });
-                            $("#jstree").jstree(true).settings.core.data = jsondata;
-                            $("#jstree").jstree(true).refresh();
+                                            $('#jstree').jstree({
+                                                'core': {
+                                                    'check_callback': true
+                                                },
+                                                "checkbox": {
+                                                    "keep_selected_style": false
+                                                },
+                                                "search": {
+                                                    "case_insensitive": true,
+                                                    "show_only_matches": true
+                                                },
+                                                "plugins": ["checkbox", "search"]
+                                            });
+                                            $("#jstree").jstree(true).settings.core.data = jsondata;
+                                            $("#jstree").jstree(true).refresh();
 //                            $("#jstree").jstree(true).redraw(true);
+                                        }
+                                    }
+                                }
+                            });
                         }
+                    });
+                }
+
+                function submitScan() {
+                    var machineid = $('#jstree').jstree(true)._model.data['#'].original.machineid;
+                    console.log(machineid);
+                    var checked = $('#jstree').jstree(true).get_selected();
+                    var a = [];
+                    for (i = 0; i < checked.length; i++) {
+                        var o = {};
+                        o = checked[i];
+                        a[i] = o;
                     }
+                    var body = {};
+                    body.folders_toscan = a;
+                    body.machineid = machineid;
+                    var jsondata = JSON.stringify(body);
+                    console.log(jsondata);
+                    $.ajax({
+                        dataType: "json",
+                        url: "scan",
+                        type: 'POST',
+                        data: jsondata,
+                        success: function (responsedata, codeHttp) {
+                            if (codeHttp == "success") {
+                                alert(responsedata);
+                            }
+                        }
+                    });
+                    console.log(checked);
                 }
-            });
-        });
-    }
-
-    function submitScan() {
-
-        var checked = $('#jstree').jstree(true).get_selected();
-        var a = [];
-        for (i = 0; i < checked.length; i++) {
-            var o = {};
-            o = checked[i];
-            a[i] = o;
-        }
-        var body = {};
-        body.folders_toscan = a;
-        var jsondata = JSON.stringify(body);
-        console.log(jsondata);
-        $.ajax({
-            dataType: "json",
-            url: "scan",
-            type: 'POST',
-            data: jsondata,
-            success: function (responsedata, codeHttp) {
-                if (codeHttp == "success") {
-                    alert(responsedata);
-                }
-            }
-        });
-        console.log(checked);
-    }
-</script>
-
+            </script>
+        </div>
+    </div>
+</div>
 </body>
 </html>
