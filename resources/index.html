@@ -11,6 +11,19 @@
 <body>
 <div class="container">
     <div id="content">
+        <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <h3 id="myModalLabel">Modal header</h3>
+            </div>
+            <div class="modal-body">
+                <img src="ajax-loader.gif"/>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+        <!--<div id='loading-indicator' style="position: fixed; left: 50%; top: 50%; display: none;">-->
+            <!--<img src="/ajax-loader.gif"></img>-->
+        <!--</div>-->
         <ul class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#home" data-toggle="tab">Wellcome</a></li>
             <li><a href="#scantab" data-toggle="tab">Scan Directories</a></li>
@@ -70,8 +83,6 @@
 
             <script>
 
-
-
                 function submitImagesSearch() {
                     $(function () {
                     });
@@ -110,14 +121,13 @@
                 $("#activeMachineList").on("click", function() {
                    $('#activeMachineList option').prop('selected', function () {
                        MachineID = $(this).val();
-                       alert(MachineID);
+                       //alert(MachineID);
                    })});
 
 
                 function submitSearch() {
                     $(function () {
-
-
+                        $('#myModal').modal('show');
                         var folderValue = $("#folderValue").val();
                         if (MachineID == "") {
                             alert("Please select a machine before");
@@ -150,12 +160,13 @@
                                             });
                                             $("#jstree").jstree(true).settings.core.data = jsondata;
                                             $("#jstree").jstree(true).refresh();
-//                            $("#jstree").jstree(true).redraw(true);
                                         }
+                                        $('#myModal').modal('hide');
                                     }
                                 }
                             });
                         }
+
                     });
                 }
 
@@ -173,7 +184,7 @@
                     body.folders_toscan = a;
                     body.machineid = machineid;
                     var jsondata = JSON.stringify(body);
-                    console.log(jsondata);
+                   // console.log(jsondata);
                     $.ajax({
                         dataType: "json",
                         url: "scan",
@@ -191,5 +202,6 @@
         </div>
     </div>
 </div>
+
 </body>
 </html>
