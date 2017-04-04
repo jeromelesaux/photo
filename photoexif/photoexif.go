@@ -56,6 +56,7 @@ func main() {
 				}
 				http.HandleFunc("/file", routes.GetFileInformations)
 				http.HandleFunc("/directory", routes.GetDirectoryInformations)
+				http.HandleFunc("/getfileextension", routes.GetExtensionList)
 				log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 			} else {
 				flag.PrintDefaults()

@@ -94,3 +94,35 @@ func ScanFoldersClient(remotepaths []string, slaveid string, conf *modele.Config
 	}()
 
 }
+
+func GetFileExtensionValues(slave *slavehandler.Slave) (error, *modele.FileExtension) {
+	var startTime time.Time
+
+	defer func() {
+		endTime := time.Now()
+		computeDuration := endTime.Sub(startTime)
+		logger.Logf("Job done in %f seconds\n", computeDuration.Minutes())
+
+	}()
+	startTime = time.Now()
+	client := &http.Client{}
+	uri := fmt.Sprintf("%s:%d/getfileextension", slave.Url, slave.Port)
+	request, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		logger.Log("error with : " + err.Error())
+		return err, &modele.FileExtension{}
+	}
+	logger.Log("Calling uri : " + uri)
+	response, err := client.Do(request)
+	if err != nil {
+		logger.Log("error with : " + err.Error())
+		return err, &modele.FileExtension{}
+	}
+	defer response.Body.Close()
+	extensions := &modele.FileExtension{}
+	if err := json.NewDecoder(response.Body).Decode(extensions); err != nil {
+		logger.Log("error with : " + err.Error())
+		return nil, &modele.FileExtension{}
+	}
+	return nil, extensions
+}

@@ -16,6 +16,31 @@ import (
 	"time"
 )
 
+func GetExtensionList(w http.ResponseWriter, r *http.Request) {
+	conf := modele.LoadConfigurationAtOnce()
+	logger.Log("Ask for extension files")
+	JsonAsResponse(w, conf)
+}
+
+func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
+	conf := slavehandler.GetSlaves()
+	if len(conf.Slaves) == 0 {
+		JsonAsResponse(w, "Not clients registered")
+
+	} else {
+		var slave *slavehandler.Slave
+		for _, slave = range conf.Slaves {
+			break
+		}
+		if err, extensions := webclient.GetFileExtensionValues(slave); err != nil {
+			JsonAsResponse(w, err.Error())
+		} else {
+			JsonAsResponse(w, extensions)
+		}
+
+	}
+}
+
 func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
 	conf := slavehandler.GetSlaves()
 	message := make([]modele.RegisteredSlave, 0)

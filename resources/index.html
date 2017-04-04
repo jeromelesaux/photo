@@ -22,7 +22,7 @@
             </div>
         </div>
         <!--<div id='loading-indicator' style="position: fixed; left: 50%; top: 50%; display: none;">-->
-            <!--<img src="/ajax-loader.gif"></img>-->
+        <!--<img src="/ajax-loader.gif"></img>-->
         <!--</div>-->
         <ul class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#home" data-toggle="tab">Wellcome</a></li>
@@ -65,26 +65,96 @@
             <div class="tab-pane" id="search">
                 <form class="form-inline">
                     <div class="form-group">
-                        <div class="offset8">Enter extension image file to search :<input type="text" id="extensionValue" name="extensionValue"
-                                                                                          class="form-control"></div>
-                        <br>
-                        <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue" name="exifTagValue"
-                                                                                                class="form-control"></div>
-                        <br>
-                        <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue" name="exifValue"
-                                                                                                  class="form-control"></div>
-                        <br>
-                        <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images" class="btn btn-primary start">
-                            <span>Search Images</span>
-                        </button>
-                    </div>
+                        <div class="offset8">Enter extension image file to search : <select class="form-control" id="extensionList"> </select>
+
+                            <br>
+                            <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue" name="exifTagValue"
+                                                                                                    class="form-control"></div>
+                            <br>
+                            <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue" name="exifValue"
+                                                                                                      class="form-control"></div>
+                            <br>
+                            <div class="offset8">Enter part of the filename of the image file to search :<input type="text" id="filename"
+                                                                                                                name="filename"
+                                                                                                                class="form-control"></div>
+                            <br>
+                            <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images" class="btn btn-primary start">
+                                <span>Search Images</span>
+                            </button>
+                            <br>
+                            <ul id="imagesFound" class="list-group"></ul>
+                        </div>
                 </form>
             </div>
 
             <script>
+                $(document).ready(function () {
+                    getRegisteredMachines();
+                    getExtensionList();
+                });
+
+                function getExtensionList() {
+                    $(function () {
+                        $.ajax({
+                            dataType: "json",
+                            url: "/getfileextension",
+                            type: 'GET',
+                            success: function (jsondata, codeHttp) {
+                                console.log(jsondata);
+                                $('#extensionList').empty();
+                                $.each(jsondata.Extensions, function (i, item) {
+                                    $('#extensionList').append('<option value="' + item + '">' + item + '</option>');
+                                });
+                            }
+                        })
+                    })
+                }
+
+
+                var ExtensionSelected = "";
+
 
                 function submitImagesSearch() {
                     $(function () {
+                        exifTag = $('#exifTagValue').val();
+                        exifValue = $('#exifValue').val();
+                        $('#extensionList').each(function () {
+                            ExtensionSelected = $(this).val();
+                        });
+                        if (exifTag == "" && exifValue == "" && ExtensionSelected != "") {
+                            $.ajax({
+                                dataType: "json",
+                                url: "/queryextension?value=" + ExtensionSelected,
+                                type: 'GET',
+                                success: function (jsondata, codeHttp) {
+                                    $('#imagesFound').empty();
+                                    if (jQuery.isEmptyObject(jsondata)) {
+                                        alert("No images found.");
+                                    } else {
+                                        $.each(jsondata, function (i, item) {
+                                            $('#imagesFound').append('<option value="' + item.Filepath + '">' + item.Filename + '</option>');
+                                        });
+                                    }
+                                }
+                            })
+                        } else {
+                            console.log("Calling /queryexif?value=" + exifValue + "&exif=" + exifTag);
+                            $.ajax({
+                                dataType: "json",
+                                url: "/queryexif?value=" + exifValue + "&exif=" + exifTag,
+                                type: 'GET',
+                                success: function (jsondata, codeHttp) {
+                                    $('#imagesFound').empty();
+                                    if (jQuery.isEmptyObject(jsondata)) {
+                                        alert("No images found.");
+                                    } else {
+                                        $.each(jsondata, function (i, item) {
+                                            $('#imagesFound').append('<option value="' + item.Filepath + '">' + item.Filename + '</option>');
+                                        });
+                                    }
+                                }
+                            })
+                        }
                     });
                 }
 
@@ -106,7 +176,7 @@
                                 }
                             }
                         });
-                    });
+                    })
                 }
 
 
@@ -118,17 +188,14 @@
 
                 var MachineID = "";
 
-                $("#activeMachineList").on("click", function() {
-                   $('#activeMachineList option').prop('selected', function () {
-                       MachineID = $(this).val();
-                       //alert(MachineID);
-                   })});
-
 
                 function submitSearch() {
                     $(function () {
                         $('#myModal').modal('show');
                         var folderValue = $("#folderValue").val();
+                        $('#activeMachineList').each(function () {
+                            MachineID = $(this).val();
+                        });
                         if (MachineID == "") {
                             alert("Please select a machine before");
                         } else {
@@ -184,7 +251,7 @@
                     body.folders_toscan = a;
                     body.machineid = machineid;
                     var jsondata = JSON.stringify(body);
-                   // console.log(jsondata);
+                    // console.log(jsondata);
                     $.ajax({
                         dataType: "json",
                         url: "scan",
