@@ -11,11 +11,13 @@ import (
 	"photo/slavehandler"
 	"strconv"
 
+	"sync"
 	"time"
 )
 
 //var traitmentChan = make(chan int, 10)
-var photoResponseChan = make(chan *modele.PhotoResponse)
+var photoResponseChan = make(chan *modele.PhotoResponse, 5)
+var sendToDatabaseOnce sync.Once
 
 func scanExifClient(remotePath string, salve *slavehandler.Slave) {
 	var startTime time.Time
@@ -73,9 +75,9 @@ func ScanFoldersClient(remotepaths []string, slaveid string, conf *modele.Config
 	}
 
 	go func() {
-		for {
-			var pr *modele.PhotoResponse
-			pr = <-photoResponseChan
+
+		//var pr *modele.PhotoResponse
+		for pr := range photoResponseChan {
 			if len(pr.Photos) > 0 {
 				err := database.InsertNewData(pr)
 				if err != nil {
@@ -84,15 +86,9 @@ func ScanFoldersClient(remotepaths []string, slaveid string, conf *modele.Config
 			}
 			logger.Log("message received")
 			logger.LogLn(*pr)
-
 		}
-	}()
-	go func() {
-		//close(photoResponseChan)
-		logger.Log("Traitment ended")
-		return
-	}()
 
+	}()
 }
 
 func GetFileExtensionValues(slave *slavehandler.Slave) (error, *modele.FileExtension) {

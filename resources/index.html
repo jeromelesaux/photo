@@ -84,6 +84,7 @@
                             <br>
                             <ul id="imagesFound" class="list-group"></ul>
                         </div>
+                    </div>
                 </form>
             </div>
 
@@ -127,6 +128,7 @@
                                 url: "/queryextension?value=" + ExtensionSelected,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
+                                    console.log(jsondata);
                                     $('#imagesFound').empty();
                                     if (jQuery.isEmptyObject(jsondata)) {
                                         alert("No images found.");
@@ -166,6 +168,8 @@
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
                                 //console.log(jsondata);
+                                $('#machineList').empty();
+                                $('#activeMachineList').empty();
                                 var listContainer = $("#machineList");
                                 var selectPicker = $("#activeMachineList");
                                 // event.preventDefault();
@@ -228,12 +232,11 @@
                                             $("#jstree").jstree(true).settings.core.data = jsondata;
                                             $("#jstree").jstree(true).refresh();
                                         }
-                                        $('#myModal').modal('hide');
                                     }
                                 }
                             });
                         }
-
+                        $('#myModal').modal('hide');
                     });
                 }
 

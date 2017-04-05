@@ -6,10 +6,10 @@ MV=mv
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 #GOPATH=$(SOURCEDIR)/
-GOOS=linux
+GOOS=darwin
 GOARCH=amd64
 #GOARCH=arm
-GOARM=7
+#GOARM=7
 
 EXEC=photo
 EXEC1=photoexif
@@ -22,7 +22,7 @@ PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db  github.com/pkg/
 
 LIBS= 
 
-LDFLAGS=	
+LDFLAGS=-ldflags -s
 
 .DEFAULT_GOAL:= $(EXEC2)
 
@@ -32,7 +32,7 @@ $(EXEC2): organize $(SOURCES)  ${EXEC1}
 		@if  [ "arm" = "${GOARCH}" ]; then\
 		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
 		else\
-            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
+            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
         fi
 		@echo "    ${EXEC2}-${VERSION} generated."
 
@@ -42,7 +42,7 @@ $(EXEC1): organize $(SOURCES)
 		@if  [ "arm" = "${GOARCH}" ]; then\
 		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
 		else\
-            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
+            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
         fi
 		@echo "    ${EXEC1}-${VERSION} generated."
 
@@ -62,8 +62,8 @@ init: clean
 		@echo "    Init of the project"
 
 execute:
-		./${EXEC1}-${VERSION}  -httpport 3000
-		./${EXEC2}-${VERSION}  -httpport 3001
+		./${EXEC1}-${VERSION}  -httpport 3001 -masteruri http://localhost:3000/register 2> photoexif.log &
+		./${EXEC2}-${VERSION}  -configurationfile confclient.json -httpport 3000 2> photocontroller.log
 
 clean:
 		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi
