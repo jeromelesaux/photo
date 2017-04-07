@@ -1,0 +1,13 @@
+package: photo
+import:
+- package: github.com/HouzuoGuo/tiedot
+  version: "3.3"
+  subpackages:
+  - db
+- package: github.com/pkg/errors
+  version: v0.8.0
+- package: github.com/xiam/exif
+- package: github.com/dgrijalva/jwt-go
+  version: ^3.0.0
+- package: github.com/stretchr/testify
+  version: ^1.1.4

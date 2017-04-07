@@ -30,9 +30,9 @@ LDFLAGS=-ldflags -s
 $(EXEC2): organize $(SOURCES)  ${EXEC1}
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
-		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
+		    	GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
 		else\
-            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
+       			GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
         fi
 		@echo "    ${EXEC2}-${VERSION} generated."
 
@@ -42,12 +42,12 @@ $(EXEC1): organize $(SOURCES)
 		@if  [ "arm" = "${GOARCH}" ]; then\
 		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
 		else\
-            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
+	            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
         fi
 		@echo "    ${EXEC1}-${VERSION} generated."
 
-test: $(EXEC1) $(EXEC2)
-		@GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go test ./...
+test: deps
+		@go test -v $(shell go list ./... | grep -v '/vendor/')
 		@echo " Tests OK."
 
 deps: init
@@ -63,7 +63,7 @@ init: clean
 
 execute:
 		./${EXEC1}-${VERSION}  -httpport 3001 -masteruri http://localhost:3000/register 2> photoexif.log &
-		./${EXEC2}-${VERSION}  -configurationfile confclient.json -httpport 3000 2> photocontroller.log
+		./${EXEC2}-${VERSION}  -configurationfile confclient.json -httpport 3000
 
 clean:
 		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi

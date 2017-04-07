@@ -24,6 +24,7 @@ func GetExtensionList(w http.ResponseWriter, r *http.Request) {
 
 func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
 	conf := slavehandler.GetSlaves()
+	client := webclient.NewPhotoExifClient()
 	if len(conf.Slaves) == 0 {
 		JsonAsResponse(w, "Not clients registered")
 
@@ -32,7 +33,7 @@ func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
 		for _, slave = range conf.Slaves {
 			break
 		}
-		if err, extensions := webclient.GetFileExtensionValues(slave); err != nil {
+		if err, extensions := client.GetFileExtensionValues(slave); err != nil {
 			JsonAsResponse(w, err.Error())
 		} else {
 			JsonAsResponse(w, extensions)
@@ -105,6 +106,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 
 func ScanFolders(w http.ResponseWriter, r *http.Request) {
 	conf := modele.GetConfiguration()
+	client := webclient.NewPhotoExifClient()
 	folders := &modele.FolderToScan{}
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
@@ -119,7 +121,7 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 	} else {
 		response = "Scans launched."
 	}
-	go webclient.ScanFoldersClient(folders.Folders, folders.MachineId, conf)
+	go client.ScanFoldersClient(folders.Folders, folders.MachineId, conf)
 
 	JsonAsResponse(w, response)
 }
@@ -163,7 +165,13 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	filename := r.URL.Query().Get("value")
-	response, err := database.QueryExtenstion(filename)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		logger.Log("Error while getting dabatabse with error" + err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.QueryExtenstion(filename)
 	logger.Log("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -176,7 +184,13 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	pattern := r.URL.Query().Get("value")
 	exiftag := r.URL.Query().Get("exif")
-	response, err := database.QueryExifTag(pattern, exiftag)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		logger.Log("Error while getting dabatabse with error" + err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.QueryExifTag(pattern, exiftag)
 	logger.Log("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -188,7 +202,13 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 func QueryFilename(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	filename := r.URL.Query().Get("value")
-	response, err := database.QueryFilename(filename)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		logger.Log("Error while getting dabatabse with error" + err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.QueryFilename(filename)
 	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -199,7 +219,13 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 
 func QueryAll(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
-	response, err := database.QueryAll()
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		logger.Log("Error while getting dabatabse with error" + err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.QueryAll()
 	logger.Log("QueryAll completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
