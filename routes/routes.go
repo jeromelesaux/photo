@@ -42,6 +42,16 @@ func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetThumbnail(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	response, err := exifhandler.GetThumbnail(filePath)
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	JsonAsResponse(w, response)
+}
+
 func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
 	conf := slavehandler.GetSlaves()
 	message := make([]modele.RegisteredSlave, 0)

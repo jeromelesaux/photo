@@ -160,6 +160,7 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 
 	}
 
+	dbInstance.Close()
 	return nil
 }
 
@@ -198,6 +199,7 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 
 	}
 
+	dbInstance.Close()
 	return response, nil
 }
 
@@ -208,6 +210,7 @@ func (d *DatabaseHandler) QueryExtenstion(pattern string) ([]*DatabasePhotoRespo
 		logger.Log("Error while opening database during insert operation with error " + err.Error())
 		return response, err
 	}
+	defer dbInstance.Close()
 
 	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
 	queryResult := make(map[int]struct{})
@@ -297,6 +300,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 		return false
 	})
 
+	dbInstance.Close()
 	logger.Logf("request returns %d results for filename %s\n", len(response), pattern)
 	return response, nil
 }
@@ -338,7 +342,7 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 		return true
 		return false
 	})
-
+	dbInstance.Close()
 	logger.Logf("request returns %d results for pattern %s and exif tag %s\n", len(response), pattern, exiftag)
 	return response, nil
 }

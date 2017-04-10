@@ -5,6 +5,12 @@ import (
 	"path"
 	"photo/logger"
 
+	"bytes"
+	"encoding/base64"
+	"github.com/disintegration/imaging"
+	"image"
+	"image/color"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 	"photo/hash"
@@ -84,4 +90,25 @@ func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
 		}
 		return nil
 	}
+}
+
+func GetThumbnail(path string) (string, error) {
+
+	img, err := imaging.Open(path)
+	if err != nil {
+		logger.Log("Error while retreiving thumbnail with error " + err.Error())
+		return "", err
+	}
+
+	thumb := imaging.Thumbnail(img, 100, 100, imaging.CatmullRom)
+	dst := imaging.New(100, 100, color.NRGBA{0, 0, 0, 0})
+	dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, dst, nil)
+	if err != nil {
+		logger.Log("Error while retreiving thumbnail with error " + err.Error())
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+
 }
