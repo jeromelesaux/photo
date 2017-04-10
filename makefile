@@ -6,7 +6,7 @@ MV=mv
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 #GOPATH=$(SOURCEDIR)/
-GOOS=darwin
+GOOS=linux
 GOARCH=amd64
 #GOARCH=arm
 #GOARM=7
@@ -60,10 +60,16 @@ organize: deps
 
 init: clean
 		@echo "    Init of the project"
+		@echo "    We compile for OS ${GOOS} and architecture ${GOARCH}"
 
 execute:
 		./${EXEC1}-${VERSION}  -httpport 3001 -masteruri http://localhost:3000/register 2> photoexif.log &
-		./${EXEC2}-${VERSION}  -configurationfile confclient.json -httpport 3000
+		./${EXEC2}-${VERSION}  -configurationfile confclient.json -httpport 3000  2> photocontroller.log &
+
+kill:
+		$(shell killall -v photoexif-1)
+		$(shell killall -v photocontroller-1)
+		@echo "    Processes killed."
 
 clean:
 		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi

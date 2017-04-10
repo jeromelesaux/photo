@@ -185,11 +185,15 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 			logger.Log("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
 			logger.LogLn(readBack)
+			var exif map[string]interface{}
+			if readBack["ExifTags"] != nil {
+				exif = readBack["ExifTags"].(map[string]interface{})
+			}
 			response = append(response, NewDatabasePhotoResponse(
 				readBack["Md5sum"].(string),
 				readBack["Filename"].(string),
 				readBack["Filepath"].(string),
-				readBack["ExifTags"].(map[string]interface{})))
+				exif))
 		}
 
 	}
@@ -222,11 +226,15 @@ func (d *DatabaseHandler) QueryExtenstion(pattern string) ([]*DatabasePhotoRespo
 			logger.Log("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
 			//logger.LogLn(readBack)
+			var exif map[string]interface{}
+			if readBack["ExifTags"] != nil {
+				exif = readBack["ExifTags"].(map[string]interface{})
+			}
 			response = append(response, NewDatabasePhotoResponse(
 				readBack["Md5sum"].(string),
 				readBack["Filename"].(string),
 				readBack["Filepath"].(string),
-				readBack["ExifTags"].(map[string]interface{})))
+				exif))
 		}
 
 	}
@@ -256,22 +264,30 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 		for _, val := range a["Filenames"].([]interface{}) {
 			if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
 				//logger.LogLn("Document",id,"is",string(docContent))
+				var exif map[string]interface{}
+				if a["ExifTags"] != nil {
+					exif = a["ExifTags"].(map[string]interface{})
+				}
 				response = append(response, NewDatabasePhotoResponse(
 					a["Md5sum"].(string),
 					a["Filename"].(string),
 					a["Filepath"].(string),
-					a["ExifTags"].(map[string]interface{})))
+					exif))
 			}
 
 		}
 		for _, val := range a["Filepaths"].([]interface{}) {
 			if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
 				//logger.LogLn("Document",id,"is",string(docContent))
+				var exif map[string]interface{}
+				if a["ExifTags"] != nil {
+					exif = a["ExifTags"].(map[string]interface{})
+				}
 				response = append(response, NewDatabasePhotoResponse(
 					a["Md5sum"].(string),
 					a["Filename"].(string),
 					a["Filepath"].(string),
-					a["ExifTags"].(map[string]interface{})))
+					exif))
 			}
 
 		}
@@ -306,11 +322,15 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 			for key, val := range a["ExifTags"].(map[string]interface{}) {
 				if strings.Contains(strings.ToLower(key), strings.ToLower(exiftag)) {
 					if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
+						var exif map[string]interface{}
+						if a["ExifTags"] != nil {
+							exif = a["ExifTags"].(map[string]interface{})
+						}
 						response = append(response, NewDatabasePhotoResponse(
 							a["Md5sum"].(string),
 							a["Filename"].(string),
 							a["Filepath"].(string),
-							a["ExifTags"].(map[string]interface{})))
+							exif))
 					}
 				}
 			}
