@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
+	"github.com/Sirupsen/logrus"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +21,11 @@ var photopath = flag.String("photopath", "", "photo path to analyze")
 var directorypath = flag.String("directorypath", "", "directory path to scan.")
 var httpport = flag.String("httpport", "", "listening at http://localhost:httpport")
 var masteruri = flag.String("masteruri", "", "uri of the master to register ex: -masteruri http://localhost:3001/register")
+var logFormat = flag.String("logformat", "", "format of the log (text or logstash available).")
+var logLevel = flag.String("loglevel", "", "level of the log (DEBUG, INFO, WARN ...).")
+var Version string
+var GitHash string
+var BuildStmp string
 
 func main() {
 	conf := modele.LoadConfigurationAtOnce()
@@ -28,17 +35,33 @@ func main() {
 		Photos:  make([]*modele.TagsPhoto, 0),
 	}
 	flag.Parse()
+	if *logFormat != "" {
+		if *logLevel != "" {
+			if err := logger.InitLog(*logLevel, *logFormat); err != nil {
+				fmt.Println("Error of th log initialisation: " + err.Error())
+			}
+		} else {
+			if err := logger.InitLog(*logLevel, *logFormat); err != nil {
+				fmt.Println("Error of th log initialisation: " + err.Error())
+			}
+		}
+	} else {
+		if err := logger.InitLog("DEBUG", logger.TextFormatter); err != nil {
+			fmt.Println("Error of th log initialisation: " + err.Error())
+		}
+	}
+
 	if *photopath != "" {
 		pinfos, err := exifhandler.GetPhotoInformations(*photopath)
 		if err != nil {
-			logger.Logf("Error with message :%s", err.Error())
+			logrus.Errorf("Error with message :%s", err.Error())
 		}
 		response.Photos = append(response.Photos, pinfos)
 	} else {
 		if *directorypath != "" {
 			pinfos, err := exifhandler.GetPhotosInformations(*directorypath, conf)
 			if err != nil {
-				logger.Logf("Error with message :%s", err.Error())
+				logrus.Errorf("Error with message :%s", err.Error())
 			}
 			response.Photos = pinfos
 		} else {
@@ -46,12 +69,12 @@ func main() {
 				if *masteruri != "" {
 					port, err := strconv.Atoi(*httpport)
 					if err != nil {
-						logger.Log("Error : " + err.Error())
+						logrus.Error("Error : " + err.Error())
 						return
 					}
 					go slavehandler.RegisterToMaster(*masteruri, port, "/directory")
 				} else {
-					logger.Log("masteruri is mandatary, don't start")
+					logrus.Error("masteruri is mandatary, don't start")
 					return
 				}
 				http.HandleFunc("/file", routes.GetFileInformations)
@@ -60,12 +83,18 @@ func main() {
 				http.HandleFunc("/thumbnail", routes.GetThumbnail)
 				log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 			} else {
+				timeStmp, err := strconv.Atoi(BuildStmp)
+				if err != nil {
+					timeStmp = 0
+				}
+				appVersion := "Version " + Version + ", build on " + time.Unix(int64(timeStmp), 0).String() + ", git hash " + GitHash
+				fmt.Println(appVersion)
 				flag.PrintDefaults()
 			}
 		}
 	}
-	logger.Log("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
-	logger.Log(strconv.Itoa(len(response.Photos)) + " images found")
+	logrus.Info("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logrus.Info(strconv.Itoa(len(response.Photos)) + " images found")
 	json.NewEncoder(os.Stdout).Encode(response)
 
 }

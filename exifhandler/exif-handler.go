@@ -1,9 +1,9 @@
 package exifhandler
 
 import (
+	logger "github.com/Sirupsen/logrus"
 	"github.com/xiam/exif"
 	"path"
-	"photo/logger"
 
 	"bytes"
 	"encoding/base64"
@@ -32,7 +32,7 @@ func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 
 	data, err := exif.Read(filePath)
 	if err != nil {
-		logger.Log(err.Error())
+		logger.Error(err.Error())
 		return &modele.TagsPhoto{
 			Filename: filename,
 			Filepath: abspath,
@@ -40,16 +40,16 @@ func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 		}, err
 	}
 
-	logger.Log("---------START----------")
+	logger.Info("---------START----------")
 	if data != nil {
 		for key, val := range data.Tags {
-			logger.Log(key + " = " + val)
+			logger.Info(key + " = " + val)
 		}
 	}
 
-	logger.Log("---------END----------")
+	logger.Info("---------END----------")
 	if err != nil {
-		logger.Log(err.Error())
+		logger.Info(err.Error())
 		return &modele.TagsPhoto{}, err
 	}
 	return &modele.TagsPhoto{
@@ -73,14 +73,14 @@ func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {
-			logger.Log(err.Error())
+			logger.Error(err.Error())
 			return nil
 		}
 		if !info.IsDir() {
 			f := filepath.Base(path)
 			for _, d := range fileExtension.Extensions {
 				if strings.HasSuffix(f, d) {
-					logger.Log("Found file " + f)
+					logger.Info("Found file " + f)
 					tags, _ := GetPhotoInformations(path)
 					if tags.Filename != "" {
 						Tags = append(Tags, tags)
@@ -96,7 +96,7 @@ func GetThumbnail(path string) (string, error) {
 
 	img, err := imaging.Open(path)
 	if err != nil {
-		logger.Log("Error while retreiving thumbnail with error " + err.Error())
+		logger.Error("Error while retreiving thumbnail with error " + err.Error())
 		return "", err
 	}
 
@@ -106,7 +106,7 @@ func GetThumbnail(path string) (string, error) {
 	buf := new(bytes.Buffer)
 	err = jpeg.Encode(buf, dst, nil)
 	if err != nil {
-		logger.Log("Error while retreiving thumbnail with error " + err.Error())
+		logger.Error("Error while retreiving thumbnail with error " + err.Error())
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil

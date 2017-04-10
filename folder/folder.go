@@ -1,9 +1,9 @@
 package folder
 
 import (
+	logger "github.com/Sirupsen/logrus"
 	"os"
 	"path/filepath"
-	"photo/logger"
 	"photo/modele"
 	"strings"
 )
@@ -12,7 +12,7 @@ func ScanDirectory(r *modele.DirectoryItemResponse) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {
-			logger.Log(err.Error())
+			logger.Error(err.Error())
 			return err
 		}
 		if info.IsDir() {
@@ -21,7 +21,7 @@ func ScanDirectory(r *modele.DirectoryItemResponse) filepath.WalkFunc {
 				currentpath = path[0 : len(path)-1]
 			}
 			f := filepath.Base(path)
-			logger.Log("path scanned " + currentpath)
+			logger.Info("path scanned " + currentpath)
 			//logger.Logf("currenDeep:%d\n",strings.Count(currentpath, "/") )
 			current := &modele.DirectoryItemResponse{
 				Name:             f,

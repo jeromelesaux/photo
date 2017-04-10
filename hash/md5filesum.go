@@ -3,9 +3,9 @@ package hash
 import (
 	"crypto/md5"
 	"fmt"
+	logger "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"os"
-	"photo/logger"
 	"strconv"
 )
 
@@ -14,7 +14,7 @@ func Md5Sum(filepath string) (string, error) {
 	var sum string
 	defer func() {
 		if err != nil {
-			logger.Log(err.Error())
+			logger.Error(err.Error())
 		}
 	}()
 	f, err := os.Open(filepath)
@@ -27,8 +27,8 @@ func Md5Sum(filepath string) (string, error) {
 	if err != nil {
 		return "", nil
 	}
-	logger.Log(filepath + "::" + strconv.Itoa(len(p)) + " bytes read.")
+	logger.Info(filepath + "::" + strconv.Itoa(len(p)) + " bytes read.")
 	sum = fmt.Sprintf("%x", md5.Sum(p))
-	logger.Log(filepath + "::" + sum)
+	logger.Info(filepath + "::" + sum)
 	return sum, nil
 }

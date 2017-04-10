@@ -3,9 +3,9 @@ package database
 import (
 	"encoding/json"
 	"github.com/HouzuoGuo/tiedot/db"
+	logger "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 	"path/filepath"
-	"photo/logger"
 	"photo/modele"
 	"strconv"
 	"strings"
@@ -50,7 +50,7 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 	}
 	dbInstance, err = db.OpenDB(databasePath)
 	if err != nil {
-		logger.Log("Error while creating database with error : " + err.Error())
+		logger.Error("Error while creating database with error : " + err.Error())
 		return dbInstance, err
 	}
 
@@ -62,10 +62,10 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 	}
 	if !collectionExists {
 		if err = dbInstance.Create(DBPHOTOCOLLECTION); err != nil {
-			logger.Log("Error while creating collection photos_collection with error : " + err.Error())
+			logger.Error("Error while creating collection photos_collection with error : " + err.Error())
 			return dbInstance, err
 		} else {
-			logger.Log("Creating collection " + DBPHOTOCOLLECTION)
+			logger.Info("Creating collection " + DBPHOTOCOLLECTION)
 		}
 	}
 
@@ -78,35 +78,35 @@ func (d *DatabaseHandler) createIndexes() error {
 
 	dbInstance, err = d.openDB()
 	if err != nil {
-		logger.Log("Cannot use database with error : " + err.Error())
+		logger.Error("Cannot use database with error : " + err.Error())
 		return err
 	}
 
 	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
 
 	if err := feeds.Index([]string{"MachineId"}); err != nil {
-		logger.Log("Error while indexing MachineId with error : " + err.Error())
+		logger.Error("Error while indexing MachineId with error : " + err.Error())
 	}
 	if err := feeds.Index([]string{"Filename"}); err != nil {
-		logger.Log("Error while indexing Filename with error : " + err.Error())
+		logger.Error("Error while indexing Filename with error : " + err.Error())
 	}
 	if err := feeds.Index([]string{"Filenames"}); err != nil {
-		logger.Log("Error while indexing Filenames with error : " + err.Error())
+		logger.Error("Error while indexing Filenames with error : " + err.Error())
 	}
 	if err := feeds.Index([]string{"Filepaths"}); err != nil {
-		logger.Log("Error while indexing Filepaths with error : " + err.Error())
+		logger.Error("Error while indexing Filepaths with error : " + err.Error())
 	}
 	if err := feeds.Index([]string{"Filepath"}); err != nil {
-		logger.Log("Error while indexing Filepath with error : " + err.Error())
+		logger.Error("Error while indexing Filepath with error : " + err.Error())
 	}
 	if err := feeds.Index([]string{"Md5sum"}); err != nil {
-		logger.Log("Error while indexing Md5sum with error : " + err.Error())
+		logger.Error("Error while indexing Md5sum with error : " + err.Error())
 	}
 	if err := feeds.Index([]string{"Type"}); err != nil {
-		logger.Log("Error while indexing Type with error : " + err.Error())
+		logger.Error("Error while indexing Type with error : " + err.Error())
 	}
 	if err := feeds.Index([]string{"Filename", "Filepath", "Type"}); err != nil {
-		logger.Log("Error while indexing Filename,Filepath,Type with error : " + err.Error())
+		logger.Error("Error while indexing Filename,Filepath,Type with error : " + err.Error())
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func SplitAll(pattern string) []string {
 func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 	dbInstance, err := d.openDB()
 	if err != nil {
-		logger.Log("Error while opening database during insert operation with error " + err.Error())
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return err
 	}
 
@@ -153,9 +153,9 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 			"ExifTags":  item.Tags,
 			"Type":      strings.ToLower(filepath.Ext(item.Filename))})
 		if err != nil {
-			logger.Log("Cannot insert data in database with error : " + err.Error())
+			logger.Error("Cannot insert data in database with error : " + err.Error())
 		} else {
-			logger.Logf("DB return id %d for filepath:%s\n", id, item.Filepath)
+			logger.Infof("DB return id %d for filepath:%s\n", id, item.Filepath)
 		}
 
 	}
@@ -168,7 +168,7 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 	response := make([]*DatabasePhotoResponse, 0)
 	dbInstance, err := d.openDB()
 	if err != nil {
-		logger.Log("Error while opening database during insert operation with error " + err.Error())
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return response, err
 	}
 
@@ -176,16 +176,16 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
-	logger.LogLn(query)
+	logger.Info(query)
 	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
-		logger.Log("Error while querying with error :" + err.Error())
+		logger.Error("Error while querying with error :" + err.Error())
 	}
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Log("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
-			logger.LogLn(readBack)
+			logger.Debug(readBack)
 			var exif map[string]interface{}
 			if readBack["ExifTags"] != nil {
 				exif = readBack["ExifTags"].(map[string]interface{})
@@ -207,7 +207,7 @@ func (d *DatabaseHandler) QueryExtenstion(pattern string) ([]*DatabasePhotoRespo
 	response := make([]*DatabasePhotoResponse, 0)
 	dbInstance, err := d.openDB()
 	if err != nil {
-		logger.Log("Error while opening database during insert operation with error " + err.Error())
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return response, err
 	}
 	defer dbInstance.Close()
@@ -218,15 +218,15 @@ func (d *DatabaseHandler) QueryExtenstion(pattern string) ([]*DatabasePhotoRespo
 
 	json.Unmarshal([]byte(`[{"eq": "`+pattern+`", "in": ["Type"]}]`), &query)
 	//json.Unmarshal([]byte(`["all"]`), &query)
-	logger.LogLn(query)
+	logger.Info(query)
 	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
-		logger.Log("Error while querying with error :" + err.Error())
+		logger.Error("Error while querying with error :" + err.Error())
 	}
-	logger.Logf("request returns %d results for extenstion %s\n", len(queryResult), pattern)
+	logger.Infof("request returns %d results for extenstion %s\n", len(queryResult), pattern)
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Log("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
 			//logger.LogLn(readBack)
 			var exif map[string]interface{}
@@ -250,7 +250,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 
 	dbInstance, err := d.openDB()
 	if err != nil {
-		logger.Log("Error while opening database during insert operation with error " + err.Error())
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return response, err
 	}
 
@@ -260,7 +260,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 		var a map[string]interface{}
 		err := json.Unmarshal(docContent, &a)
 		if err != nil {
-			logger.Log("Error while unmarshalling document with error : " + err.Error())
+			logger.Error("Error while unmarshalling document with error : " + err.Error())
 			return false
 		}
 
@@ -301,7 +301,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 	})
 
 	dbInstance.Close()
-	logger.Logf("request returns %d results for filename %s\n", len(response), pattern)
+	logger.Infof("request returns %d results for filename %s\n", len(response), pattern)
 	return response, nil
 }
 
@@ -310,7 +310,7 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 	response := make([]*DatabasePhotoResponse, 0)
 	dbInstance, err := d.openDB()
 	if err != nil {
-		logger.Log("Error while opening database during insert operation with error " + err.Error())
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return response, err
 	}
 
@@ -319,7 +319,7 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 		var a map[string]interface{}
 		err := json.Unmarshal(docContent, &a)
 		if err != nil {
-			logger.Log("Error while unmarshalling document with error : " + err.Error())
+			logger.Error("Error while unmarshalling document with error : " + err.Error())
 			return false
 		}
 		if a["ExifTags"] != nil {
@@ -343,6 +343,6 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 		return false
 	})
 	dbInstance.Close()
-	logger.Logf("request returns %d results for pattern %s and exif tag %s\n", len(response), pattern, exiftag)
+	logger.Infof("request returns %d results for pattern %s and exif tag %s\n", len(response), pattern, exiftag)
 	return response, nil
 }

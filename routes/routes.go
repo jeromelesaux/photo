@@ -2,13 +2,13 @@ package routes
 
 import (
 	"encoding/json"
+	logger "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"photo/database"
 	"photo/exifhandler"
 	"photo/folder"
-	"photo/logger"
 	"photo/modele"
 	"photo/slavehandler"
 	"photo/webclient"
@@ -18,7 +18,7 @@ import (
 
 func GetExtensionList(w http.ResponseWriter, r *http.Request) {
 	conf := modele.LoadConfigurationAtOnce()
-	logger.Log("Ask for extension files")
+	logger.Info("Ask for extension files")
 	JsonAsResponse(w, conf)
 }
 
@@ -58,7 +58,7 @@ func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
 	for _, slave := range conf.Slaves {
 		message = append(message, modele.RegisteredSlave{MachineId: slave.Name, Ip: slave.Url})
 	}
-	logger.LogLn("Ask for registered slave machines", message)
+	logger.Infof("Ask for registered slave machines", message)
 	JsonAsResponse(w, message)
 }
 
@@ -72,14 +72,14 @@ func RegisterSlave(w http.ResponseWriter, r *http.Request) {
 	slave := &slavehandler.Slave{}
 	err := json.NewDecoder(r.Body).Decode(slave)
 	if err != nil {
-		logger.Log("Cannot not decode body received for registering with error " + err.Error())
+		logger.Info("Cannot not decode body received for registering with error " + err.Error())
 		body, _ := ioutil.ReadAll(r.Body)
-		logger.Log("Body received : " + string(body))
+		logger.Debug("Body received : " + string(body))
 		http.Error(w, "Cannot not decode body received for registering", 400)
 		return
 	}
 	slavehandler.AddSlave(slave)
-	logger.LogLn(*slave, "is registered")
+	logger.Infof("%v %s\n", *slave, "is registered")
 	JsonAsResponse(w, "ok")
 }
 
@@ -88,7 +88,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	directorypath := r.URL.Query().Get("value")
 	machineId := r.URL.Query().Get("machineId")
-	logger.Log("Browse directory " + directorypath + " machineid " + machineId)
+	logger.Info("Browse directory " + directorypath + " machineid " + machineId)
 	response := &modele.DirectoryItemResponse{
 		Name:             "Root",
 		Path:             "#",
@@ -108,9 +108,9 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 	err := filepath.Walk(directorypath, folder.ScanDirectory(response))
 	if err != nil && err.Error() != "" {
 		response.Message = err.Error()
-		logger.Log(err.Error())
+		logger.Error(err.Error())
 	}
-	logger.Log("Scan directory completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Info("Scan directory completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	JsonAsResponse(w, response)
 }
 
@@ -124,7 +124,7 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := json.NewDecoder(r.Body).Decode(folders)
-	logger.LogLn(&folders)
+	logger.Debug(&folders)
 	var response string
 	if err != nil {
 		response = err.Error()
@@ -139,7 +139,7 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 func GetFileInformations(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	filepathValue := r.URL.Query().Get("value")
-	logger.Log("file to scan " + filepathValue)
+	logger.Info("file to scan " + filepathValue)
 	response := &modele.PhotoResponse{
 		Version: modele.VERSION,
 		Photos:  make([]*modele.TagsPhoto, 0),
@@ -149,8 +149,8 @@ func GetFileInformations(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.Message = err.Error()
 	}
-	logger.Log("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
-	logger.Log(strconv.Itoa(len(response.Photos)) + " images found")
+	logger.Info("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Info(strconv.Itoa(len(response.Photos)) + " images found")
 	JsonAsResponse(w, response)
 }
 
@@ -161,14 +161,14 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 		Photos:  make([]*modele.TagsPhoto, 0),
 	}
 	directorypath := r.URL.Query().Get("value")
-	logger.Log("directory to scan " + directorypath)
+	logger.Info("directory to scan " + directorypath)
 	pinfos, err := exifhandler.GetPhotosInformations(directorypath, modele.LoadConfigurationAtOnce())
 	response.Photos = pinfos
 	if err != nil {
 		response.Message = err.Error()
 	}
-	logger.Log("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
-	logger.Log(strconv.Itoa(len(response.Photos)) + " images found")
+	logger.Info("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Info(strconv.Itoa(len(response.Photos)) + " images found")
 	JsonAsResponse(w, response)
 }
 
@@ -177,12 +177,12 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	filename := r.URL.Query().Get("value")
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
-		logger.Log("Error while getting dabatabse with error" + err.Error())
+		logger.Error("Error while getting dabatabse with error" + err.Error())
 		JsonAsResponse(w, err)
 		return
 	}
 	response, err := db.QueryExtenstion(filename)
-	logger.Log("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Info("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -196,12 +196,12 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 	exiftag := r.URL.Query().Get("exif")
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
-		logger.Log("Error while getting dabatabse with error" + err.Error())
+		logger.Error("Error while getting dabatabse with error" + err.Error())
 		JsonAsResponse(w, err)
 		return
 	}
 	response, err := db.QueryExifTag(pattern, exiftag)
-	logger.Log("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Info("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -214,12 +214,12 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 	filename := r.URL.Query().Get("value")
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
-		logger.Log("Error while getting dabatabse with error" + err.Error())
+		logger.Error("Error while getting dabatabse with error" + err.Error())
 		JsonAsResponse(w, err)
 		return
 	}
 	response, err := db.QueryFilename(filename)
-	logger.Log("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -231,12 +231,12 @@ func QueryAll(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
-		logger.Log("Error while getting dabatabse with error" + err.Error())
+		logger.Error("Error while getting dabatabse with error" + err.Error())
 		JsonAsResponse(w, err)
 		return
 	}
 	response, err := db.QueryAll()
-	logger.Log("QueryAll completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	logger.Info("QueryAll completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -247,7 +247,7 @@ func QueryAll(w http.ResponseWriter, r *http.Request) {
 func JsonAsResponse(w http.ResponseWriter, o interface{}) {
 	js, err := json.Marshal(o)
 	if err != nil {
-		logger.Log("Error while marshalling  object")
+		logger.Error("Error while marshalling  object")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

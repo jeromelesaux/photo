@@ -2,8 +2,8 @@ package modele
 
 import (
 	"encoding/json"
+	logger "github.com/Sirupsen/logrus"
 	"os"
-	"photo/logger"
 	"strings"
 	"sync"
 )
@@ -72,14 +72,14 @@ func LoadPhotoExifConfiguration(configurationPathfile string) *Configuration {
 	confPhotoExifMut.Lock()
 	file, errOpen := os.Open(configurationPathfile)
 	if errOpen != nil {
-		logger.Log("Error while opening file " + configurationPathfile + " with error :" + errOpen.Error())
+		logger.Error("Error while opening file " + configurationPathfile + " with error :" + errOpen.Error())
 	}
 	decoder := json.NewDecoder(file)
 	err := decoder.Decode(&configuration)
 	if err != nil {
-		logger.LogLn("error:", err)
+		logger.Error("error:", err)
 	}
-	logger.LogLn(*configuration)
+	logger.Debug(*configuration)
 	confPhotoExifMut.Unlock()
 	return configuration
 }
@@ -92,15 +92,15 @@ func LoadConfiguration(configurationFile string) FileExtension {
 	confFileExtensionMut.Lock()
 	file, errOpen := os.Open(configurationFile)
 	if errOpen != nil {
-		logger.Log("Error while opening file " + configurationFile + " with error :" + errOpen.Error())
+		logger.Error("Error while opening file " + configurationFile + " with error :" + errOpen.Error())
 	}
 	decoder := json.NewDecoder(file)
 	err := decoder.Decode(&configuration)
 	if err != nil {
-		logger.LogLn("error:", err)
+		logger.Error("error:", err)
 	}
 	confFileExtensionMut.Unlock()
-	logger.Log("File extensions supported : " + strings.Join(configuration.Extensions, ","))
+	logger.Info("File extensions supported : " + strings.Join(configuration.Extensions, ","))
 
 	return configuration
 }

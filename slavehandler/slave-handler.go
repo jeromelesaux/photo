@@ -3,11 +3,11 @@ package slavehandler
 import (
 	"bytes"
 	"encoding/json"
+	logger "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
-	"photo/logger"
 	"sync"
 	"time"
 )
@@ -33,12 +33,12 @@ func GetSlaveIPMacAddess() (error, string, string) {
 	if slaveIp == "" {
 		interfaces, err := net.Interfaces()
 		if err != nil {
-			logger.Log("no local internet interfaces found with error " + err.Error())
+			logger.Error("no local internet interfaces found with error " + err.Error())
 			return err, "", ""
 		}
 		for _, i := range interfaces {
 			if addrs, err := i.Addrs(); err != nil {
-				logger.Log("no local addresses internet interfaces found with error " + err.Error())
+				logger.Error("no local addresses internet interfaces found with error " + err.Error())
 				return err, "", ""
 			} else {
 				for _, addr := range addrs {
@@ -54,7 +54,7 @@ func GetSlaveIPMacAddess() (error, string, string) {
 					if ip.To4() != nil && !ip.IsLoopback() {
 						slaveIp = ip.To4().String()
 						if netInterface, err := net.InterfaceByName(i.Name); err != nil {
-							logger.Log("Error while getting interfaceByName with error: " + err.Error())
+							logger.Error("Error while getting interfaceByName with error: " + err.Error())
 							return err, slaveIp, slaveMacAddress
 						} else {
 							slaveMacAddress = netInterface.HardwareAddr.String()
@@ -100,12 +100,12 @@ func (s *SlavesConfiguration) saveConfiguration() error {
 	defer slavesConfigLock.Unlock()
 	f, err := os.Create("slaves_configuration.json")
 	if err != nil {
-		logger.Log("Error while saving slaves configuration with error " + err.Error())
+		logger.Error("Error while saving slaves configuration with error " + err.Error())
 		return err
 	}
 	defer f.Close()
 	if err := json.NewEncoder(f).Encode(s); err != nil {
-		logger.Log("Error while saving slaves configuration with error " + err.Error())
+		logger.Error("Error while saving slaves configuration with error " + err.Error())
 		return err
 	}
 	return nil
@@ -114,9 +114,9 @@ func (s *SlavesConfiguration) saveConfiguration() error {
 func RegisterToMaster(masterUri string, localPort int, localAction string) {
 	go func() {
 		for {
-			logger.Log("Attempt to register to " + masterUri)
+			logger.Info("Attempt to register to " + masterUri)
 			if err, ip, macAddress := GetSlaveIPMacAddess(); err != nil {
-				logger.Log("not enable to get local ip and macaddress")
+				logger.Error("not enable to get local ip and macaddress")
 			} else {
 				conf := &Slave{
 					Url:    "http://" + ip,
@@ -126,23 +126,23 @@ func RegisterToMaster(masterUri string, localPort int, localAction string) {
 				}
 
 				body, _ := json.Marshal(conf)
-				logger.LogLn("Body to send ", *conf)
+				logger.Info("Body to send ", *conf)
 				response, err := http.Post(masterUri, "application/json", bytes.NewBuffer(body))
 				if err == nil {
 					msg, _ := ioutil.ReadAll(response.Body)
 					if response.StatusCode != 200 {
-						logger.Log("Bad response from master " + masterUri + " with response " + string(msg))
+						logger.Error("Bad response from master " + masterUri + " with response " + string(msg))
 					} else {
 						errorMsg := string(msg)
 						if errorMsg != "\"ok\"" {
-							logger.Log("Bad response from master " + masterUri + " with response " + errorMsg)
+							logger.Error("Bad response from master " + masterUri + " with response " + errorMsg)
 						} else {
-							logger.Log("Ok registered to " + masterUri + " with response " + errorMsg)
+							logger.Info("Ok registered to " + masterUri + " with response " + errorMsg)
 						}
 					}
 					response.Body.Close()
 				} else {
-					logger.Log("Error while registering to " + masterUri + " with error " + err.Error())
+					logger.Error("Error while registering to " + masterUri + " with error " + err.Error())
 				}
 			}
 

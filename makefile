@@ -6,7 +6,7 @@ MV=mv
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 #GOPATH=$(SOURCEDIR)/
-GOOS=linux
+GOOS=darwin
 GOARCH=amd64
 #GOARCH=arm
 #GOARM=7
@@ -15,14 +15,19 @@ EXEC=photo
 EXEC1=photoexif
 EXEC2=photocontroller
 
+
 VERSION=1
+BUILDDATE=$(shell date -u '+%s')
+BUILDHASH=$(shell git rev-parse --short HEAD)
+
+
 BUILD_TIME=`date +%FT%T%z`
-PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db  github.com/pkg/errors  github.com/disintegration/imaging
+PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db  github.com/pkg/errors  github.com/disintegration/imaging  github.com/Sirupsen/logrus github.com/bshuster-repo/logrus-logstash-hook
 
 
 LIBS= 
 
-LDFLAGS=-ldflags -s
+LDFLAGS=-ldflags "-s -X main.Version=$(VERSION) -X main.GitHash=$(BUILDHASH) -X main.BuildStmp=$(BUILDDATE)"
 
 .DEFAULT_GOAL:= $(EXEC2)
 
