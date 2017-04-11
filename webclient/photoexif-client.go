@@ -28,7 +28,7 @@ func (p *PhotoExifClient) scanExifClient(remotePath string, salve *slavehandler.
 	defer func() {
 		endTime := time.Now()
 		computeDuration := endTime.Sub(startTime)
-		logger.Info("Job done in %f seconds\n", computeDuration.Minutes())
+		logger.Infof("Job done in %f seconds\n", computeDuration.Minutes())
 
 	}()
 	startTime = time.Now()
@@ -56,7 +56,7 @@ func (p *PhotoExifClient) scanExifClient(remotePath string, salve *slavehandler.
 		return
 	}
 	logger.Info("Found " + strconv.Itoa(len(photoResponse.Photos)) + " images in " + remotePath)
-
+	photoResponse.MachineId = salve.Name
 	p.photoResponseChan <- photoResponse
 	return
 }
@@ -106,7 +106,7 @@ func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (err
 	defer func() {
 		endTime := time.Now()
 		computeDuration := endTime.Sub(startTime)
-		logger.Info("Job done in %f seconds\n", computeDuration.Minutes())
+		logger.Infof("Job done in %f seconds\n", computeDuration.Minutes())
 
 	}()
 	startTime = time.Now()
@@ -130,4 +130,53 @@ func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (err
 		return nil, &modele.FileExtension{}
 	}
 	return nil, extensions
+}
+
+func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoResponse) []*database.DatabasePhotoResponse {
+	slavesConfig := slavehandler.GetSlaves()
+	for _, response := range responses {
+		if ok := slavesConfig.Slaves[response.MachineId]; ok == nil {
+			logger.Warn("No client found for machine id " + response.MachineId)
+		} else {
+			err, data := p.GetThumbnail(ok, response.Filepath)
+			if err != nil {
+				logger.Error("error while getting thumbnail from machine " + ok.Name + " with error " + err.Error())
+			} else {
+				response.Image = data
+			}
+
+		}
+	}
+	return responses
+}
+
+func (p *PhotoExifClient) GetThumbnail(slave *slavehandler.Slave, path string) (error, string) {
+	var startTime time.Time
+	var image string
+	defer func() {
+		endTime := time.Now()
+		computeDuration := endTime.Sub(startTime)
+		logger.Infof("Job done in %f seconds\n", computeDuration.Minutes())
+
+	}()
+	startTime = time.Now()
+	client := &http.Client{}
+	uri := fmt.Sprintf("%s:%d/thumbnail?filepath=%s", slave.Url, slave.Port, path)
+	request, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		logger.Error("error with : " + err.Error())
+		return err, ""
+	}
+	logger.Info("Calling uri : " + uri)
+	response, err := client.Do(request)
+	if err != nil {
+		logger.Error("error with : " + err.Error())
+		return err, ""
+	}
+	defer response.Body.Close()
+	if err := json.NewDecoder(response.Body).Decode(&image); err != nil {
+		logger.Error("error with : " + err.Error())
+		return nil, ""
+	}
+	return nil, image
 }

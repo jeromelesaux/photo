@@ -194,6 +194,7 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 				readBack["Md5sum"].(string),
 				readBack["Filename"].(string),
 				readBack["Filepath"].(string),
+				readBack["MachineId"].(string),
 				exif))
 		}
 
@@ -203,7 +204,7 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 	return response, nil
 }
 
-func (d *DatabaseHandler) QueryExtenstion(pattern string) ([]*DatabasePhotoResponse, error) {
+func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoResponse, error) {
 	response := make([]*DatabasePhotoResponse, 0)
 	dbInstance, err := d.openDB()
 	if err != nil {
@@ -237,6 +238,7 @@ func (d *DatabaseHandler) QueryExtenstion(pattern string) ([]*DatabasePhotoRespo
 				readBack["Md5sum"].(string),
 				readBack["Filename"].(string),
 				readBack["Filepath"].(string),
+				readBack["MachineId"].(string),
 				exif))
 		}
 
@@ -275,6 +277,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 					a["Md5sum"].(string),
 					a["Filename"].(string),
 					a["Filepath"].(string),
+					a["MachineId"].(string),
 					exif))
 			}
 
@@ -290,6 +293,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 					a["Md5sum"].(string),
 					a["Filename"].(string),
 					a["Filepath"].(string),
+					a["MachineId"].(string),
 					exif))
 			}
 
@@ -334,6 +338,7 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 							a["Md5sum"].(string),
 							a["Filename"].(string),
 							a["Filepath"].(string),
+							a["MachineId"].(string),
 							exif))
 					}
 				}

@@ -10,7 +10,7 @@ import (
 	"github.com/disintegration/imaging"
 	"image"
 	"image/color"
-	"image/jpeg"
+	"image/png"
 	"os"
 	"path/filepath"
 	"photo/hash"
@@ -104,7 +104,7 @@ func GetThumbnail(path string) (string, error) {
 	dst := imaging.New(100, 100, color.NRGBA{0, 0, 0, 0})
 	dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
 	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, dst, nil)
+	err = png.Encode(buf, dst)
 	if err != nil {
 		logger.Error("Error while retreiving thumbnail with error " + err.Error())
 		return "", err

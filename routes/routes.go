@@ -181,7 +181,9 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	response, err := db.QueryExtenstion(filename)
+	response, err := db.QueryExtension(filename)
+	response = webclient.NewPhotoExifClient().GetThumbnails(response)
+
 	logger.Info("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -201,6 +203,7 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryExifTag(pattern, exiftag)
+	response = webclient.NewPhotoExifClient().GetThumbnails(response)
 	logger.Info("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -219,6 +222,8 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryFilename(filename)
+	response = webclient.NewPhotoExifClient().GetThumbnails(response)
+
 	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)

@@ -35,7 +35,7 @@ func (d *DatabaseMock) InsertNewData(response *modele.PhotoResponse) error {
 func (d *DatabaseMock) QueryAll() ([]*DatabasePhotoResponse, error) {
 	return d.data, nil
 }
-func (d *DatabaseMock) QueryExtenstion(pattern string) ([]*DatabasePhotoResponse, error) {
+func (d *DatabaseMock) QueryExtension(pattern string) ([]*DatabasePhotoResponse, error) {
 	results := make([]*DatabasePhotoResponse, 0)
 	for _, p := range d.data {
 		if strings.Contains(p.Type, pattern) {
