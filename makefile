@@ -65,7 +65,7 @@ organize: deps
 
 init: clean
 		@echo "    Init of the project"
-		@echo "    We compile for OS ${GOOS} and architecture ${GOARCH}"
+		@echo "    We compile for OS ${GOOS} and architecture ${GOARCH} and compiler $(shell go version)"
 
 execute:
 		./${EXEC1}-${VERSION}  -httpport 3001 -masteruri http://localhost:3000/register 2> photoexif.log &

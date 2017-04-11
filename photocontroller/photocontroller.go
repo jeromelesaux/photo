@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	logger "github.com/Sirupsen/logrus"
 	"log"
 	"net/http"
 	"photo/modele"
@@ -16,12 +17,27 @@ var configurationfile = flag.String("configurationfile", "", "photoexif client's
 var Version string
 var GitHash string
 var BuildStmp string
+var wellcomeMessage = "\n" +
+	"\\ \\        / / | | |                          | |\n" +
+	" \\ \\  /\\  / /__| | | ___ ___  _ __ ___   ___  | |_ ___\n" +
+	"  \\ \\/  \\/ / _ \\ | |/ __/ _ \\| '_ ` _ \\ / _ \\ | __/ _ \\ \n" +
+	"   \\  /\\  /  __/ | | (_| (_) | | | | | |  __/ | || (_) |\n" +
+	"    \\/  \\/ \\___|_|_|\\___\\___/|_| |_| |_|\\___|  \\__\\___/\n" +
+	"\n" +
+	"\n" +
+	"__     ___    _ _\n" +
+	"\\ \\   / / |  | | |        /\\ \n" +
+	" \\ \\_/ /| |  | | |       /  \\ \n" +
+	"  \\   / | |  | | |      / /\\ \\ \n" +
+	"   | |  | |__| | |____ / ____ \\ \n" +
+	"   |_|   \\____/|______/_/    \\_\\ \n\n"
 
 func main() {
 
 	flag.Parse()
 
 	if *httpport != "" && *configurationfile != "" {
+		logger.Info(wellcomeMessage)
 		modele.LoadPhotoExifConfiguration(*configurationfile)
 		http.HandleFunc("/register", routes.RegisterSlave)
 		http.HandleFunc("/registeredslaves", routes.GetRegisteredSlaves)

@@ -72,7 +72,7 @@ func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
 	for _, slave := range conf.Slaves {
 		message = append(message, modele.RegisteredSlave{MachineId: slave.Name, Ip: slave.Url})
 	}
-	logger.Infof("Ask for registered slave machines", message)
+	logger.Infof("Ask for registered slave machines %v", message)
 	JsonAsResponse(w, message)
 }
 
