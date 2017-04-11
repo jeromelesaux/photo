@@ -23,6 +23,7 @@ func GetExtensionList(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
+	logger.Info("Cleanning database")
 	conf := slavehandler.GetSlaves()
 	client := webclient.NewPhotoExifClient()
 	if len(conf.Slaves) == 0 {
@@ -40,6 +41,19 @@ func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+}
+
+func CleanDatabase(w http.ResponseWriter, r *http.Request) {
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	if err := db.CleanDatabase(); err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	JsonAsResponse(w, "ok")
 }
 
 func GetThumbnail(w http.ResponseWriter, r *http.Request) {

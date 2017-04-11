@@ -32,6 +32,7 @@ func main() {
 		http.HandleFunc("/queryexif", routes.QueryExif)
 		http.HandleFunc("/queryall", routes.QueryAll)
 		http.HandleFunc("/getfileextension", routes.ReadExtensionList)
+		http.HandleFunc("/cleandatabase", routes.CleanDatabase)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

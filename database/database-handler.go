@@ -164,6 +164,30 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 	return nil
 }
 
+func (d *DatabaseHandler) CleanDatabase() error {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return err
+	}
+	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
+		var a map[string]interface{}
+		err := json.Unmarshal(docContent, &a)
+		if err != nil {
+			logger.Error("Error while unmarshalling document with error : " + err.Error())
+			return false
+		}
+		if a["MachineId"] == "" {
+			logger.Infof("Removing %d", id)
+			feeds.Delete(id)
+		}
+
+		return true
+	})
+	return nil
+}
+
 func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 	response := make([]*DatabasePhotoResponse, 0)
 	dbInstance, err := d.openDB()

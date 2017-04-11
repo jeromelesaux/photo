@@ -33,7 +33,7 @@
             <div class="tab-pane active" id="home">
                 Registered machines :
                 <ul id="machineList" class="list-group"></ul>
-                <button type="button" name="refresh" onclick="getRegisteredMachines()" value="refresh" class="btn btn-primary start">
+                <button type="button" name="refresh" onclick="refresh()" value="refresh" class="btn btn-primary start">
                     <span>refresh</span>
                 </button>
             </div>
@@ -84,6 +84,9 @@
                             <button type="button" name="clean " onclick="clean()" value="clean" class="btn btn-primary start">
                                 <span>clean</span>
                             </button>
+                            <button type="button" name="clean " onclick="cleanDatabase()" value="clean database" class="btn btn-primary start">
+                                <span>clean database</span>
+                            </button>
                             <br>
                             <br>
                             <br>
@@ -119,6 +122,21 @@
                     getRegisteredMachines();
                     getExtensionList();
                 });
+
+                function cleanDatabase() {
+                    $(function(){
+                        $.ajax({
+                            dataType: "json",
+                            url: "/cleandatabase",
+                            type:"POST",
+                            success:function(jsondata,codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert("Database cleaned.");
+                                }
+                            }
+                        })
+                    })
+                }
 
                 function clean() {
                     $(function(){
@@ -194,6 +212,13 @@
                             })
                         }
                     });
+                }
+
+                function refresh() {
+                    $(function () {
+                        getRegisteredMachines();
+                        getExtensionList();
+                    })
                 }
 
                 function getRegisteredMachines() {

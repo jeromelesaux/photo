@@ -10,6 +10,7 @@ type DatabaseInterface interface {
 	QueryExtension(pattern string) ([]*DatabasePhotoResponse, error)
 	QueryFilename(pattern string) ([]*DatabasePhotoResponse, error)
 	QueryExifTag(pattern string, exiftag string) ([]*DatabasePhotoResponse, error)
+	CleanDatabase() error
 }
 
 type DatabasePhotoResponse struct {

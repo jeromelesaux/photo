@@ -32,6 +32,10 @@ func (d *DatabaseMock) InsertNewData(response *modele.PhotoResponse) error {
 	}
 	return nil
 }
+func (d *DatabaseMock) CleanDatabase() error {
+	d.data = d.data[:len(d.data)-1]
+	return nil
+}
 func (d *DatabaseMock) QueryAll() ([]*DatabasePhotoResponse, error) {
 	return d.data, nil
 }
