@@ -99,10 +99,31 @@ func GetThumbnail(path string) (string, error) {
 		logger.Error("Error while retreiving thumbnail with error " + err.Error())
 		return "", err
 	}
+	var dst *image.NRGBA
+	width := img.Bounds().Max.X
+	height := img.Bounds().Max.Y
+	if height > width {
+		if height < 100 {
+			thumb := imaging.Thumbnail(img, width, height, imaging.CatmullRom)
+			dst = imaging.New(width, height, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		} else {
+			thumb := imaging.Thumbnail(img, 100, 100, imaging.CatmullRom)
+			dst = imaging.New(100, 100, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		}
+	} else {
+		if width < 100 {
+			thumb := imaging.Thumbnail(img, width, height, imaging.CatmullRom)
+			dst = imaging.New(width, height, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		} else {
+			thumb := imaging.Thumbnail(img, 100, 100, imaging.CatmullRom)
+			dst = imaging.New(100, 100, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		}
+	}
 
-	thumb := imaging.Thumbnail(img, 100, 100, imaging.CatmullRom)
-	dst := imaging.New(100, 100, color.NRGBA{0, 0, 0, 0})
-	dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
 	buf := new(bytes.Buffer)
 	err = png.Encode(buf, dst)
 	if err != nil {

@@ -132,9 +132,11 @@ func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (err
 	return nil, extensions
 }
 
-func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoResponse) []*database.DatabasePhotoResponse {
+func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoResponse, size string) []*database.DatabasePhotoResponse {
 	slavesConfig := slavehandler.GetSlaves()
+	finalResponses := make([]*database.DatabasePhotoResponse, 0)
 	for _, response := range responses {
+
 		if ok := slavesConfig.Slaves[response.MachineId]; ok == nil {
 			logger.Warn("No client found for machine id " + response.MachineId)
 		} else {
@@ -142,12 +144,30 @@ func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoRespo
 			if err != nil {
 				logger.Error("error while getting thumbnail from machine " + ok.Name + " with error " + err.Error())
 			} else {
-				response.Image = data
+				logger.Infof("filesize :%d", len(data))
+				switch size {
+				case modele.FILESIZE_LITTLE:
+					response.Image = data
+					finalResponses = append(finalResponses, response)
+				case modele.FILESIZE_MEDIUM:
+					if len(data) > 15000 {
+						response.Image = data
+						finalResponses = append(finalResponses, response)
+					}
+				case modele.FILESIZE_BIG:
+					if len(data) > 25000 {
+						response.Image = data
+						finalResponses = append(finalResponses, response)
+					}
+				default:
+					response.Image = data
+					finalResponses = append(finalResponses, response)
+				}
 			}
-
 		}
 	}
-	return responses
+
+	return finalResponses
 }
 
 func (p *PhotoExifClient) GetThumbnail(slave *slavehandler.Slave, path string) (error, string) {

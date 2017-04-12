@@ -66,7 +66,11 @@
                 <form class="form-inline">
                     <div class="form-group">
                         <div class="offset8">Enter extension image file to search : <select class="form-control" id="extensionList"> </select>
-
+                            <select class="form-control" id="fileSize">
+                                <option value="big">big size</option>
+                                <option value="medium">meduim size</option>
+                                <option value="little">little size</option>
+                            </select>
                             <br>
                             <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue" name="exifTagValue"
                                                                                                     class="form-control"></div>
@@ -88,11 +92,12 @@
                                 <span>clean database</span>
                             </button>
                             <br>
+                            <div id="imagesFoundNumber"></div>
+                            <br>
                             <br>
                             <br>
                             <div id="imagesFound">
                                 <div class="row">
-                                    
                                 </div>
                             </div>
 
@@ -171,20 +176,24 @@
                     $(function () {
                         exifTag = $('#exifTagValue').val();
                         exifValue = $('#exifValue').val();
+                        size = $('#fileSize').val();
                         $('#extensionList').each(function () {
                             ExtensionSelected = $(this).val();
                         });
                         if (exifTag == "" && exifValue == "" && ExtensionSelected != "") {
                             $.ajax({
                                 dataType: "json",
-                                url: "/queryextension?value=" + ExtensionSelected,
+                                url: "/queryextension?value=" + ExtensionSelected+ "&filesize="+size,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
                                     console.log(jsondata);
+
                                     $('#imagesFound').empty();
                                     if (jQuery.isEmptyObject(jsondata)) {
                                         alert("No images found.");
+                                        $('#imagesFoundNumber').val('');
                                     } else {
+                                        $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                         $.each(jsondata, function (i, item) {
                                             $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/></div>')
                                            // $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
@@ -196,13 +205,15 @@
                             console.log("Calling /queryexif?value=" + exifValue + "&exif=" + exifTag);
                             $.ajax({
                                 dataType: "json",
-                                url: "/queryexif?value=" + exifValue + "&exif=" + exifTag,
+                                url: "/queryexif?value=" + exifValue + "&exif=" + exifTag+ "&filesize="+size,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
                                     $('#imagesFound').empty();
                                     if (jQuery.isEmptyObject(jsondata)) {
                                         alert("No images found.");
+                                        $('#imagesFoundNumber').val('');
                                     } else {
+                                        $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                         $.each(jsondata, function (i, item) {
                                             $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/></div>')
                                          //   $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');

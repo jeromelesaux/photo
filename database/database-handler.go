@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 	"photo/modele"
+	"photo/slavehandler"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,13 +19,14 @@ type DatabaseHandler struct {
 }
 
 func NewDatabaseHandler() (*DatabaseHandler, error) {
-
+	var dbinstance *db.DB
 	var err error
 	databaseTiedotHandler := &DatabaseHandler{}
 	createDB.Do(func() {
-		if _, err = databaseTiedotHandler.openDB(); err != nil {
+		if dbinstance, err = databaseTiedotHandler.openDB(); err != nil {
 			return
 		}
+		dbinstance.Close()
 		if err = databaseTiedotHandler.createIndexes(); err != nil {
 			return
 		}
@@ -81,6 +83,7 @@ func (d *DatabaseHandler) createIndexes() error {
 		logger.Error("Cannot use database with error : " + err.Error())
 		return err
 	}
+	defer dbInstance.Close()
 
 	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
 
@@ -140,6 +143,7 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return err
 	}
+	defer dbInstance.Close()
 
 	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
 	for _, item := range response.Photos {
@@ -160,31 +164,44 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 
 	}
 
-	dbInstance.Close()
 	return nil
 }
 
 func (d *DatabaseHandler) CleanDatabase() error {
+	slaves := slavehandler.GetSlaves()
 	dbInstance, err := d.openDB()
 	if err != nil {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return err
 	}
+	defer dbInstance.Close()
 	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
-	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
-		var a map[string]interface{}
-		err := json.Unmarshal(docContent, &a)
-		if err != nil {
-			logger.Error("Error while unmarshalling document with error : " + err.Error())
-			return false
-		}
-		if a["MachineId"] == "" {
-			logger.Infof("Removing %d", id)
-			feeds.Delete(id)
-		}
 
-		return true
-	})
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`["all"]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	for id := range queryResult {
+		readBack, err := feeds.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			if readBack["MachineId"] == "" {
+				logger.Infof("Removing %d", id)
+				feeds.Delete(id)
+			}
+			for _, slave := range slaves.Slaves {
+				if !slave.IsActive() && slave.Name == readBack["MachineId"] {
+					logger.Infof("Removing %d", id)
+					feeds.Delete(id)
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -279,6 +296,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return response, err
 	}
+	defer dbInstance.Close()
 
 	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
 
@@ -328,7 +346,6 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 		return false
 	})
 
-	dbInstance.Close()
 	logger.Infof("request returns %d results for filename %s\n", len(response), pattern)
 	return response, nil
 }
@@ -341,6 +358,7 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
 		return response, err
 	}
+	defer dbInstance.Close()
 
 	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
 	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
@@ -371,7 +389,7 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 		return true
 		return false
 	})
-	dbInstance.Close()
+
 	logger.Infof("request returns %d results for pattern %s and exif tag %s\n", len(response), pattern, exiftag)
 	return response, nil
 }

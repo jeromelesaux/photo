@@ -13,10 +13,18 @@ import (
 )
 
 type Slave struct {
-	Url    string `json:"slave_url"`
-	Port   int    `json:"slave_port"`
-	Name   string `json:"slave_name"`
-	Action string `json:"slave_action"`
+	Url            string    `json:"slave_url"`
+	Port           int       `json:"slave_port"`
+	Name           string    `json:"slave_name"`
+	Action         string    `json:"slave_action"`
+	LastConnection time.Time `json:"slave_lastconnection"`
+}
+
+func (s *Slave) IsActive() bool {
+	if time.Now().Sub(s.LastConnection).Minutes() < 120 {
+		return true
+	}
+	return false
 }
 
 type SlavesConfiguration struct {
@@ -78,6 +86,7 @@ func GetSlaves() *SlavesConfiguration {
 
 func AddSlave(slave *Slave) error {
 	slavesConfig := GetSlaves()
+	slave.LastConnection = time.Now()
 	slavesConfig.Slaves[slave.Name] = slave
 	return slavesConfig.saveConfiguration()
 }

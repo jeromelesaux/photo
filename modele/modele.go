@@ -8,6 +8,12 @@ import (
 	"sync"
 )
 
+var (
+	FILESIZE_BIG    = "big"
+	FILESIZE_MEDIUM = "medium"
+	FILESIZE_LITTLE = "little"
+)
+
 type Configuration struct {
 	DatabasePath string `json:"database_path"`
 }

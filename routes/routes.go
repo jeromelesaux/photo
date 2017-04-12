@@ -189,6 +189,10 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	filename := r.URL.Query().Get("value")
+	size := r.URL.Query().Get("filesize")
+	if size == "" {
+		size = modele.FILESIZE_LITTLE
+	}
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		logger.Error("Error while getting dabatabse with error" + err.Error())
@@ -196,7 +200,7 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryExtension(filename)
-	response = webclient.NewPhotoExifClient().GetThumbnails(response)
+	response = webclient.NewPhotoExifClient().GetThumbnails(response, size)
 
 	logger.Info("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
@@ -210,6 +214,10 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	pattern := r.URL.Query().Get("value")
 	exiftag := r.URL.Query().Get("exif")
+	size := r.URL.Query().Get("filesize")
+	if size == "" {
+		size = modele.FILESIZE_LITTLE
+	}
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		logger.Error("Error while getting dabatabse with error" + err.Error())
@@ -217,7 +225,7 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryExifTag(pattern, exiftag)
-	response = webclient.NewPhotoExifClient().GetThumbnails(response)
+	response = webclient.NewPhotoExifClient().GetThumbnails(response, size)
 	logger.Info("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -229,6 +237,10 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 func QueryFilename(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	filename := r.URL.Query().Get("value")
+	size := r.URL.Query().Get("filesize")
+	if size == "" {
+		size = modele.FILESIZE_LITTLE
+	}
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		logger.Error("Error while getting dabatabse with error" + err.Error())
@@ -236,7 +248,7 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryFilename(filename)
-	response = webclient.NewPhotoExifClient().GetThumbnails(response)
+	response = webclient.NewPhotoExifClient().GetThumbnails(response, size)
 
 	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
