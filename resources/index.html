@@ -195,7 +195,7 @@
                                     } else {
                                         $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                         $.each(jsondata, function (i, item) {
-                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/></div>')
+                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/><span>'+ item.filename +'</span></div>')
                                            // $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
                                         });
                                     }
@@ -215,7 +215,7 @@
                                     } else {
                                         $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                         $.each(jsondata, function (i, item) {
-                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/></div>')
+                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/><span>'+ item.filename +'</span></div>')
                                          //   $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
                                         });
                                     }

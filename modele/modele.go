@@ -24,10 +24,11 @@ type RegisteredSlave struct {
 }
 
 type TagsPhoto struct {
-	Tags     map[string]string `json:"tags"`
-	Md5Sum   string            `json:"md5sum"`
-	Filename string            `json:"filename"`
-	Filepath string            `json:"filepath"`
+	Tags      map[string]string `json:"tags"`
+	Md5Sum    string            `json:"md5sum"`
+	Filename  string            `json:"filename"`
+	Filepath  string            `json:"filepath"`
+	Thumbnail string            `json:"thumbnail"`
 }
 
 type PhotoResponse struct {

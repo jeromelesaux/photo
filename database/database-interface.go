@@ -23,12 +23,13 @@ type DatabasePhotoResponse struct {
 	MachineId string                 `json:"machineid"`
 }
 
-func NewDatabasePhotoResponse(md5sum string, filename string, filepath string, machineid string, exiftags map[string]interface{}) *DatabasePhotoResponse {
+func NewDatabasePhotoResponse(md5sum string, filename string, filepath string, machineid string, thumbnail string, exiftags map[string]interface{}) *DatabasePhotoResponse {
 	return &DatabasePhotoResponse{
 		Md5sum:    md5sum,
 		Filename:  filename,
 		Filepath:  filepath,
 		MachineId: machineid,
+		Image:     thumbnail,
 		ExifTags:  exiftags,
 	}
 }

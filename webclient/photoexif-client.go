@@ -144,7 +144,7 @@ func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoRespo
 			if err != nil {
 				logger.Error("error while getting thumbnail from machine " + ok.Name + " with error " + err.Error())
 			} else {
-				logger.Infof("filesize :%d", len(data))
+				//logger.Infof("filesize :%d", len(data))
 				switch size {
 				case modele.FILESIZE_LITTLE:
 					response.Image = data

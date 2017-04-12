@@ -21,12 +21,14 @@ import (
 func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 	abspath, err := filepath.Abs(filePath)
 	filename := path.Base(filePath)
+	thumbnail, _ := GetThumbnail(filePath)
 	sum, err := hash.Md5Sum(filePath)
 	if err != nil {
 		return &modele.TagsPhoto{
-			Filename: filename,
-			Filepath: abspath,
-			Md5Sum:   sum,
+			Filename:  filename,
+			Filepath:  abspath,
+			Md5Sum:    sum,
+			Thumbnail: thumbnail,
 		}, err
 	}
 
@@ -34,9 +36,10 @@ func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 	if err != nil {
 		logger.Error(err.Error())
 		return &modele.TagsPhoto{
-			Filename: filename,
-			Filepath: abspath,
-			Md5Sum:   sum,
+			Filename:  filename,
+			Filepath:  abspath,
+			Md5Sum:    sum,
+			Thumbnail: thumbnail,
 		}, err
 	}
 
@@ -53,10 +56,11 @@ func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 		return &modele.TagsPhoto{}, err
 	}
 	return &modele.TagsPhoto{
-		Filename: filename,
-		Filepath: abspath,
-		Tags:     data.Tags,
-		Md5Sum:   sum,
+		Filename:  filename,
+		Filepath:  abspath,
+		Tags:      data.Tags,
+		Md5Sum:    sum,
+		Thumbnail: thumbnail,
 	}, err
 }
 

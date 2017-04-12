@@ -37,8 +37,19 @@ func NewDatabaseHandler() (*DatabaseHandler, error) {
 
 var createDB sync.Once
 
-var DBPHOTOCOLLECTION = "photos_collection"
-var DBALBUMCOLLECTION = "albums_collection"
+var (
+	DBPHOTO_COLLECTION = "photos_collection"
+	DBALBUM_COLLECTION = "albums_collection"
+	MACHINEID_INDEX    = "MachineId"
+	FILENAME_INDEX     = "Filename"
+	FILENAMES_INDEX    = "Filenames"
+	FILEPATHS_INDEX    = "Filepaths"
+	FILEPATH_INDEX     = "Filepath"
+	MD5SUM_INDEX       = "Md5sum"
+	FILETYPE_INDEX     = "Type"
+	THUMBNAIL_INDEX    = "Thumbnail"
+	EXIFTAGS_INDEX     = ""
+)
 
 func (d *DatabaseHandler) openDB() (*db.DB, error) {
 	var err error
@@ -57,17 +68,17 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 	}
 
 	for _, colname := range dbInstance.AllCols() {
-		if colname == DBPHOTOCOLLECTION {
+		if colname == DBPHOTO_COLLECTION {
 			collectionExists = true
 			break
 		}
 	}
 	if !collectionExists {
-		if err = dbInstance.Create(DBPHOTOCOLLECTION); err != nil {
+		if err = dbInstance.Create(DBPHOTO_COLLECTION); err != nil {
 			logger.Error("Error while creating collection photos_collection with error : " + err.Error())
 			return dbInstance, err
 		} else {
-			logger.Info("Creating collection " + DBPHOTOCOLLECTION)
+			logger.Info("Creating collection " + DBPHOTO_COLLECTION)
 		}
 	}
 
@@ -85,30 +96,30 @@ func (d *DatabaseHandler) createIndexes() error {
 	}
 	defer dbInstance.Close()
 
-	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 
-	if err := feeds.Index([]string{"MachineId"}); err != nil {
+	if err := feeds.Index([]string{MACHINEID_INDEX}); err != nil {
 		logger.Error("Error while indexing MachineId with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{"Filename"}); err != nil {
+	if err := feeds.Index([]string{FILENAME_INDEX}); err != nil {
 		logger.Error("Error while indexing Filename with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{"Filenames"}); err != nil {
+	if err := feeds.Index([]string{FILENAMES_INDEX}); err != nil {
 		logger.Error("Error while indexing Filenames with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{"Filepaths"}); err != nil {
+	if err := feeds.Index([]string{FILEPATHS_INDEX}); err != nil {
 		logger.Error("Error while indexing Filepaths with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{"Filepath"}); err != nil {
+	if err := feeds.Index([]string{FILEPATH_INDEX}); err != nil {
 		logger.Error("Error while indexing Filepath with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{"Md5sum"}); err != nil {
+	if err := feeds.Index([]string{MD5SUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Md5sum with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{"Type"}); err != nil {
+	if err := feeds.Index([]string{FILETYPE_INDEX}); err != nil {
 		logger.Error("Error while indexing Type with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{"Filename", "Filepath", "Type"}); err != nil {
+	if err := feeds.Index([]string{FILENAME_INDEX, FILEPATH_INDEX, FILETYPE_INDEX}); err != nil {
 		logger.Error("Error while indexing Filename,Filepath,Type with error : " + err.Error())
 	}
 
@@ -145,17 +156,18 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 	}
 	defer dbInstance.Close()
 
-	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 	for _, item := range response.Photos {
 		id, err := feeds.Insert(map[string]interface{}{
-			"MachineId": response.MachineId,
-			"Filename":  item.Filename,
-			"Filenames": SplitAll(item.Filename),
-			"Filepath":  item.Filepath,
-			"Filepaths": SplitAll(item.Filepath),
-			"Md5sum":    item.Md5Sum,
-			"ExifTags":  item.Tags,
-			"Type":      strings.ToLower(filepath.Ext(item.Filename))})
+			MACHINEID_INDEX: response.MachineId,
+			FILENAME_INDEX:  item.Filename,
+			FILENAMES_INDEX: SplitAll(item.Filename),
+			FILEPATH_INDEX:  item.Filepath,
+			FILEPATHS_INDEX: SplitAll(item.Filepath),
+			MD5SUM_INDEX:    item.Md5Sum,
+			EXIFTAGS_INDEX:  item.Tags,
+			THUMBNAIL_INDEX: item.Thumbnail,
+			FILETYPE_INDEX:  strings.ToLower(filepath.Ext(item.Filename))})
 		if err != nil {
 			logger.Error("Cannot insert data in database with error : " + err.Error())
 		} else {
@@ -175,7 +187,7 @@ func (d *DatabaseHandler) CleanDatabase() error {
 		return err
 	}
 	defer dbInstance.Close()
-	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 
 	queryResult := make(map[int]struct{})
 	var query interface{}
@@ -189,12 +201,12 @@ func (d *DatabaseHandler) CleanDatabase() error {
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
-			if readBack["MachineId"] == "" {
+			if readBack[MACHINEID_INDEX] == "" {
 				logger.Infof("Removing %d", id)
 				feeds.Delete(id)
 			}
 			for _, slave := range slaves.Slaves {
-				if !slave.IsActive() && slave.Name == readBack["MachineId"] {
+				if !slave.IsActive() && slave.Name == readBack[MACHINEID_INDEX] {
 					logger.Infof("Removing %d", id)
 					feeds.Delete(id)
 				}
@@ -213,7 +225,7 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 		return response, err
 	}
 
-	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -228,14 +240,15 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 		} else {
 			logger.Debug(readBack)
 			var exif map[string]interface{}
-			if readBack["ExifTags"] != nil {
-				exif = readBack["ExifTags"].(map[string]interface{})
+			if readBack[EXIFTAGS_INDEX] != nil {
+				exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
 			}
 			response = append(response, NewDatabasePhotoResponse(
-				readBack["Md5sum"].(string),
-				readBack["Filename"].(string),
-				readBack["Filepath"].(string),
-				readBack["MachineId"].(string),
+				readBack[MD5SUM_INDEX].(string),
+				readBack[FILENAME_INDEX].(string),
+				readBack[FILEPATH_INDEX].(string),
+				readBack[MACHINEID_INDEX].(string),
+				readBack[THUMBNAIL_INDEX].(string),
 				exif))
 		}
 
@@ -254,12 +267,11 @@ func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRespon
 	}
 	defer dbInstance.Close()
 
-	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 
-	json.Unmarshal([]byte(`[{"eq": "`+pattern+`", "in": ["Type"]}]`), &query)
-	//json.Unmarshal([]byte(`["all"]`), &query)
+	json.Unmarshal([]byte(`[{"eq": "`+pattern+`", "in": ["`+FILETYPE_INDEX+`"]}]`), &query)
 	logger.Info(query)
 	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
@@ -272,14 +284,15 @@ func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRespon
 		} else {
 			//logger.LogLn(readBack)
 			var exif map[string]interface{}
-			if readBack["ExifTags"] != nil {
-				exif = readBack["ExifTags"].(map[string]interface{})
+			if readBack[EXIFTAGS_INDEX] != nil {
+				exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
 			}
 			response = append(response, NewDatabasePhotoResponse(
-				readBack["Md5sum"].(string),
-				readBack["Filename"].(string),
-				readBack["Filepath"].(string),
-				readBack["MachineId"].(string),
+				readBack[MD5SUM_INDEX].(string),
+				readBack[FILENAME_INDEX].(string),
+				readBack[FILEPATH_INDEX].(string),
+				readBack[MACHINEID_INDEX].(string),
+				readBack[THUMBNAIL_INDEX].(string),
 				exif))
 		}
 
@@ -298,7 +311,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 	}
 	defer dbInstance.Close()
 
-	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 
 	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
 		var a map[string]interface{}
@@ -308,40 +321,39 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 			return false
 		}
 
-		for _, val := range a["Filenames"].([]interface{}) {
+		for _, val := range a[FILENAMES_INDEX].([]interface{}) {
 			if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
 				//logger.LogLn("Document",id,"is",string(docContent))
 				var exif map[string]interface{}
-				if a["ExifTags"] != nil {
-					exif = a["ExifTags"].(map[string]interface{})
+				if a[EXIFTAGS_INDEX] != nil {
+					exif = a[EXIFTAGS_INDEX].(map[string]interface{})
 				}
 				response = append(response, NewDatabasePhotoResponse(
-					a["Md5sum"].(string),
-					a["Filename"].(string),
-					a["Filepath"].(string),
-					a["MachineId"].(string),
+					a[MD5SUM_INDEX].(string),
+					a[FILENAME_INDEX].(string),
+					a[FILEPATH_INDEX].(string),
+					a[MACHINEID_INDEX].(string),
+					a[THUMBNAIL_INDEX].(string),
 					exif))
 			}
 
 		}
-		for _, val := range a["Filepaths"].([]interface{}) {
+		for _, val := range a[FILEPATHS_INDEX].([]interface{}) {
 			if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
-				//logger.LogLn("Document",id,"is",string(docContent))
 				var exif map[string]interface{}
-				if a["ExifTags"] != nil {
-					exif = a["ExifTags"].(map[string]interface{})
+				if a[EXIFTAGS_INDEX] != nil {
+					exif = a[EXIFTAGS_INDEX].(map[string]interface{})
 				}
 				response = append(response, NewDatabasePhotoResponse(
-					a["Md5sum"].(string),
-					a["Filename"].(string),
-					a["Filepath"].(string),
-					a["MachineId"].(string),
+					a[MD5SUM_INDEX].(string),
+					a[FILENAME_INDEX].(string),
+					a[FILEPATH_INDEX].(string),
+					a[MACHINEID_INDEX].(string),
+					a[THUMBNAIL_INDEX].(string),
 					exif))
 			}
 
 		}
-
-		//logger.LogLn("Document",id,"is",string(docContent))
 		return true
 		return false
 	})
@@ -360,7 +372,7 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 	}
 	defer dbInstance.Close()
 
-	feeds := dbInstance.Use(DBPHOTOCOLLECTION)
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
 		var a map[string]interface{}
 		err := json.Unmarshal(docContent, &a)
@@ -368,19 +380,20 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 			logger.Error("Error while unmarshalling document with error : " + err.Error())
 			return false
 		}
-		if a["ExifTags"] != nil {
-			for key, val := range a["ExifTags"].(map[string]interface{}) {
+		if a[EXIFTAGS_INDEX] != nil {
+			for key, val := range a[EXIFTAGS_INDEX].(map[string]interface{}) {
 				if strings.Contains(strings.ToLower(key), strings.ToLower(exiftag)) {
 					if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
 						var exif map[string]interface{}
-						if a["ExifTags"] != nil {
-							exif = a["ExifTags"].(map[string]interface{})
+						if a[EXIFTAGS_INDEX] != nil {
+							exif = a[EXIFTAGS_INDEX].(map[string]interface{})
 						}
 						response = append(response, NewDatabasePhotoResponse(
-							a["Md5sum"].(string),
-							a["Filename"].(string),
-							a["Filepath"].(string),
-							a["MachineId"].(string),
+							a[MD5SUM_INDEX].(string),
+							a[FILENAME_INDEX].(string),
+							a[FILEPATH_INDEX].(string),
+							a[MACHINEID_INDEX].(string),
+							a[THUMBNAIL_INDEX].(string),
 							exif))
 					}
 				}

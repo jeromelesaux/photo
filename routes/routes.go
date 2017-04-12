@@ -159,10 +159,10 @@ func GetFileInformations(w http.ResponseWriter, r *http.Request) {
 		Photos:  make([]*modele.TagsPhoto, 0),
 	}
 	pinfos, err := exifhandler.GetPhotoInformations(filepathValue)
-	response.Photos = append(response.Photos, pinfos)
 	if err != nil {
 		response.Message = err.Error()
 	}
+	response.Photos = append(response.Photos, pinfos)
 	logger.Info("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	logger.Info(strconv.Itoa(len(response.Photos)) + " images found")
 	JsonAsResponse(w, response)
@@ -181,6 +181,7 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.Message = err.Error()
 	}
+
 	logger.Info("Scan completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	logger.Info(strconv.Itoa(len(response.Photos)) + " images found")
 	JsonAsResponse(w, response)
@@ -200,7 +201,6 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryExtension(filename)
-	response = webclient.NewPhotoExifClient().GetThumbnails(response, size)
 
 	logger.Info("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
@@ -225,7 +225,7 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryExifTag(pattern, exiftag)
-	response = webclient.NewPhotoExifClient().GetThumbnails(response, size)
+
 	logger.Info("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -248,7 +248,6 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryFilename(filename)
-	response = webclient.NewPhotoExifClient().GetThumbnails(response, size)
 
 	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
