@@ -406,3 +406,35 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 	logger.Infof("request returns %d results for pattern %s and exif tag %s\n", len(response), pattern, exiftag)
 	return response, nil
 }
+
+func Reduce(responses []*DatabasePhotoResponse, size string) []*DatabasePhotoResponse {
+
+	finalResponses := make([]*DatabasePhotoResponse, 0)
+	for _, response := range responses {
+		alreadyStored := false
+		for _, r := range finalResponses {
+			if r.Md5sum == response.Md5sum {
+				alreadyStored = true
+				break
+			}
+		}
+		if !alreadyStored {
+			//logger.Infof("filesize :%d", len(data))
+			switch size {
+			case modele.FILESIZE_LITTLE:
+				finalResponses = append(finalResponses, response)
+			case modele.FILESIZE_MEDIUM:
+				if len(response.Image) > 15000 {
+					finalResponses = append(finalResponses, response)
+				}
+			case modele.FILESIZE_BIG:
+				if len(response.Image) > 25000 {
+					finalResponses = append(finalResponses, response)
+				}
+			default:
+				finalResponses = append(finalResponses, response)
+			}
+		}
+	}
+	return finalResponses
+}

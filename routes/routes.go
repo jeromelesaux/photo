@@ -201,7 +201,7 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryExtension(filename)
-
+	response = database.Reduce(response, size)
 	logger.Info("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -225,7 +225,7 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryExifTag(pattern, exiftag)
-
+	response = database.Reduce(response, size)
 	logger.Info("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -248,7 +248,7 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryFilename(filename)
-
+	response = database.Reduce(response, size)
 	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -266,6 +266,7 @@ func QueryAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryAll()
+
 	logger.Info("QueryAll completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	if err != nil {
 		JsonAsResponse(w, err)

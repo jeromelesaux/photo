@@ -6,7 +6,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    
+
 </head>
 <body>
 <div class="container">
@@ -109,10 +109,10 @@
                 img {
                     filter: gray; /* IE6-9 */
                     -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
-                    -webkit-box-shadow: 0px 2px 6px 2px rgba(0,0,0,0.75);
-                    -moz-box-shadow: 0px 2px 6px 2px rgba(0,0,0,0.75);
-                    box-shadow: 0px 2px 6px 2px rgba(0,0,0,0.75);
-                    margin-bottom:20px;
+                    -webkit-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
+                    -moz-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
+                    box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
+                    margin-bottom: 20px;
                 }
 
                 img:hover {
@@ -129,12 +129,12 @@
                 });
 
                 function cleanDatabase() {
-                    $(function(){
+                    $(function () {
                         $.ajax({
                             dataType: "json",
                             url: "/cleandatabase",
-                            type:"POST",
-                            success:function(jsondata,codeHttp) {
+                            type: "POST",
+                            success: function (jsondata, codeHttp) {
                                 if (codeHttp == "success") {
                                     alert("Database cleaned.");
                                 }
@@ -144,7 +144,7 @@
                 }
 
                 function clean() {
-                    $(function(){
+                    $(function () {
                         $('#exifTagValue').val('');
                         $('#exifValue').val('');
                         $('#filename').val('');
@@ -174,16 +174,18 @@
 
                 function submitImagesSearch() {
                     $(function () {
-                        exifTag = $('#exifTagValue').val();
-                        exifValue = $('#exifValue').val();
-                        size = $('#fileSize').val();
+                        var exifTag = $('#exifTagValue').val();
+                        var exifValue = $('#exifValue').val();
+                        var size = $('#fileSize').val();
                         $('#extensionList').each(function () {
                             ExtensionSelected = $(this).val();
                         });
-                        if (exifTag == "" && exifValue == "" && ExtensionSelected != "") {
+                        filename = $('#filename').val();
+
+                        if (filename != "") {
                             $.ajax({
                                 dataType: "json",
-                                url: "/queryextension?value=" + ExtensionSelected+ "&filesize="+size,
+                                url: "/queryfilename?value=" + filename + "&filesize=" + size,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
                                     console.log(jsondata);
@@ -195,32 +197,55 @@
                                     } else {
                                         $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                         $.each(jsondata, function (i, item) {
-                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/><span>'+ item.filename +'</span></div>')
-                                           // $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
+                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '</span></div>')
+                                            // $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
                                         });
                                     }
                                 }
                             })
                         } else {
-                            console.log("Calling /queryexif?value=" + exifValue + "&exif=" + exifTag);
-                            $.ajax({
-                                dataType: "json",
-                                url: "/queryexif?value=" + exifValue + "&exif=" + exifTag+ "&filesize="+size,
-                                type: 'GET',
-                                success: function (jsondata, codeHttp) {
-                                    $('#imagesFound').empty();
-                                    if (jQuery.isEmptyObject(jsondata)) {
-                                        alert("No images found.");
-                                        $('#imagesFoundNumber').val('');
-                                    } else {
-                                        $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
-                                        $.each(jsondata, function (i, item) {
-                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image+ '" alt="'+ item.filename+'"/><span>'+ item.filename +'</span></div>')
-                                         //   $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
-                                        });
+                            if (exifTag == "" && exifValue == "" && ExtensionSelected != "") {
+                                $.ajax({
+                                    dataType: "json",
+                                    url: "/queryextension?value=" + ExtensionSelected + "&filesize=" + size,
+                                    type: 'GET',
+                                    success: function (jsondata, codeHttp) {
+                                        console.log(jsondata);
+
+                                        $('#imagesFound').empty();
+                                        if (jQuery.isEmptyObject(jsondata)) {
+                                            alert("No images found.");
+                                            $('#imagesFoundNumber').val('');
+                                        } else {
+                                            $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
+                                            $.each(jsondata, function (i, item) {
+                                                $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '</span></div>')
+                                                // $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
+                                            });
+                                        }
                                     }
-                                }
-                            })
+                                })
+                            } else {
+                                console.log("Calling /queryexif?value=" + exifValue + "&exif=" + exifTag);
+                                $.ajax({
+                                    dataType: "json",
+                                    url: "/queryexif?value=" + exifValue + "&exif=" + exifTag + "&filesize=" + size,
+                                    type: 'GET',
+                                    success: function (jsondata, codeHttp) {
+                                        $('#imagesFound').empty();
+                                        if (jQuery.isEmptyObject(jsondata)) {
+                                            alert("No images found.");
+                                            $('#imagesFoundNumber').val('');
+                                        } else {
+                                            $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
+                                            $.each(jsondata, function (i, item) {
+                                                $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '</span></div>')
+                                                //   $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
+                                            });
+                                        }
+                                    }
+                                })
+                            }
                         }
                     });
                 }
