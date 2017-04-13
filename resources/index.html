@@ -108,7 +108,7 @@
             <style type="text/css">
                 img {
                     filter: gray; /* IE6-9 */
-                    -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
+                    -webkit-filter: grayscale(0); /* Google Chrome, Safari 6+ & Opera 15+ */
                     -webkit-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
                     -moz-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
                     box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
@@ -119,7 +119,6 @@
                     filter: none; /* IE6-9 */
                     -webkit-filter: grayscale(0); /* Google Chrome, Safari 6+ & Opera 15+ */
 
-                }
             </style>
 
             <script>
@@ -158,7 +157,7 @@
                             url: "/getfileextension",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
-                                console.log(jsondata);
+                              //  console.log(jsondata);
                                 $('#extensionList').empty();
                                 $.each(jsondata.Extensions, function (i, item) {
                                     $('#extensionList').append('<option value="' + item + '">' + item + '</option>');
@@ -171,6 +170,13 @@
 
                 var ExtensionSelected = "";
 
+                function displayExifTags(exiftags) {
+                    var display ="";
+                    $.each(exiftags, function (i, item) {
+                        display += i + ":" + item + "<br>";
+                    });
+                    return display;
+                }
 
                 function submitImagesSearch() {
                     $(function () {
@@ -188,7 +194,7 @@
                                 url: "/queryfilename?value=" + filename + "&filesize=" + size,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
-                                    console.log(jsondata);
+                                  //  console.log(jsondata);
 
                                     $('#imagesFound').empty();
                                     if (jQuery.isEmptyObject(jsondata)) {
@@ -197,7 +203,7 @@
                                     } else {
                                         $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                         $.each(jsondata, function (i, item) {
-                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '</span></div>')
+                                            $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span></div>')
                                             // $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
                                         });
                                     }
@@ -210,7 +216,7 @@
                                     url: "/queryextension?value=" + ExtensionSelected + "&filesize=" + size,
                                     type: 'GET',
                                     success: function (jsondata, codeHttp) {
-                                        console.log(jsondata);
+                                      //  console.log(jsondata);
 
                                         $('#imagesFound').empty();
                                         if (jQuery.isEmptyObject(jsondata)) {
@@ -219,7 +225,7 @@
                                         } else {
                                             $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                             $.each(jsondata, function (i, item) {
-                                                $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '</span></div>')
+                                                $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span></div>')
                                                 // $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
                                             });
                                         }
@@ -239,7 +245,8 @@
                                         } else {
                                             $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                             $.each(jsondata, function (i, item) {
-                                                $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '</span></div>')
+                                               // console.log(item);
+                                                $('#imagesFound').append('<div class="col-md-3 col-sm-4 col-xs-6"><img class="img-responsive" src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/><span>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span></div>')
                                                 //   $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
                                             });
                                         }
