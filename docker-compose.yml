@@ -1,19 +1,9 @@
 # photo micro-service
 photo:
- container_name: photo
- image: golang:1.8-alpine
+ container_name: yula-container
+ image: yula
  restart: always
- links:
-   - mongo
  ports:
   - "8020:8020"
- command: /go/bin/photoexif-1 -httpport 3001 -masteruri http://localhost:8020/register 2> photoexif.log
- command: /go/bin/photocontroller-1 -configurationfile confclient.json -httpport 8020  2> photocontroller.log
-
-# bdd mockup
-mongo:
- container_name: handsongo-mongo
- image: mongo:3.3
- restart: always
- ports:
-  - "27017:27017"
+  - "3001"
+ command: bash -c " ./photocontroller-1 -configurationfile confclient.json -httpport 8020  2> photocontroller.log& ./photoexif-1 -httpport 3001 -masteruri http://localhost:8020/register 2> photoexif.log"

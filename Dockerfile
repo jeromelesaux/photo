@@ -3,7 +3,7 @@ FROM golang:1.8-alpine
 
 # GO and PATH env variables already set in golang image
 # to reduce download time
-RUN apk add -U make git  && apk add libexif libexif-dev gcc libc-dev g++
+RUN apk add -U make git  && apk add libexif libexif-dev gcc libc-dev g++ bash
 
 # set the go path to import the source project
 WORKDIR $GOPATH/src/photo

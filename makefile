@@ -6,8 +6,8 @@ MV=mv
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go' | grep -v '/vendor/')
 #GOPATH=$(SOURCEDIR)/
-GOOS=linux
-GOARCH=amd64
+#GOOS=linux
+#GOARCH=amd64
 #GOARCH=arm
 #GOARM=7
 
@@ -79,6 +79,8 @@ kill:
 clean:
 		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi
 		@if [ -f "${EXEC2}-${VERSION}" ] ; then rm ${EXEC2}-${VERSION} ; fi
+		@rm -fr database_photo.db
+		@rm -f *.log
 		@echo "    Nettoyage effectuee"
 
 package:  ${EXEC1} ${EXEC2} swagger
@@ -101,10 +103,10 @@ swagger:
 DOCKER_IP=$(shell if [ -z "$(DOCKER_MACHINE_NAME)" ]; then echo 'localhost'; else docker-machine ip $(DOCKER_MACHINE_NAME); fi)
 
 dockerBuild:
-	docker build -f ./Dockerfile .
+	docker build -t yula .
 
 dockerClean:
-	docker rmi -f ./Dockerfile .
+	docker rmi -t yula .
 
 dockerUp:
 	docker-compose up -d
