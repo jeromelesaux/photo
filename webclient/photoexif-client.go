@@ -11,6 +11,7 @@ import (
 	"photo/slavehandler"
 	"strconv"
 
+	"sync"
 	"time"
 )
 
@@ -43,12 +44,16 @@ func (p *PhotoExifClient) scanExifClient(remotePath string, salve *slavehandler.
 	}
 	logger.Info("Calling uri : " + uri)
 	response, err := client.Do(request)
+	defer func() {
+		if response.Body != nil {
+			response.Body.Close()
+		}
+	}()
 	if err != nil {
 		logger.Error("error with : " + err.Error())
 		p.photoResponseChan <- &modele.PhotoResponse{}
 		return
 	}
-	defer response.Body.Close()
 	photoResponse := &modele.PhotoResponse{}
 	if err := json.NewDecoder(response.Body).Decode(photoResponse); err != nil {
 		logger.Error("error with : " + err.Error())
@@ -61,27 +66,17 @@ func (p *PhotoExifClient) scanExifClient(remotePath string, salve *slavehandler.
 	return
 }
 
+type Job struct {
+	r   string
+	sid string
+}
+
 func (p *PhotoExifClient) ScanFoldersClient(remotepaths []string, slaveid string, conf *modele.Configuration) {
 
-	slavesConfig := slavehandler.GetSlaves()
-
-	if len(slavesConfig.Slaves) == 0 {
-		logger.Error("No slave registered, skip action")
-		return
-	}
-
-	for _, remotepath := range remotepaths {
-		logger.Info("Sending to traitment " + remotepath)
-		//traitmentChan <- 1
-		if slave := slavesConfig.Slaves[slaveid]; slave != nil {
-			logger.Info("Exec search to " + slave.Name + " address " + slave.Url + " for directory " + remotepath)
-			go p.scanExifClient(remotepath, slave)
-		}
-	}
-
+	wgp := sync.WaitGroup{}
+	wgp.Add(1)
 	go func() {
-
-		//var pr *modele.PhotoResponse
+		defer wgp.Done()
 		for pr := range p.photoResponseChan {
 			if len(pr.Photos) > 0 {
 				db, err := database.NewDatabaseHandler()
@@ -98,6 +93,46 @@ func (p *PhotoExifClient) ScanFoldersClient(remotepaths []string, slaveid string
 		}
 
 	}()
+
+	slavesConfig := slavehandler.GetSlaves()
+
+	if len(slavesConfig.Slaves) == 0 {
+		logger.Error("No slave registered, skip action")
+		return
+	}
+
+	c := make(chan Job, 100)
+	wg := sync.WaitGroup{}
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for d := range c {
+				logger.Info("Sending to traitment " + d.r)
+				if slave := slavesConfig.Slaves[d.sid]; slave != nil {
+					logger.Info("Exec search to " + slave.Name + " address " + slave.Url + " for directory " + d.r)
+					p.scanExifClient(d.r, slave)
+				}
+
+			}
+			logger.Info("Finished all treatments")
+		}()
+	}
+
+	for _, remotepath := range remotepaths {
+		logger.Info("Sending to traitment " + remotepath)
+
+		j := Job{r: remotepath, sid: slaveid}
+		c <- j
+
+	}
+	close(c)
+	wg.Wait()
+
+	close(p.photoResponseChan)
+
+	wgp.Wait()
+
 }
 
 func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (error, *modele.FileExtension) {

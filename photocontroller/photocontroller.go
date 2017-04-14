@@ -6,8 +6,10 @@ import (
 	logger "github.com/Sirupsen/logrus"
 	"log"
 	"net/http"
+	"os"
 	"photo/modele"
 	"photo/routes"
+	"runtime/pprof"
 	"strconv"
 	"time"
 )
@@ -35,7 +37,12 @@ var wellcomeMessage = "\n" +
 func main() {
 
 	flag.Parse()
-
+	f, err := os.Create("mem-photocontroller.pprof")
+	if err != nil {
+		log.Fatal(err)
+	}
+	pprof.WriteHeapProfile(f)
+	defer f.Close()
 	if *httpport != "" && *configurationfile != "" {
 		logger.Info(wellcomeMessage)
 		modele.LoadPhotoExifConfiguration(*configurationfile)
