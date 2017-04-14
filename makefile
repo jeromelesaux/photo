@@ -4,7 +4,7 @@ MV=mv
 
 
 SOURCEDIR=.
-SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
+SOURCES := $(shell find $(SOURCEDIR) -name '*.go' | grep -v '/vendor/')
 #GOPATH=$(SOURCEDIR)/
 GOOS=linux
 GOARCH=amd64
@@ -93,3 +93,32 @@ swagger:
 	@echo "Generate swagger json file specs"
 	@GOPATH=$(PWD)/../.. GOOS=linux GOARCH=amd64 go run ${GOPATH}/src/github.com/go-swagger/go-swagger/cmd/swagger/swagger.go generate spec -m -b ./routes > resources/swagger.json
 	@echo "Specs generate at resources/swagger.json"
+
+#----------------------------------------------------------------------#
+#----------------------------- docker actions -------------------------#
+#----------------------------------------------------------------------#
+
+DOCKER_IP=$(shell if [ -z "$(DOCKER_MACHINE_NAME)" ]; then echo 'localhost'; else docker-machine ip $(DOCKER_MACHINE_NAME); fi)
+
+dockerBuild:
+	docker build -f ./Dockerfile .
+
+dockerClean:
+	docker rmi -f ./Dockerfile .
+
+dockerUp:
+	docker-compose up -d
+
+dockerStop:
+	docker-compose stop
+	docker-compose kill
+	docker-compose rm -f
+
+dockerBuildUp: dockerStop dockerBuild dockerUp
+
+dockerWatch:
+	@watch -n1 'docker ps | grep photo'
+
+dockerLogs:
+	docker-compose logs -f
+
