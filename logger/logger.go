@@ -42,6 +42,4 @@ func InitLog(logLevel, formatter string) error {
 		logrus.SetLevel(level)
 		return nil
 	}
-
-	return nil
 }

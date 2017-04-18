@@ -88,7 +88,7 @@ package:  ${EXEC1} ${EXEC2} swagger
 		@echo "    Archive ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip created"
 
 audit:   ${EXEC1}
-		@go tool vet -all -shadow ./
+		@go tool vet -all -shadow ${SOURCES}
 		@echo "    Audit effectue"
 
 swagger:
