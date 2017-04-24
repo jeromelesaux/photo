@@ -88,7 +88,8 @@ package:  ${EXEC1} ${EXEC2} swagger
 		@echo "    Archive ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip created"
 
 audit:   ${EXEC1}
-		@go tool vet -all -shadow ./
+		@go tool vet -all -shadow  $(shell go list ./... | grep -v /vendor/ | sed 's/photo\///')
+		@golint $(shell go list ./... | grep -v /vendor/ | sed 's/photo\///')
 		@echo "    Audit effectue"
 
 swagger:
@@ -99,6 +100,8 @@ swagger:
 #----------------------------------------------------------------------#
 #----------------------------- docker actions -------------------------#
 #----------------------------------------------------------------------#
+
+#export DOCKER_HOST=$(shell ip route get 1 | awk '{if ($7 != "" ) { print "tcp://"$7":2375";}}')
 
 DOCKER_IP=$(shell if [ -z "$(DOCKER_MACHINE_NAME)" ]; then echo 'localhost'; else docker-machine ip $(DOCKER_MACHINE_NAME); fi)
 

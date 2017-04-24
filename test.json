@@ -1,0 +1,143 @@
+{
+  "photosets": {
+    "page": 1,
+    "pages": 1,
+    "perpage": 6,
+    "total": 6,
+    "photoset": [
+      {
+        "id": "72157671432368396",
+        "primary": "28526479866",
+        "secret": "90542017ed",
+        "server": "8313",
+        "farm": 9,
+        "photos": 0,
+        "videos": "1",
+        "title": {
+          "_content": "Breizh camp juillet 2016"
+        },
+        "description": {
+          "_content": "Petites souvenirs de ce tr\u00e8s bon moment."
+        },
+        "needs_interstitial": 0,
+        "visibility_can_see_set": 1,
+        "count_views": "18",
+        "count_comments": "0",
+        "can_comment": 0,
+        "date_create": "1469436391",
+        "date_update": "1469523929"
+      },
+      {
+        "id": "72157669902911590",
+        "primary": "28281232115",
+        "secret": "7b62ab9963",
+        "server": "7545",
+        "farm": 8,
+        "photos": 0,
+        "videos": "2",
+        "title": {
+          "_content": "Anniversaire De Gaspard 2016"
+        },
+        "description": {
+          "_content": ""
+        },
+        "needs_interstitial": 0,
+        "visibility_can_see_set": 1,
+        "count_views": "19",
+        "count_comments": "0",
+        "can_comment": 0,
+        "date_create": "1468301760",
+        "date_update": "1470126179"
+      },
+      {
+        "id": "72157624714957250",
+        "primary": "4738116021",
+        "secret": "26ce548c99",
+        "server": "4143",
+        "farm": 5,
+        "photos": "1",
+        "videos": 0,
+        "title": {
+          "_content": "For fun"
+        },
+        "description": {
+          "_content": ""
+        },
+        "needs_interstitial": 0,
+        "visibility_can_see_set": 1,
+        "count_views": "8",
+        "count_comments": "0",
+        "can_comment": 0,
+        "date_create": "1281689543",
+        "date_update": "1424452763"
+      },
+      {
+        "id": "72157624714956698",
+        "primary": "4821408036",
+        "secret": "179c976dd5",
+        "server": "4076",
+        "farm": 5,
+        "photos": "2",
+        "videos": 0,
+        "title": {
+          "_content": "Landscapes"
+        },
+        "description": {
+          "_content": ""
+        },
+        "needs_interstitial": 0,
+        "visibility_can_see_set": 1,
+        "count_views": "11",
+        "count_comments": "0",
+        "can_comment": 0,
+        "date_create": "1281689532",
+        "date_update": "1412545193"
+      },
+      {
+        "id": "72157624714954958",
+        "primary": "4862088215",
+        "secret": "74e81506b4",
+        "server": "4139",
+        "farm": 5,
+        "photos": "3",
+        "videos": 0,
+        "title": {
+          "_content": "HDR"
+        },
+        "description": {
+          "_content": "HDR tests "
+        },
+        "needs_interstitial": 0,
+        "visibility_can_see_set": 1,
+        "count_views": "13",
+        "count_comments": "0",
+        "can_comment": 0,
+        "date_create": "1281689512",
+        "date_update": "1344538868"
+      },
+      {
+        "id": "72157624243260609",
+        "primary": "4738039277",
+        "secret": "897e2776e3",
+        "server": "4093",
+        "farm": 5,
+        "photos": "1",
+        "videos": 0,
+        "title": {
+          "_content": "Tournoi Reims Finale Reims 1 - Courbevoie 1"
+        },
+        "description": {
+          "_content": ""
+        },
+        "needs_interstitial": 0,
+        "visibility_can_see_set": 1,
+        "count_views": "2",
+        "count_comments": "0",
+        "can_comment": 0,
+        "date_create": "1277645137",
+        "date_update": "1304739713"
+      }
+    ]
+  },
+  "stat": "ok"
+}

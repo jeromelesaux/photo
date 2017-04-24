@@ -355,7 +355,6 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 
 		}
 		return true
-		return false
 	})
 
 	logger.Infof("request returns %d results for filename %s\n", len(response), pattern)
@@ -400,7 +399,6 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 			}
 		}
 		return true
-		return false
 	})
 
 	logger.Infof("request returns %d results for pattern %s and exif tag %s\n", len(response), pattern, exiftag)
