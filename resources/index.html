@@ -91,20 +91,43 @@
                             <button type="button" name="clean " onclick="cleanDatabase()" value="clean database" class="btn btn-primary start">
                                 <span>clean database</span>
                             </button>
+                            <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new album</button>
                             <br>
-
+                             <!-- number of images returned by server -->
                             <div id="imagesFoundNumber"></div>
                             <br>
                             <br>
                             <br>
+                            <!-- gallery of images found and returned by server -->
                             <div class="row">
-                                <form>
+                                <form id="photosAlbumSelection">
                                     <input type="text" class="hidden" id="gallery_name">
                                     <div class="form-group">
                                         <div id="imagesFound">
                                         </div>
                                     </div>
                                 </form>
+                            </div>
+
+                            <!-- modal page to create new album -->
+                            <div id="createNewAlbum" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                       <div class="modal-header">
+                                           <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                           <h4 class="modal-title">Create new album</h4>
+                                       </div>
+                                        <div class="modal-body">
+                                            <div class="offset8">Enter the new album new of your photo's selection :<input type="text" id="albumname"
+                                                                                                                                name="albumname"
+                                                                                                                                class="form-control"></div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="createalbum()">Create Album</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                         </div>
@@ -151,6 +174,35 @@
                         event.preventDefault();
                     });
 
+
+                function createalbum() {
+                    $(function(){
+                        var values = [];
+                        var albumName = $("#albumname").val();
+                        $('input').each(function() {
+                            if ($(this).is(":checked") == true ) {
+                                values.push($(this).val());
+                            }
+                        });
+                        var body = {};
+                        body.album_name = albumName;
+                        body.md5sums = values;
+                        var jsondata = JSON.stringify(body);
+                        console.log(jsondata);
+                        $.ajax({
+                            dataType: "json",
+                            url: "createalbum",
+                            type: 'POST',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert(responsedata);
+                                }
+                            }
+                        });
+
+                    });
+                }
 
                 function cleanDatabase() {
                     $(function () {
@@ -230,7 +282,7 @@
                                             $('#imagesFound').append('<div class="col-xs-4">' +
                                                 '<label class="btn btn-primary img-check">' +
                                                 '<img class="img-responsive " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
-                                                '<input type="checkbox" id="' + item.filename + '" value="' + item.filename + '" class="hidden" autocomplete="off">' +
+                                                '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
                                                 '</label>' +
                                                 '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
                                                 '</div>')
@@ -258,7 +310,7 @@
                                                 $('#imagesFound').append('<div class="col-xs-4">' +
                                                     '<label class="btn btn-primary img-check">' +
                                                     '<img class="img-responsive " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
-                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.filename + '" class="hidden" autocomplete="off">' +
+                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
                                                     '</label>' +
                                                     '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
                                                     '</div>')
@@ -285,7 +337,7 @@
                                                 $('#imagesFound').append('<div class="col-xs-4">' +
                                                     '<label class="btn btn-primary img-check">' +
                                                     '<img class="img-responsive " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
-                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.filename + '" class="hidden" autocomplete="off">' +
+                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
                                                     '</label>' +
                                                     '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
                                                     '</div>')

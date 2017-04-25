@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+	"photo/album"
 	"photo/database"
 	"photo/exifhandler"
 	"photo/folder"
@@ -16,14 +17,37 @@ import (
 	"time"
 )
 
+func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	defer r.Body.Close()
+
+	albumCreationMessage := album.NewAlbumCreationMessage()
+
+	err := json.NewDecoder(r.Body).Decode(albumCreationMessage)
+	if err != nil {
+		logger.Info("Cannot not decode body received for registering with error " + err.Error())
+		body, _ := ioutil.ReadAll(r.Body)
+		logger.Debug("Body received : " + string(body))
+		http.Error(w, "Cannot not decode body received for registering", 400)
+		return
+	}
+	logger.Info(albumCreationMessage)
+	JsonAsResponse(w, "Album "+albumCreationMessage.AlbumName+" recorded.")
+}
+
+// route : return the extension files list from the configuration file
 func GetExtensionList(w http.ResponseWriter, r *http.Request) {
 	conf := modele.LoadConfigurationAtOnce()
 	logger.Info("Ask for extension files")
 	JsonAsResponse(w, conf)
 }
 
+//  route : purpose get the images files extension supported by the application
 func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
-	logger.Info("Cleanning database")
+	logger.Info("get image files extension list")
 	conf := slavehandler.GetSlaves()
 	client := webclient.NewPhotoExifClient()
 	if len(conf.Slaves) == 0 {
@@ -43,6 +67,7 @@ func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// route : purpose clean the database redundance
 func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
@@ -56,6 +81,7 @@ func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, "ok")
 }
 
+// route thumbnail  of the filpath (encoded in url)
 func GetThumbnail(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	response, err := exifhandler.GetThumbnail(filePath)
@@ -66,6 +92,7 @@ func GetThumbnail(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, response)
 }
 
+// route: return the registered slaves on the controller
 func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
 	conf := slavehandler.GetSlaves()
 	message := make([]modele.RegisteredSlave, 0)
@@ -76,6 +103,7 @@ func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, message)
 }
 
+// route: register a new slave that call this web service
 func RegisterSlave(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
@@ -97,6 +125,7 @@ func RegisterSlave(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, "ok")
 }
 
+// route : browse the directory (encoded in the value variable) on the machineId
 func Browse(w http.ResponseWriter, r *http.Request) {
 	//usr, _ := user.Current()
 	starttime := time.Now()
