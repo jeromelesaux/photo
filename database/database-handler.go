@@ -48,6 +48,7 @@ var (
 	MD5SUM_INDEX       = "Md5sum"
 	FILETYPE_INDEX     = "Type"
 	THUMBNAIL_INDEX    = "Thumbnail"
+	ALBUM_INDEX        = "Album"
 	EXIFTAGS_INDEX     = ""
 )
 
@@ -56,6 +57,7 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 	var dbInstance *db.DB
 
 	collectionExists := false
+	albumExists := false
 	databasePath := modele.GetConfiguration().DatabasePath
 	if databasePath == "" {
 		err = errors.New("No database path defined")
@@ -70,7 +72,15 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 	for _, colname := range dbInstance.AllCols() {
 		if colname == DBPHOTO_COLLECTION {
 			collectionExists = true
-			break
+			if albumExists == true {
+				break
+			}
+		}
+		if colname == DBALBUM_COLLECTION {
+			albumExists = true
+			if collectionExists == true {
+				break
+			}
 		}
 	}
 	if !collectionExists {
@@ -79,6 +89,15 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 			return dbInstance, err
 		} else {
 			logger.Info("Creating collection " + DBPHOTO_COLLECTION)
+		}
+	}
+
+	if !albumExists {
+		if err = dbInstance.Create(DBALBUM_COLLECTION); err != nil {
+			logger.Error("Error while creating album photos_album with error : " + err.Error())
+			return dbInstance, err
+		} else {
+			logger.Info("Creating album " + DBALBUM_COLLECTION)
 		}
 	}
 
@@ -121,6 +140,11 @@ func (d *DatabaseHandler) createIndexes() error {
 	}
 	if err := feeds.Index([]string{FILENAME_INDEX, FILEPATH_INDEX, FILETYPE_INDEX}); err != nil {
 		logger.Error("Error while indexing Filename,Filepath,Type with error : " + err.Error())
+	}
+
+	feeds = dbInstance.Use(DBALBUM_COLLECTION)
+	if err := feeds.Index([]string{ALBUM_INDEX}); err != nil {
+		logger.Error("Error while indexing Album with error : " + err.Error())
 	}
 
 	return nil

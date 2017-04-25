@@ -17,6 +17,7 @@ import (
 	"time"
 )
 
+// route create a new album by the name and the md5sums of the photos
 func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
@@ -24,7 +25,7 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	albumCreationMessage := album.NewAlbumCreationMessage()
+	albumCreationMessage := album.NewAlbumMessage()
 
 	err := json.NewDecoder(r.Body).Decode(albumCreationMessage)
 	if err != nil {
@@ -36,6 +37,11 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Info(albumCreationMessage)
 	JsonAsResponse(w, "Album "+albumCreationMessage.AlbumName+" recorded.")
+}
+
+// return all albums names
+func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
+	JsonAsResponse(w, "")
 }
 
 // route : return the extension files list from the configuration file
