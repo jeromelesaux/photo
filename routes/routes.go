@@ -41,7 +41,13 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 
 // return all albums names
 func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
-	JsonAsResponse(w, "")
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	albums := db.GetAlbumList()
+	JsonAsResponse(w, albums)
 }
 
 // route : return the extension files list from the configuration file

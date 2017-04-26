@@ -167,9 +167,9 @@ func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (err
 	return nil, extensions
 }
 
-func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoResponse, size string) []*database.DatabasePhotoResponse {
+func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoRecord, size string) []*database.DatabasePhotoRecord {
 	slavesConfig := slavehandler.GetSlaves()
-	finalResponses := make([]*database.DatabasePhotoResponse, 0)
+	finalResponses := make([]*database.DatabasePhotoRecord, 0)
 	for _, response := range responses {
 
 		if ok := slavesConfig.Slaves[response.MachineId]; ok == nil {

@@ -6,13 +6,13 @@ import (
 )
 
 type DatabaseMock struct {
-	data []*DatabasePhotoResponse
+	data []*DatabasePhotoRecord
 }
 
 var _ DatabaseInterface = (*DatabaseMock)(nil)
 
 func NewDataBaseMock() (*DatabaseMock, error) {
-	return &DatabaseMock{data: make([]*DatabasePhotoResponse, 0)}, nil
+	return &DatabaseMock{data: make([]*DatabasePhotoRecord, 0)}, nil
 }
 
 func (d *DatabaseMock) InsertNewData(response *modele.PhotoResponse) error {
@@ -22,7 +22,7 @@ func (d *DatabaseMock) InsertNewData(response *modele.PhotoResponse) error {
 			exifs[tag] = value
 		}
 
-		toinsert := &DatabasePhotoResponse{
+		toinsert := &DatabasePhotoRecord{
 			Filename: item.Filename,
 			Filepath: item.Filepath,
 			Md5sum:   item.Md5Sum,
@@ -36,11 +36,11 @@ func (d *DatabaseMock) CleanDatabase() error {
 	d.data = d.data[:len(d.data)-1]
 	return nil
 }
-func (d *DatabaseMock) QueryAll() ([]*DatabasePhotoResponse, error) {
+func (d *DatabaseMock) QueryAll() ([]*DatabasePhotoRecord, error) {
 	return d.data, nil
 }
-func (d *DatabaseMock) QueryExtension(pattern string) ([]*DatabasePhotoResponse, error) {
-	results := make([]*DatabasePhotoResponse, 0)
+func (d *DatabaseMock) QueryExtension(pattern string) ([]*DatabasePhotoRecord, error) {
+	results := make([]*DatabasePhotoRecord, 0)
 	for _, p := range d.data {
 		if strings.Contains(p.Type, pattern) {
 			results = append(results, p)
@@ -48,8 +48,8 @@ func (d *DatabaseMock) QueryExtension(pattern string) ([]*DatabasePhotoResponse,
 	}
 	return results, nil
 }
-func (d *DatabaseMock) QueryFilename(pattern string) ([]*DatabasePhotoResponse, error) {
-	results := make([]*DatabasePhotoResponse, 0)
+func (d *DatabaseMock) QueryFilename(pattern string) ([]*DatabasePhotoRecord, error) {
+	results := make([]*DatabasePhotoRecord, 0)
 	for _, p := range d.data {
 		if strings.Contains(p.Filename, pattern) {
 			results = append(results, p)
@@ -57,8 +57,8 @@ func (d *DatabaseMock) QueryFilename(pattern string) ([]*DatabasePhotoResponse, 
 	}
 	return results, nil
 }
-func (d *DatabaseMock) QueryExifTag(pattern string, exiftag string) ([]*DatabasePhotoResponse, error) {
-	results := make([]*DatabasePhotoResponse, 0)
+func (d *DatabaseMock) QueryExifTag(pattern string, exiftag string) ([]*DatabasePhotoRecord, error) {
+	results := make([]*DatabasePhotoRecord, 0)
 	for _, p := range d.data {
 
 		if strings.Contains(p.ExifTags[exiftag].(string), pattern) {

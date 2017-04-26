@@ -6,6 +6,7 @@ import (
 	logger "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
 	"path/filepath"
+	"photo/album"
 	"photo/modele"
 	"photo/slavehandler"
 	"strconv"
@@ -49,6 +50,7 @@ var (
 	FILETYPE_INDEX     = "Type"
 	THUMBNAIL_INDEX    = "Thumbnail"
 	ALBUM_INDEX        = "Album"
+	ALBUM_ITEMS        = "Album_Items"
 	EXIFTAGS_INDEX     = ""
 )
 
@@ -172,6 +174,119 @@ func SplitAll(pattern string) []string {
 	return result
 }
 
+func (d *DatabaseHandler) GetAlbumList() []string {
+	albumsNames := make([]string, 0)
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return albumsNames
+	}
+	defer dbInstance.Close()
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`["all"]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	for id := range queryResult {
+		readBack, err := feedsAlbum.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			albumsNames = append(albumsNames, readBack[ALBUM_INDEX].(string))
+		}
+	}
+	return albumsNames
+}
+
+func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
+	collection := NewDatabaseAlbumRecord()
+	collection.AlbumName = albumName
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return collection
+	}
+	defer dbInstance.Close()
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+
+	json.Unmarshal([]byte(`[{"eq": "`+albumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	for id := range queryResult {
+		readBack, err := feedsAlbum.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			collection.Records = readBack[ALBUM_ITEMS].([]*DatabasePhotoRecord)
+		}
+	}
+
+	return collection
+}
+
+func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return err
+	}
+	defer dbInstance.Close()
+	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	collection := NewDatabaseAlbumRecord()
+	collection.AlbumName = response.AlbumName
+	for _, md5sum := range response.Md5sums {
+		json.Unmarshal([]byte(`[{"eq": "`+md5sum+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
+		logger.Info(query)
+		if err := db.EvalQuery(query, feedsCollection, &queryResult); err != nil {
+			logger.Error("Error while querying with error :" + err.Error())
+		}
+		for id := range queryResult {
+			readBack, err := feedsCollection.Read(id)
+			if err != nil {
+				logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			} else {
+				logger.Debug(readBack)
+				var exif map[string]interface{}
+				if readBack[EXIFTAGS_INDEX] != nil {
+					exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
+				}
+				collection.Records = append(collection.Records,
+					&DatabasePhotoRecord{
+						MachineId: readBack[MACHINEID_INDEX].(string),
+						Md5sum:    readBack[MD5SUM_INDEX].(string),
+						Filename:  readBack[FILENAME_INDEX].(string),
+						Filepath:  readBack[FILEPATH_INDEX].(string),
+						Thumbnail: readBack[THUMBNAIL_INDEX].(string),
+						ExifTags:  exif,
+					})
+			}
+
+		}
+	}
+
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	id, err := feedsAlbum.Insert(map[string]interface{}{
+		ALBUM_INDEX: collection.AlbumName,
+		ALBUM_ITEMS: collection.Records,
+	})
+	if err != nil {
+		logger.Error("Cannot insert data in database with error : " + err.Error())
+	} else {
+		logger.Infof("DB return id %d for album:%s\n", id, collection.AlbumName)
+	}
+
+	return err
+}
+
 func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 	dbInstance, err := d.openDB()
 	if err != nil {
@@ -241,8 +356,8 @@ func (d *DatabaseHandler) CleanDatabase() error {
 	return nil
 }
 
-func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
-	response := make([]*DatabasePhotoResponse, 0)
+func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoRecord, error) {
+	response := make([]*DatabasePhotoRecord, 0)
 	dbInstance, err := d.openDB()
 	if err != nil {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
@@ -282,8 +397,8 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoResponse, error) {
 	return response, nil
 }
 
-func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoResponse, error) {
-	response := make([]*DatabasePhotoResponse, 0)
+func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRecord, error) {
+	response := make([]*DatabasePhotoRecord, 0)
 	dbInstance, err := d.openDB()
 	if err != nil {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
@@ -325,8 +440,8 @@ func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRespon
 	return response, nil
 }
 
-func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoResponse, error) {
-	response := make([]*DatabasePhotoResponse, 0)
+func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord, error) {
+	response := make([]*DatabasePhotoRecord, 0)
 
 	dbInstance, err := d.openDB()
 	if err != nil {
@@ -385,9 +500,9 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRespons
 	return response, nil
 }
 
-func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*DatabasePhotoResponse, error) {
+func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*DatabasePhotoRecord, error) {
 
-	response := make([]*DatabasePhotoResponse, 0)
+	response := make([]*DatabasePhotoRecord, 0)
 	dbInstance, err := d.openDB()
 	if err != nil {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
@@ -429,9 +544,9 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 	return response, nil
 }
 
-func Reduce(responses []*DatabasePhotoResponse, size string) []*DatabasePhotoResponse {
+func Reduce(responses []*DatabasePhotoRecord, size string) []*DatabasePhotoRecord {
 
-	finalResponses := make([]*DatabasePhotoResponse, 0)
+	finalResponses := make([]*DatabasePhotoRecord, 0)
 	for _, response := range responses {
 		alreadyStored := false
 		for _, r := range finalResponses {

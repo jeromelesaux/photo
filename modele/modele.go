@@ -38,6 +38,15 @@ type PhotoResponse struct {
 	Photos    []*TagsPhoto `json:"photos"`
 }
 
+func NewPhotoResponse(message string, version string, machineid string, photos []*TagsPhoto) *PhotoResponse {
+	return &PhotoResponse{
+		Message:   message,
+		Version:   version,
+		MachineId: machineid,
+		Photos:    photos,
+	}
+}
+
 type FileExtension struct {
 	Extensions []string
 }
