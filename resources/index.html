@@ -97,18 +97,20 @@
                             <br>
                             <!-- number of images returned by server -->
                             <div id="imagesFoundNumber"></div>
-                            <br>
-                            <br>
-                            <br>
-                            <!-- gallery of images found and returned by server -->
-                            <div class="row">
-                                <form id="photosAlbumSelection">
-                                    <input type="text" class="hidden" id="gallery_name">
-                                    <div class="form-group">
-                                        <div id="imagesFound">
-                                        </div>
+                       
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <!-- gallery of images found and returned by server -->
+                                    <div class="row">
+                                        <form id="photosAlbumSelection">
+                                            <input type="text" class="hidden" id="gallery_name">
+                                            <div class="form-group">
+                                                <div id="imagesFound">
+                                                </div>
+                                            </div>
+                                        </form>
                                     </div>
-                                </form>
+                                </div>
                             </div>
 
                             <!-- modal page to create new album -->
@@ -142,14 +144,22 @@
                         class="btn btn-primary start">
                     <span>Retreive the albums list</span>
                 </button>
-                <div id="albumListId" class="btn-group">
-                    <br>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div id="albumListId" class="btn-group">
+                        </div>
+                    </div>
                 </div>
                 <br>
-                <!-- gallery of the album found and returned by server -->
-                <div class="row">
-                    <div id="albumNameId"></div>
-                    <div id="albumImagesFound"></div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <!-- gallery of the album found and returned by server -->
+                        <div class="row">
+                            <div id="albumNameId"></div>
+                            <div id="albumImagesFound"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <style type="text/css">
