@@ -211,6 +211,7 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 	}
 	defer dbInstance.Close()
 	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 
@@ -224,22 +225,34 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
-			for _, obj := range readBack[ALBUM_ITEMS].([]interface{}) {
-				record := obj.(map[string]interface{})
-				dbRecord := &DatabasePhotoRecord{
-					Filename:  record["filename"].(string),
-					Filepath:  record["filepath"].(string),
-					Md5sum:    record["md5sum"].(string),
-					Image:     record["image"].(string),
-					Type:      record["type"].(string),
-					MachineId: record["machineid"].(string),
-					Thumbnail: record["thumbnail"].(string),
+			for _, md5sum := range readBack[ALBUM_ITEMS].([]interface{}) {
+				json.Unmarshal([]byte(`[{"eq": "`+md5sum.(string)+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
+				logger.Info(query)
+				if err := db.EvalQuery(query, feedsCollection, &queryResult); err != nil {
+					logger.Error("Error while querying with error :" + err.Error())
 				}
-				if exifs, ok := record["exifTags"].(map[string]interface{}); ok {
-					dbRecord.ExifTags = exifs
+				for id := range queryResult {
+					readBack, err := feedsCollection.Read(id)
+					if err != nil {
+						logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+					} else {
+						logger.Debug(readBack)
+						var exif map[string]interface{}
+						if readBack[EXIFTAGS_INDEX] != nil {
+							exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
+						}
+						collection.Records = append(collection.Records,
+							&DatabasePhotoRecord{
+								MachineId: readBack[MACHINEID_INDEX].(string),
+								Md5sum:    readBack[MD5SUM_INDEX].(string),
+								Filename:  readBack[FILENAME_INDEX].(string),
+								Filepath:  readBack[FILEPATH_INDEX].(string),
+								Thumbnail: readBack[THUMBNAIL_INDEX].(string),
+								ExifTags:  exif,
+							})
+					}
+
 				}
-				//logger.Infof("%d,%v", index, dbRecord)
-				collection.Records = append(collection.Records, dbRecord)
 			}
 		}
 	}
@@ -254,50 +267,16 @@ func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 		return err
 	}
 	defer dbInstance.Close()
-	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
-	queryResult := make(map[int]struct{})
-	var query interface{}
-	collection := NewDatabaseAlbumRecord()
-	collection.AlbumName = response.AlbumName
-	for _, md5sum := range response.Md5sums {
-		json.Unmarshal([]byte(`[{"eq": "`+md5sum+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
-		logger.Info(query)
-		if err := db.EvalQuery(query, feedsCollection, &queryResult); err != nil {
-			logger.Error("Error while querying with error :" + err.Error())
-		}
-		for id := range queryResult {
-			readBack, err := feedsCollection.Read(id)
-			if err != nil {
-				logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
-			} else {
-				logger.Debug(readBack)
-				var exif map[string]interface{}
-				if readBack[EXIFTAGS_INDEX] != nil {
-					exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
-				}
-				collection.Records = append(collection.Records,
-					&DatabasePhotoRecord{
-						MachineId: readBack[MACHINEID_INDEX].(string),
-						Md5sum:    readBack[MD5SUM_INDEX].(string),
-						Filename:  readBack[FILENAME_INDEX].(string),
-						Filepath:  readBack[FILEPATH_INDEX].(string),
-						Thumbnail: readBack[THUMBNAIL_INDEX].(string),
-						ExifTags:  exif,
-					})
-			}
-
-		}
-	}
 
 	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
 	id, err := feedsAlbum.Insert(map[string]interface{}{
-		ALBUM_INDEX: collection.AlbumName,
-		ALBUM_ITEMS: collection.Records,
+		ALBUM_INDEX: response.AlbumName,
+		ALBUM_ITEMS: response.Md5sums,
 	})
 	if err != nil {
 		logger.Error("Cannot insert data in database with error : " + err.Error())
 	} else {
-		logger.Infof("DB return id %d for album:%s\n", id, collection.AlbumName)
+		logger.Infof("DB return id %d for album:%s\n", id, response.AlbumName)
 	}
 
 	return err

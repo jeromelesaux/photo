@@ -79,7 +79,7 @@ kill:
 clean:
 		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi
 		@if [ -f "${EXEC2}-${VERSION}" ] ; then rm ${EXEC2}-${VERSION} ; fi
-#		@rm -fr database_photo.db
+		@rm -fr database_photo.db
 		@rm -f *.log
 		@echo "    Nettoyage effectuee"
 
