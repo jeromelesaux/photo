@@ -25,9 +25,9 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	albumCreationMessage := album.NewAlbumMessage()
+	albumMessage := album.NewAlbumMessage()
 
-	err := json.NewDecoder(r.Body).Decode(albumCreationMessage)
+	err := json.NewDecoder(r.Body).Decode(albumMessage)
 	if err != nil {
 		logger.Info("Cannot not decode body received for registering with error " + err.Error())
 		body, _ := ioutil.ReadAll(r.Body)
@@ -35,8 +35,18 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cannot not decode body received for registering", 400)
 		return
 	}
-	logger.Info(albumCreationMessage)
-	JsonAsResponse(w, "Album "+albumCreationMessage.AlbumName+" recorded.")
+	logger.Info(albumMessage)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	if err = db.InsertNewAlbum(albumMessage); err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+
+	JsonAsResponse(w, "Album "+albumMessage.AlbumName+" recorded.")
 }
 
 // return all albums names
@@ -48,6 +58,17 @@ func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
 	}
 	albums := db.GetAlbumList()
 	JsonAsResponse(w, albums)
+}
+
+func GetAlbumData(w http.ResponseWriter, r *http.Request) {
+	albumName := r.URL.Query().Get("albumName")
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	content := db.GetAlbumData(albumName)
+	JsonAsResponse(w, content)
 }
 
 // route : return the extension files list from the configuration file

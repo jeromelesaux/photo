@@ -92,9 +92,10 @@
                             <button type="button" name="clean " onclick="cleanDatabase()" value="clean database" class="btn btn-primary start">
                                 <span>clean database</span>
                             </button>
-                            <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new album</button>
+                            <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new album
+                            </button>
                             <br>
-                             <!-- number of images returned by server -->
+                            <!-- number of images returned by server -->
                             <div id="imagesFoundNumber"></div>
                             <br>
                             <br>
@@ -114,17 +115,18 @@
                             <div id="createNewAlbum" class="modal fade" role="dialog">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                       <div class="modal-header">
-                                           <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                           <h4 class="modal-title">Create new album</h4>
-                                       </div>
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Create new album</h4>
+                                        </div>
                                         <div class="modal-body">
                                             <div class="offset8">Enter the new album new of your photo's selection :<input type="text" id="albumname"
-                                                                                                                                name="albumname"
-                                                                                                                                class="form-control"></div>
+                                                                                                                           name="albumname"
+                                                                                                                           class="form-control"></div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="createalbum()">Create Album</button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="createalbum()">Create Album
+                                            </button>
                                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                         </div>
                                     </div>
@@ -136,7 +138,19 @@
                 </form>
             </div>
             <div class="tab-pane" id="albums">
-
+                <button type="button" name="Retreive the albums list" onclick="listAlbums()" value="Retreive the albums list"
+                        class="btn btn-primary start">
+                    <span>Retreive the albums list</span>
+                </button>
+                <div id="albumListId" class="btn-group">
+                    <br>
+                </div>
+                <br>
+                <!-- gallery of the album found and returned by server -->
+                <div class="row">
+                    <div id="albumNameId"></div>
+                    <div id="albumImagesFound"></div>
+                </div>
             </div>
             <style type="text/css">
                 img {
@@ -169,22 +183,67 @@
                         if (input.is(":checked") == false) {
                             input.prop('checked', true);
                             console.log("checked");
-                            $(this).animate({'opacity':'0.5'},350);
+                            $(this).animate({'opacity': '0.5'}, 350);
                         } else {
                             input.prop('checked', false);
                             console.log("unchecked");
-                            $(this).animate({'opacity':'1'},150);
+                            $(this).animate({'opacity': '1'}, 150);
                         }
                         event.preventDefault();
                     });
 
+                function getAlbum(albumName) {
+                    $(function () {
+                        $('#albumImagesFound').empty();
+                        $.ajax({
+                            dataType: "json",
+                            url: "/getalbum?albumName=" + albumName,
+                            type: 'GET',
+                            success: function (jsondata, codeHttp) {
+                                console.log(jsondata);
+                                $('#albumname').html(jsondata.album);
+                                $.each(jsondata.records, function (i, item) {
+                                    $('#albumImagesFound').append('<div class="col-xs-4">' +
+                                        '<label class="btn btn-primary img-check">' +
+                                        '<img class="img-responsive " src="data:image/png;base64,' + item.thumbnail + '" alt="' + item.filename + '"/>' +
+                                        '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
+                                        '</label>' +
+                                        '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
+                                        '</div>')
+                                })
+                            }
+                        });
+                    });
+                }
+
+                function listAlbums() {
+                    $(function () {
+                        $.ajax({
+                            dataType: "json",
+                            url: "/albums",
+                            type: 'GET',
+                            success: function (jsondata, codeHttp) {
+                                console.log(jsondata);
+                                $('#albumListId').empty();
+                                if (jQuery.isEmptyObject(jsondata)) {
+                                    alert("No albums set.");
+                                } else {
+                                    $.each(jsondata, function (i, item) {
+                                        $('#albumListId').append('<button type="button" name="' + item +
+                                            '" onclick="getAlbum(\'' + item + '\')" value="' + item + ' " class="btn btn-primary start">' + item + '</button>');
+                                    });
+                                }
+                            }
+                        })
+                    })
+                }
 
                 function createalbum() {
-                    $(function(){
+                    $(function () {
                         var values = [];
                         var albumName = $("#albumname").val();
-                        $('input').each(function() {
-                            if ($(this).is(":checked") == true ) {
+                        $('input').each(function () {
+                            if ($(this).is(":checked") == true) {
                                 values.push($(this).val());
                             }
                         });

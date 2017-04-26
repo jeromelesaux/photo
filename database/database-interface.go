@@ -21,7 +21,7 @@ type DatabasePhotoRecord struct {
 	ExifTags  map[string]interface{} `json:"exiftags"`
 	Image     string                 `json:"image"`
 	MachineId string                 `json:"machineid"`
-	Thumbnail string                 "_"
+	Thumbnail string                 `json:"thumbnail"`
 }
 
 type DatabaseAlbumRecord struct {

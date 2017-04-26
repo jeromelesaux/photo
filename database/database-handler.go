@@ -224,11 +224,27 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
-			collection.Records = readBack[ALBUM_ITEMS].([]*DatabasePhotoRecord)
+			for _, obj := range readBack[ALBUM_ITEMS].([]interface{}) {
+				record := obj.(map[string]interface{})
+				dbRecord := &DatabasePhotoRecord{
+					Filename:  record["filename"].(string),
+					Filepath:  record["filepath"].(string),
+					Md5sum:    record["md5sum"].(string),
+					Image:     record["image"].(string),
+					Type:      record["type"].(string),
+					MachineId: record["machineid"].(string),
+					Thumbnail: record["thumbnail"].(string),
+				}
+				if exifs, ok := record["exifTags"].(map[string]interface{}); ok {
+					dbRecord.ExifTags = exifs
+				}
+				//logger.Infof("%d,%v", index, dbRecord)
+				collection.Records = append(collection.Records, dbRecord)
+			}
 		}
 	}
 
-	return collection
+	return ReduceAlbumMessage(collection, "")
 }
 
 func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
@@ -570,6 +586,38 @@ func Reduce(responses []*DatabasePhotoRecord, size string) []*DatabasePhotoRecor
 				}
 			default:
 				finalResponses = append(finalResponses, response)
+			}
+		}
+	}
+	return finalResponses
+}
+
+func ReduceAlbumMessage(album *DatabaseAlbumRecord, size string) *DatabaseAlbumRecord {
+	finalResponses := NewDatabaseAlbumRecord()
+	finalResponses.AlbumName = album.AlbumName
+	for _, response := range album.Records {
+		alreadyStored := false
+		for _, r := range finalResponses.Records {
+			if r.Md5sum == response.Md5sum {
+				alreadyStored = true
+				break
+			}
+		}
+		if !alreadyStored {
+			//logger.Infof("filesize :%d", len(data))
+			switch size {
+			case modele.FILESIZE_LITTLE:
+				finalResponses.Records = append(finalResponses.Records, response)
+			case modele.FILESIZE_MEDIUM:
+				if len(response.Image) > 15000 {
+					finalResponses.Records = append(finalResponses.Records, response)
+				}
+			case modele.FILESIZE_BIG:
+				if len(response.Image) > 25000 {
+					finalResponses.Records = append(finalResponses.Records, response)
+				}
+			default:
+				finalResponses.Records = append(finalResponses.Records, response)
 			}
 		}
 	}
