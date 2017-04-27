@@ -48,6 +48,69 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 
 	JsonAsResponse(w, "Album "+albumMessage.AlbumName+" recorded.")
 }
+func DeleteAlbum(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	defer r.Body.Close()
+
+	albumMessage := album.NewAlbumMessage()
+
+	err := json.NewDecoder(r.Body).Decode(albumMessage)
+	if err != nil {
+		logger.Info("Cannot not decode body received for registering with error " + err.Error())
+		body, _ := ioutil.ReadAll(r.Body)
+		logger.Debug("Body received : " + string(body))
+		http.Error(w, "Cannot not decode body received for registering", 400)
+		return
+	}
+	logger.Info(albumMessage)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	if err = db.DeleteAlbum(albumMessage); err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+
+	JsonAsResponse(w, "Album "+albumMessage.AlbumName+" deleted.")
+
+}
+
+func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	defer r.Body.Close()
+
+	albumMessage := album.NewAlbumMessage()
+
+	err := json.NewDecoder(r.Body).Decode(albumMessage)
+	if err != nil {
+		logger.Info("Cannot not decode body received for registering with error " + err.Error())
+		body, _ := ioutil.ReadAll(r.Body)
+		logger.Debug("Body received : " + string(body))
+		http.Error(w, "Cannot not decode body received for registering", 400)
+		return
+	}
+	logger.Info(albumMessage)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	if err = db.UpdateAlbum(albumMessage); err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+
+	JsonAsResponse(w, "Album "+albumMessage.AlbumName+" updated.")
+
+}
 
 // return all albums names
 func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {

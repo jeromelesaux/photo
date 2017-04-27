@@ -139,8 +139,8 @@
                                                                                                                            class="form-control"></div>
 
                                             <div class="offset8">Enter the album description :<input type="text" id="albumDescription"
-                                                                                                                           name="albumDescription"
-                                                                                                                           class="form-control"></div>
+                                                                                                     name="albumDescription"
+                                                                                                     class="form-control"></div>
 
                                         </div>
                                         <div class="modal-footer">
@@ -177,13 +177,26 @@
                     <div class="panel-body">
                         <div class="panel panel-default">
                             <div class="panel-heading">Album Description</div>
+                            <button type="button" name="Update the album" onclick="updateAlbumView()" value="Update the album"
+                                    class="btn btn-primary start">
+                                <span>update the album</span>
+                            </button>
+                            <button type="button" name="Delete the album" onclick="deleteAlbum()" value="Delete the album"
+                                    class="btn btn-primary start">
+                                <span>delete the album</span>
+                            </button>
                             <div class="panel-body">
-                                <div id="albumDescriptionId"></div>
+                                <input type="text" id="albumDescriptionId"
+                                       name="albumDescriptionId"
+                                       class="form-control">
+
                             </div>
                         </div>
                         <!-- gallery of the album found and returned by server -->
                         <div class="row">
-                            <div id="albumNameId"></div>
+                            <input type="text" id="albumNameId"
+                                   name="albumNameId"
+                                   class="form-control">
                             <div id="albumImagesFound"></div>
                         </div>
                     </div>
@@ -229,6 +242,50 @@
                         event.preventDefault();
                     });
 
+                function deleteAlbum() {
+                    $(function() {
+                        albumName = $('#albumNameId').val();
+                        var body = {};
+                        body.album_name = albumName;
+                        var jsondata = JSON.stringify(body);
+                        console.log(jsondata);
+                        $.ajax({
+                            dataType: "json",
+                            url: "deletealbum",
+                            type: 'DELETE',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert(responsedata);
+                                }
+                            }
+                        });
+                    })
+                }
+
+                function updateAlbumView() {
+                    $(function () {
+                        albumName = $('#albumNameId').val();
+                        albumDescription = $('#albumDescriptionId').val();
+                        var body = {};
+                        body.album_name = albumName;
+                        body.description = albumDescription;
+                        var jsondata = JSON.stringify(body);
+                        console.log(jsondata);
+                        $.ajax({
+                            dataType: "json",
+                            url: "updatealbum",
+                            type: 'POST',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert(responsedata);
+                                }
+                            }
+                        });
+                    })
+                }
+
                 function getAlbum(albumName) {
                     $(function () {
                         $('#albumImagesFound').empty();
@@ -238,8 +295,8 @@
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
                                 console.log(jsondata);
-                                $('#albumname').html(jsondata.album);
-                                $('#albumDescriptionId').html(jsondata.description);
+                                $('#albumNameId').val(jsondata.album_name);
+                                $('#albumDescriptionId').val(jsondata.description);
                                 $.each(jsondata.records, function (i, item) {
                                     $('#albumImagesFound').append('<div class="col-xs-4">' +
                                         '<label class="btn btn-primary img-check">' +
@@ -288,7 +345,7 @@
                         var body = {};
                         body.album_name = albumName;
                         body.md5sums = values;
-                        body.description=$("#albumDescription").val();
+                        body.description = $("#albumDescription").val();
                         var jsondata = JSON.stringify(body);
                         console.log(jsondata);
                         $.ajax({

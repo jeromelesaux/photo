@@ -289,6 +289,79 @@ func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 	return err
 }
 
+func (d *DatabaseHandler) DeleteAlbum(response *album.AlbumMessage) error {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return err
+	}
+	defer dbInstance.Close()
+
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+		return err
+	}
+	if len(queryResult) == 0 {
+		return errors.New("no records found")
+	}
+	for id := range queryResult {
+		err = feedsAlbum.Delete(id)
+
+		if err != nil {
+			logger.Error("Cannot delete data in database with error : " + err.Error())
+		} else {
+			logger.Infof("DB return id %d for album:%s is delete\n", id, response.AlbumName)
+		}
+
+	}
+	return err
+}
+
+func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return err
+	}
+	defer dbInstance.Close()
+
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+		return err
+	}
+	if len(queryResult) == 0 {
+		return errors.New("no records found")
+	}
+	for id := range queryResult {
+		readback, err := feedsAlbum.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			err = feedsAlbum.Update(id, map[string]interface{}{
+				ALBUM_INDEX:       response.AlbumName,
+				ALBUM_ITEMS:       readback[ALBUM_ITEMS],
+				ALBUM_DESCRIPTION: response.Description,
+			})
+			if err != nil {
+				logger.Error("Cannot insert data in database with error : " + err.Error())
+			} else {
+				logger.Infof("DB return id %d for album:%s\n", id, response.AlbumName)
+			}
+		}
+	}
+	return err
+}
+
 func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 	dbInstance, err := d.openDB()
 	if err != nil {
