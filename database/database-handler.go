@@ -51,6 +51,7 @@ var (
 	THUMBNAIL_INDEX    = "Thumbnail"
 	ALBUM_INDEX        = "Album"
 	ALBUM_ITEMS        = "Album_Items"
+	ALBUM_DESCRIPTION  = "Album_Description"
 	EXIFTAGS_INDEX     = ""
 )
 
@@ -220,18 +221,23 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
 	}
+
 	for id := range queryResult {
 		readBack, err := feedsAlbum.Read(id)
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
+			logger.Infof("description : %s", readBack[ALBUM_DESCRIPTION].(string))
+			collection.Description = readBack[ALBUM_DESCRIPTION].(string)
 			for _, md5sum := range readBack[ALBUM_ITEMS].([]interface{}) {
-				json.Unmarshal([]byte(`[{"eq": "`+md5sum.(string)+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
+				queryResultImg := make(map[int]struct{})
+				var queryImg interface{}
+				json.Unmarshal([]byte(`[{"eq": "`+md5sum.(string)+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &queryImg)
 				logger.Info(query)
-				if err := db.EvalQuery(query, feedsCollection, &queryResult); err != nil {
+				if err := db.EvalQuery(queryImg, feedsCollection, &queryResultImg); err != nil {
 					logger.Error("Error while querying with error :" + err.Error())
 				}
-				for id := range queryResult {
+				for id := range queryResultImg {
 					readBack, err := feedsCollection.Read(id)
 					if err != nil {
 						logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
@@ -270,8 +276,9 @@ func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 
 	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
 	id, err := feedsAlbum.Insert(map[string]interface{}{
-		ALBUM_INDEX: response.AlbumName,
-		ALBUM_ITEMS: response.Md5sums,
+		ALBUM_INDEX:       response.AlbumName,
+		ALBUM_ITEMS:       response.Md5sums,
+		ALBUM_DESCRIPTION: response.Description,
 	})
 	if err != nil {
 		logger.Error("Cannot insert data in database with error : " + err.Error())
@@ -574,6 +581,7 @@ func Reduce(responses []*DatabasePhotoRecord, size string) []*DatabasePhotoRecor
 func ReduceAlbumMessage(album *DatabaseAlbumRecord, size string) *DatabaseAlbumRecord {
 	finalResponses := NewDatabaseAlbumRecord()
 	finalResponses.AlbumName = album.AlbumName
+	finalResponses.Description = album.Description
 	for _, response := range album.Records {
 		alreadyStored := false
 		for _, r := range finalResponses.Records {

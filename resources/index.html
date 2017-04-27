@@ -66,39 +66,51 @@
             <div class="tab-pane" id="search">
                 <form class="form-inline">
                     <div class="form-group">
-                        <div class="offset8">Enter extension image file to search : <select class="form-control" id="extensionList"> </select>
-                            <select class="form-control" id="fileSize">
-                                <option value="big">big size</option>
-                                <option value="medium">meduim size</option>
-                                <option value="little">little size</option>
-                            </select>
-                            <br>
-                            <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue" name="exifTagValue"
-                                                                                                    class="form-control"></div>
-                            <br>
-                            <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue" name="exifValue"
-                                                                                                      class="form-control"></div>
-                            <br>
-                            <div class="offset8">Enter part of the filename of the image file to search :<input type="text" id="filename"
-                                                                                                                name="filename"
-                                                                                                                class="form-control"></div>
-                            <br>
-                            <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images" class="btn btn-primary start">
-                                <span>Search Images</span>
-                            </button>
-                            <button type="button" name="clean " onclick="clean()" value="clean" class="btn btn-primary start">
-                                <span>clean</span>
-                            </button>
-                            <button type="button" name="clean " onclick="cleanDatabase()" value="clean database" class="btn btn-primary start">
-                                <span>clean database</span>
-                            </button>
-                            <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new album
-                            </button>
-                            <br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Search Critea</div>
+                            <div class="panel-body">
+                                <div class="offset8">Enter extension image file to search : <select class="form-control" id="extensionList"> </select>
+                                    <select class="form-control" id="fileSize">
+                                        <option value="big">big size</option>
+                                        <option value="medium">meduim size</option>
+                                        <option value="little">little size</option>
+                                    </select>
+                                    <br>
+                                    <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue"
+                                                                                                            name="exifTagValue"
+                                                                                                            class="form-control"></div>
+                                    <br>
+                                    <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue"
+                                                                                                              name="exifValue"
+                                                                                                              class="form-control"></div>
+                                    <br>
+                                    <div class="offset8">Enter part of the filename of the image file to search :<input type="text" id="filename"
+                                                                                                                        name="filename"
+                                                                                                                        class="form-control"></div>
+                                    <br>
+                                    <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images"
+                                            class="btn btn-primary start">
+                                        <span>Search Images</span>
+                                    </button>
+                                    <button type="button" name="clean " onclick="clean()" value="clean" class="btn btn-primary start">
+                                        <span>clean</span>
+                                    </button>
+                                    <button type="button" name="clean " onclick="cleanDatabase()" value="clean database"
+                                            class="btn btn-primary start">
+                                        <span>clean database</span>
+                                    </button>
+                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new
+                                        album
+                                    </button>
+                                </div>
+
+                            </div>
+
                             <!-- number of images returned by server -->
                             <div id="imagesFoundNumber"></div>
-                       
+
                             <div class="panel panel-default">
+                                <div class="panel-heading">Images found.</div>
                                 <div class="panel-body">
                                     <!-- gallery of images found and returned by server -->
                                     <div class="row">
@@ -125,6 +137,11 @@
                                             <div class="offset8">Enter the new album new of your photo's selection :<input type="text" id="albumname"
                                                                                                                            name="albumname"
                                                                                                                            class="form-control"></div>
+
+                                            <div class="offset8">Enter the album description :<input type="text" id="albumDescription"
+                                                                                                                           name="albumDescription"
+                                                                                                                           class="form-control"></div>
+
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-default" data-dismiss="modal" onclick="createalbum()">Create Album
@@ -139,13 +156,16 @@
                     </div>
                 </form>
             </div>
+            <!-- tab to display albums -->
             <div class="tab-pane" id="albums">
                 <button type="button" name="Retreive the albums list" onclick="listAlbums()" value="Retreive the albums list"
                         class="btn btn-primary start">
                     <span>Retreive the albums list</span>
                 </button>
                 <div class="panel panel-default">
+                    <div class="panel-heading">Albums</div>
                     <div class="panel-body">
+
                         <div id="albumListId" class="btn-group">
                         </div>
                     </div>
@@ -153,7 +173,14 @@
                 <br>
 
                 <div class="panel panel-default">
+                    <div class="panel-heading">Albums photos</div>
                     <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Album Description</div>
+                            <div class="panel-body">
+                                <div id="albumDescriptionId"></div>
+                            </div>
+                        </div>
                         <!-- gallery of the album found and returned by server -->
                         <div class="row">
                             <div id="albumNameId"></div>
@@ -212,6 +239,7 @@
                             success: function (jsondata, codeHttp) {
                                 console.log(jsondata);
                                 $('#albumname').html(jsondata.album);
+                                $('#albumDescriptionId').html(jsondata.description);
                                 $.each(jsondata.records, function (i, item) {
                                     $('#albumImagesFound').append('<div class="col-xs-4">' +
                                         '<label class="btn btn-primary img-check">' +
@@ -260,6 +288,7 @@
                         var body = {};
                         body.album_name = albumName;
                         body.md5sums = values;
+                        body.description=$("#albumDescription").val();
                         var jsondata = JSON.stringify(body);
                         console.log(jsondata);
                         $.ajax({

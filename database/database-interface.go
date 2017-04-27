@@ -25,8 +25,10 @@ type DatabasePhotoRecord struct {
 }
 
 type DatabaseAlbumRecord struct {
-	AlbumName string                 `json:"album_name"`
-	Records   []*DatabasePhotoRecord `json:"records"`
+	AlbumName   string                 `json:"album_name"`
+	Description string                 `json:"description"`
+	Tags        []string               `json:"tags"`
+	Records     []*DatabasePhotoRecord `json:"records"`
 }
 
 func NewDatabaseAlbumRecord() *DatabaseAlbumRecord {
