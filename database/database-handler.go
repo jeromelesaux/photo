@@ -266,6 +266,57 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 	return ReduceAlbumMessage(collection, "")
 }
 
+func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return err
+	}
+	defer dbInstance.Close()
+
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+
+	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	photosToKeep := make([]string, 0)
+	for id := range queryResult {
+		readback, err := feedsAlbum.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			for _, item := range readback[ALBUM_ITEMS].([]interface{}) {
+				mustBeDeleted := false
+				for _, md5sum := range response.Md5sums {
+					if md5sum == item.(string) {
+						mustBeDeleted = true
+						break
+					}
+				}
+				if !mustBeDeleted {
+					photosToKeep = append(photosToKeep, item.(string))
+				}
+			}
+			err = feedsAlbum.Update(id, map[string]interface{}{
+				ALBUM_INDEX:       response.AlbumName,
+				ALBUM_ITEMS:       photosToKeep,
+				ALBUM_DESCRIPTION: response.Description,
+			})
+			if err != nil {
+				logger.Error("Cannot insert data in database with error : " + err.Error())
+			} else {
+				logger.Infof("DB return id %d for album:%s\n", id, response.AlbumName)
+			}
+
+		}
+	}
+	return err
+}
+
 func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 	dbInstance, err := d.openDB()
 	if err != nil {

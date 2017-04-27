@@ -61,6 +61,7 @@ func main() {
 		http.HandleFunc("/getalbum", routes.GetAlbumData)
 		http.HandleFunc("/updatealbum", routes.UpdateAlbum)
 		http.HandleFunc("/deletealbum", routes.DeleteAlbum)
+		http.HandleFunc("/deletephotosalbum", routes.DeletePhotosAlbum)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {
