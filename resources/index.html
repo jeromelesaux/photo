@@ -102,6 +102,9 @@
                                     <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new
                                         album
                                     </button>
+                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#updateExistingAlbum">Update an
+                                        existing album
+                                    </button>
                                 </div>
 
                             </div>
@@ -152,6 +155,35 @@
                                 </div>
                             </div>
 
+                            <!-- modal page to update an album -->
+                            <div id="updateExistingAlbum" class="modal fade" role="dialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Update an existing album</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <label for="updateAlbumList">Select an existing Album:</label>
+                                            <select class="form-control" id="updateAlbumList">
+                                            </select>
+                                            <div class="offset8">Album Name :<input type="text" id="updateAlbumName"
+                                                                                    name="updateAlbumName"
+                                                                                    class="form-control"></div>
+                                            <div class="offset8">Album description :<input type="text" id="updateAlbumDescription"
+                                                                                           name="updateAlbumDescription"
+                                                                                           class="form-control"></div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="mergeAlbum()">Update Album
+                                            </button>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </form>
@@ -178,12 +210,17 @@
                         <div class="panel panel-default">
                             <div class="panel-heading">Album Description</div>
                             <button type="button" name="Update the album" onclick="updateAlbumView()" value="Update the album"
-                                    class="btn btn-primary start">
+                                    class="btn btn-info start">
                                 <span>update the album</span>
                             </button>
                             <button type="button" name="Delete the album" onclick="deleteAlbum()" value="Delete the album"
-                                    class="btn btn-primary start">
+                                    class="btn btn-info start">
                                 <span>delete the album</span>
+                            </button>
+                            <button type="button" name="Delete the selected photos of the album" onclick="deletePhotosAlbum()"
+                                    value="Delete selected photos from the album"
+                                    class="btn btn-info start">
+                                <span>delete selected photos from the album</span>
                             </button>
                             <div class="panel-body">
                                 <input type="text" id="albumDescriptionId"
@@ -242,8 +279,110 @@
                         event.preventDefault();
                     });
 
+                function deletePhotosAlbum() {
+                    $(function () {
+                        var values = [];
+                        albumName = $('#albumNameId').val();
+                        albumDescription = $('#albumDescriptionId').val();
+                        $('input.album[type=checkbox]').each(function () {
+                            if ($(this).is(":checked") == true) {
+                                values.push($(this).val());
+
+                            }
+                        });
+                        var body = {};
+                        console.log(values);
+                        body.album_name = albumName;
+                        body.description = albumDescription;
+                        body.md5sums = values;
+                        var jsondata = JSON.stringify(body);
+                        console.log(jsondata);
+                        $.ajax({
+                            dataType: "json",
+                            url: "deletephotosalbum",
+                            type: 'DELETE',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert(responsedata);
+                                }
+                            }
+                        });
+                    });
+                };
+
+
+                function mergeAlbum() {
+                    $(function () {
+                        var values = [];
+                        albumName = $('#updateAlbumName').val();
+                        albumDescription = $('#updateAlbumDescription').val();
+                        $('input.album[type=checkbox]').each(function () {
+                            if ($(this).is(":checked") == true) {
+                                values.push($(this).val());
+                            }
+                        });
+                        var body = {};
+                        body.album_name = albumName;
+                        body.description = albumDescription;
+                        body.md5sums = values;
+                        var jsondata = JSON.stringify(body);
+                        console.log(jsondata);
+                        $.ajax({
+                            dataType: "json",
+                            url: "updatealbum",
+                            type: 'POST',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert(responsedata);
+                                }
+                            }
+                        });
+                    });
+                };
+
+                $("#updateExistingAlbum").on("show.bs.modal", function (e) {
+                    updateAlbumList()
+                });
+
+                $("#updateAlbumList").on("change", function () {
+                    selectedAlbum = $(this).find("option:selected").val();
+                    $.ajax({
+                        dataType: "json",
+                        url: "/getalbum?albumName=" + selectedAlbum,
+                        type: 'GET',
+                        success: function (jsondata, codeHttp) {
+                            console.log(jsondata);
+                            $('#updateAlbumName').val(jsondata.album_name);
+                            $('#updateAlbumDescription').val(jsondata.description);
+                        }
+                    });
+                });
+
+                function updateAlbumList() {
+                    $(function () {
+                        $.ajax({
+                            dataType: "json",
+                            url: "/albums",
+                            type: 'GET',
+                            success: function (jsondata, codeHttp) {
+                                console.log(jsondata);
+                                $('#updateAlbumList').empty();
+                                if (jQuery.isEmptyObject(jsondata)) {
+                                    alert("No albums set.");
+                                } else {
+                                    $.each(jsondata, function (i, item) {
+                                        $('#updateAlbumList').append('<option value="' + item + '">' + item + '</option>');
+                                    });
+                                }
+                            }
+                        })
+                    })
+                }
+
                 function deleteAlbum() {
-                    $(function() {
+                    $(function () {
                         albumName = $('#albumNameId').val();
                         var body = {};
                         body.album_name = albumName;
@@ -301,7 +440,7 @@
                                     $('#albumImagesFound').append('<div class="col-xs-4">' +
                                         '<label class="btn btn-primary img-check">' +
                                         '<img class="img-responsive " src="data:image/png;base64,' + item.thumbnail + '" alt="' + item.filename + '"/>' +
-                                        '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
+                                        '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden album" autocomplete="off">' +
                                         '</label>' +
                                         '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
                                         '</div>')
@@ -337,7 +476,7 @@
                     $(function () {
                         var values = [];
                         var albumName = $("#albumname").val();
-                        $('input').each(function () {
+                        $('input.search[type=checkbox]').each(function () {
                             if ($(this).is(":checked") == true) {
                                 values.push($(this).val());
                             }
@@ -439,9 +578,9 @@
                                         $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                         $.each(jsondata, function (i, item) {
                                             $('#imagesFound').append('<div class="col-xs-4">' +
-                                                '<label class="btn btn-primary img-check">' +
+                                                '<label class="btn btn-primary img-check" >' +
                                                 '<img class="img-responsive " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
-                                                '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
+                                                '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden search" autocomplete="off">' +
                                                 '</label>' +
                                                 '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
                                                 '</div>')
@@ -469,7 +608,7 @@
                                                 $('#imagesFound').append('<div class="col-xs-4">' +
                                                     '<label class="btn btn-primary img-check">' +
                                                     '<img class="img-responsive " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
-                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
+                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden search" autocomplete="off">' +
                                                     '</label>' +
                                                     '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
                                                     '</div>')
@@ -494,13 +633,12 @@
                                             $.each(jsondata, function (i, item) {
                                                 // console.log(item);
                                                 $('#imagesFound').append('<div class="col-xs-4">' +
-                                                    '<label class="btn btn-primary img-check">' +
+                                                    '<label class="btn btn-primary img-check" >' +
                                                     '<img class="img-responsive " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
-                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden" autocomplete="off">' +
+                                                    '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden search" autocomplete="off">' +
                                                     '</label>' +
                                                     '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
                                                     '</div>')
-                                                //   $('#imagesFound').append('<div class="item"><img src="data:image/png;base64,' + item.image+ '"</div>');
                                             });
                                         }
                                     }

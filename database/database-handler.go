@@ -330,6 +330,8 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 	}
 	defer dbInstance.Close()
 
+	md5sumsMerged := make([]string, 0)
+
 	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
@@ -342,14 +344,27 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 	if len(queryResult) == 0 {
 		return errors.New("no records found")
 	}
+	md5sumsMerged = append(md5sumsMerged, response.Md5sums...)
 	for id := range queryResult {
 		readback, err := feedsAlbum.Read(id)
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
+			for _, item := range readback[ALBUM_ITEMS].([]interface{}) {
+				existing := false
+				for _, md5sum := range md5sumsMerged {
+					if md5sum == item.(string) {
+						existing = true
+						break
+					}
+				}
+				if !existing {
+					md5sumsMerged = append(md5sumsMerged, item.(string))
+				}
+			}
 			err = feedsAlbum.Update(id, map[string]interface{}{
 				ALBUM_INDEX:       response.AlbumName,
-				ALBUM_ITEMS:       readback[ALBUM_ITEMS],
+				ALBUM_ITEMS:       md5sumsMerged,
 				ALBUM_DESCRIPTION: response.Description,
 			})
 			if err != nil {
