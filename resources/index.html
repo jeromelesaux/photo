@@ -222,6 +222,11 @@
                                     class="btn btn-info start">
                                 <span>delete selected photos from the album</span>
                             </button>
+                            <button type="button" name="Clear photos selection" onclick="clearSelectionAlbum()"
+                                    value="Clear photos selection"
+                                    class="btn btn-info start">
+                                <span>clear photos selection</span>
+                            </button>
                             <div class="panel-body">
                                 <input type="text" id="albumDescriptionId"
                                        name="albumDescriptionId"
@@ -279,6 +284,14 @@
                         event.preventDefault();
                     });
 
+                function clearSelectionAlbum() {
+                    $(function () {
+                        $('input.album[type=checkbox]').each(function () {
+                            $(this).prop('checked', false);
+                        });
+                    })
+                }
+
                 function deletePhotosAlbum() {
                     $(function () {
                         var values = [];
@@ -287,7 +300,6 @@
                         $('input.album[type=checkbox]').each(function () {
                             if ($(this).is(":checked") == true) {
                                 values.push($(this).val());
-
                             }
                         });
                         var body = {};
@@ -317,11 +329,12 @@
                         var values = [];
                         albumName = $('#updateAlbumName').val();
                         albumDescription = $('#updateAlbumDescription').val();
-                        $('input.album[type=checkbox]').each(function () {
+                        $('input.search[type=checkbox]').each(function () {
                             if ($(this).is(":checked") == true) {
                                 values.push($(this).val());
                             }
                         });
+                        console.log(values);
                         var body = {};
                         body.album_name = albumName;
                         body.description = albumDescription;
