@@ -17,6 +17,10 @@ import (
 	"time"
 )
 
+
+
+
+
 // route create a new album by the name and the md5sums of the photos
 func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
@@ -207,10 +211,22 @@ func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, "ok")
 }
 
+
+// route thumbnail  of the filpath (encoded in url)
+func GetPhoto(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	response, err := exifhandler.GetBase64Photo(filePath)
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	JsonAsResponse(w, response)
+}
+
 // route thumbnail  of the filpath (encoded in url)
 func GetThumbnail(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-	response, err := exifhandler.GetThumbnail(filePath)
+	response, err := exifhandler.GetBase64Thumbnail(filePath)
 	if err != nil {
 		JsonAsResponse(w, err)
 		return

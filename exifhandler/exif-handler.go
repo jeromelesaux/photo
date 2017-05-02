@@ -21,7 +21,7 @@ import (
 func GetPhotoInformations(filePath string) (*modele.TagsPhoto, error) {
 	abspath, err := filepath.Abs(filePath)
 	filename := path.Base(filePath)
-	thumbnail, _ := GetThumbnail(filePath)
+	thumbnail, _ := GetBase64Thumbnail(filePath)
 	sum, err := hash.Md5Sum(filePath)
 	if err != nil {
 		return &modele.TagsPhoto{
@@ -96,7 +96,23 @@ func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
 	}
 }
 
-func GetThumbnail(path string) (string, error) {
+
+func GetBase64Photo(path string) (string,error) {
+	img,err :=imaging.Open(path)
+	if err != nil {
+		logger.Error("Error while retreiving image content with error " + err.Error())
+		return "", err
+	}
+	buf := new(bytes.Buffer)
+	err = png.Encode(buf, img)
+	if err != nil {
+		logger.Error("Error while retreiving image content with error " + err.Error())
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+}
+
+func GetBase64Thumbnail(path string) (string, error) {
 
 	img, err := imaging.Open(path)
 	if err != nil {

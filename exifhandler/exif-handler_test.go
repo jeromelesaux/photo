@@ -7,7 +7,7 @@ import (
 )
 
 func TestExtractThumbnail(t *testing.T) {
-	content, err := GetThumbnail("../vendor/github.com/xiam/exif/_examples/resources/testlocation.jpg")
+	content, err := GetBase64Thumbnail("../vendor/github.com/xiam/exif/_examples/resources/testlocation.jpg")
 	if err != nil {
 		t.Fatal("Error while trying to extract thumbnail")
 	}
