@@ -25,8 +25,8 @@ func CreatePdfAlbum(albumName string, photos []string, imagesPerPage string) []b
 	f := gofpdf.New("P", "mm", "A4", "")
 	switch imagesPerPage {
 	case Images3XPerPages:
-		i:=0
-		for i<len(filesnames) {
+		i := 0
+		for i < len(filesnames) {
 			var file1, file2, file3 string
 			if i < len(filesnames) {
 				file1 = filesnames[i]
@@ -40,11 +40,11 @@ func CreatePdfAlbum(albumName string, photos []string, imagesPerPage string) []b
 				file3 = filesnames[i]
 			}
 			i++
-			f =Add3Images(f,file1,file2,file3)
+			f = Add3Images(f, file1, file2, file3)
 		}
 	case Images4XPerPages:
-		i:=0
-		for i<len(filesnames) {
+		i := 0
+		for i < len(filesnames) {
 			var file1, file2, file3, file4 string
 			if i < len(filesnames) {
 				file1 = filesnames[i]
@@ -62,7 +62,7 @@ func CreatePdfAlbum(albumName string, photos []string, imagesPerPage string) []b
 				file4 = filesnames[i]
 			}
 			i++
-			f =Add4Images(f,file1,file2,file3,file4)
+			f = Add4Images(f, file1, file2, file3, file4)
 		}
 	}
 
@@ -85,8 +85,8 @@ func CreateFilePdfAlbum(albumName string, photos []string, imagesPerPage string)
 	f := gofpdf.New("P", "mm", "A4", "")
 	switch imagesPerPage {
 	case Images3XPerPages:
-		i:=0
-		for i<len(filesnames) {
+		i := 0
+		for i < len(filesnames) {
 			var file1, file2, file3 string
 			if i < len(filesnames) {
 				file1 = filesnames[i]
@@ -100,11 +100,11 @@ func CreateFilePdfAlbum(albumName string, photos []string, imagesPerPage string)
 				file3 = filesnames[i]
 			}
 			i++
-			f =Add3Images(f,file1,file2,file3)
+			f = Add3Images(f, file1, file2, file3)
 		}
 	case Images4XPerPages:
-		i:=0
-		for i<len(filesnames) {
+		i := 0
+		for i < len(filesnames) {
 			var file1, file2, file3, file4 string
 			if i < len(filesnames) {
 				file1 = filesnames[i]
@@ -122,7 +122,7 @@ func CreateFilePdfAlbum(albumName string, photos []string, imagesPerPage string)
 				file4 = filesnames[i]
 			}
 			i++
-			f =Add4Images(f,file1,file2,file3,file4)
+			f = Add4Images(f, file1, file2, file3, file4)
 		}
 	}
 
@@ -158,6 +158,7 @@ func saveImage(photos []string) []string {
 			img, err := png.Decode(reader)
 			if err != nil {
 				logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
+				os.Remove(filename)
 			} else {
 				if err := jpeg.Encode(f, img, &jpeg.Options{Quality: 99}); err != nil {
 					logger.Infof("error in encoding temporary file %s with error %v", filename, err.Error())
@@ -182,7 +183,7 @@ func Add4Images(f *gofpdf.Fpdf, img1, img2, img3, img4 string) *gofpdf.Fpdf {
 	if img2 != "" {
 		f.Image(img2, 10, 150, 90, 0, false, "", 0, "")
 	}
-	if img3 != ""{
+	if img3 != "" {
 		f.Image(img3, 110, 50, 90, 0, false, "", 0, "")
 	}
 	if img4 != "" {
