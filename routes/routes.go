@@ -11,15 +11,12 @@ import (
 	"photo/exifhandler"
 	"photo/folder"
 	"photo/modele"
+	"photo/pdf"
 	"photo/slavehandler"
 	"photo/webclient"
 	"strconv"
 	"time"
 )
-
-
-
-
 
 // route create a new album by the name and the md5sums of the photos
 func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +111,26 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 
 	JsonAsResponse(w, "Album "+albumMessage.AlbumName+" updated.")
 }
+
+func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
+	albumName := r.URL.Query().Get("albumName")
+	logger.Info("Generate album : " + albumName)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	content := db.GetAlbumData(albumName)
+	if content.AlbumName == albumName && len(content.Records) > 0 {
+		logger.Info(content)
+		photos := webclient.NewPdfClient(content).GetRemoteRawPhotosAlbum()
+		data := pdf.CreatePdfAlbum(content.AlbumName, photos, pdf.Images3XPerPages)
+		BinaryAsResponse(w, data, albumName+".pdf")
+		return
+	}
+	JsonAsResponse(w, "An error occured while generating pdf for album :"+albumName)
+}
+
 func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
@@ -211,7 +228,6 @@ func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, "ok")
 }
 
-
 // route thumbnail  of the filpath (encoded in url)
 func GetPhoto(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
@@ -220,7 +236,7 @@ func GetPhoto(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	JsonAsResponse(w, response)
+	JsonAsResponse(w, &modele.RawPhoto{Name: filePath, Data: response})
 }
 
 // route thumbnail  of the filpath (encoded in url)
@@ -455,4 +471,11 @@ func JsonAsResponse(w http.ResponseWriter, o interface{}) {
 	}
 	w.Header().Set("Content-Type", "application-json")
 	w.Write(js)
+}
+
+func BinaryAsResponse(w http.ResponseWriter, o []byte, filename string) {
+	w.Header().Set("Content-type", "application/octet-stream")
+	w.Header().Set("Content-Transfer-Encoding", "binary")
+	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+	w.Write(o)
 }

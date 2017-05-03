@@ -12,7 +12,8 @@
 <div class="container">
     <div id="content">
 
-        <div id="loadingImage" style="display: none; position:fixed; z-index: 1104; background:url(ajax-loader.gif) no-repeat center center #D3D3D3; opacity: 0.5; width:100%;height: 100%">
+        <div id="loadingImage"
+             style="display: none; position:fixed; z-index: 1104; background:url(ajax-loader.gif) no-repeat center center #D3D3D3; opacity: 0.5; width:100%;height: 100%">
             <!--<img src="ajax-loader.gif">-->
         </div>
 
@@ -223,6 +224,11 @@
                                     class="btn btn-info start">
                                 <span>clear photos selection</span>
                             </button>
+                            <button type="button" name="Download pdf album" onclick="getPdfAlbum()"
+                                    value="Download pdf album"
+                                    class="btn btn-info start">
+                                <span>Download pdf album</span>
+                            </button>
                             <div class="panel-body">
                                 <input type="text" id="albumDescriptionId"
                                        name="albumDescriptionId"
@@ -264,12 +270,12 @@
                     getExtensionList();
                 });
 
-                $(function() {
-                    $(document).ajaxStart(function() {
+                $(function () {
+                    $(document).ajaxStart(function () {
                         $('#loadingImage').show();
                     });
 
-                    $(document).ajaxStop(function() {
+                    $(document).ajaxStop(function () {
                         $('#loadingImage').hide();
                     });
                 });
@@ -290,6 +296,29 @@
                         }
                         event.preventDefault();
                     });
+
+                function getPdfAlbum() {
+                    $(function () {
+                        albumName = $('#albumNameId').val();
+                        url = "pdfalbum?albumName=" + albumName;
+                        // Get file name from url.
+                        var filename =albumName +".pdf";
+                        var xhr = new XMLHttpRequest();
+                        xhr.responseType = 'blob';
+                        xhr.onload = function () {
+                            var a = document.createElement('a');
+                            a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+                            a.download = filename; // Set the file name.
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+                            delete a;
+                        };
+                        xhr.open('GET', url);
+                        xhr.send();
+
+                    })
+                }
 
                 function clearSelectionAlbum() {
                     $(function () {
@@ -341,13 +370,13 @@
                                 values.push($(this).val());
                             }
                         });
-                       // console.log(values);
+                        // console.log(values);
                         var body = {};
                         body.album_name = albumName;
                         body.description = albumDescription;
                         body.md5sums = values;
                         var jsondata = JSON.stringify(body);
-                       // console.log(jsondata);
+                        // console.log(jsondata);
                         $.ajax({
                             dataType: "json",
                             url: "updatealbum",
@@ -373,7 +402,7 @@
                         url: "/getalbum?albumName=" + selectedAlbum,
                         type: 'GET',
                         success: function (jsondata, codeHttp) {
-                           // console.log(jsondata);
+                            // console.log(jsondata);
                             $('#updateAlbumName').val(jsondata.album_name);
                             $('#updateAlbumDescription').val(jsondata.description);
                         }
@@ -387,7 +416,7 @@
                             url: "/albums",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
-                             //   console.log(jsondata);
+                                //   console.log(jsondata);
                                 $('#updateAlbumList').empty();
                                 if (jQuery.isEmptyObject(jsondata)) {
                                     alert("No albums set.");
@@ -407,7 +436,7 @@
                         var body = {};
                         body.album_name = albumName;
                         var jsondata = JSON.stringify(body);
-                      //  console.log(jsondata);
+                        //  console.log(jsondata);
                         $.ajax({
                             dataType: "json",
                             url: "deletealbum",
@@ -430,7 +459,7 @@
                         body.album_name = albumName;
                         body.description = albumDescription;
                         var jsondata = JSON.stringify(body);
-                      //  console.log(jsondata);
+                        //  console.log(jsondata);
                         $.ajax({
                             dataType: "json",
                             url: "updatealbum",
@@ -453,7 +482,7 @@
                             url: "/getalbum?albumName=" + albumName,
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
-                             //   console.log(jsondata);
+                                //   console.log(jsondata);
                                 $('#albumNameId').val(jsondata.album_name);
                                 $('#albumDescriptionId').val(jsondata.description);
                                 $.each(jsondata.records, function (i, item) {
@@ -477,7 +506,7 @@
                             url: "/albums",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
-                              //  console.log(jsondata);
+                                //  console.log(jsondata);
                                 $('#albumListId').empty();
                                 if (jQuery.isEmptyObject(jsondata)) {
                                     alert("No albums set.");
@@ -506,7 +535,7 @@
                         body.md5sums = values;
                         body.description = $("#albumDescription").val();
                         var jsondata = JSON.stringify(body);
-                      //  console.log(jsondata);
+                        //  console.log(jsondata);
                         $.ajax({
                             dataType: "json",
                             url: "createalbum",

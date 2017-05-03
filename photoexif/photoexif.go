@@ -81,7 +81,7 @@ func main() {
 				http.HandleFunc("/directory", routes.GetDirectoryInformations)
 				http.HandleFunc("/getfileextension", routes.GetExtensionList)
 				http.HandleFunc("/thumbnail", routes.GetThumbnail)
-				http.HandleFunc("/photo",routes.GetPhoto)
+				http.HandleFunc("/photo", routes.GetPhoto)
 				log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 			} else {
 				timeStmp, err := strconv.Atoi(BuildStmp)

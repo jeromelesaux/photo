@@ -31,6 +31,11 @@ type TagsPhoto struct {
 	Thumbnail string            `json:"thumbnail"`
 }
 
+type RawPhoto struct {
+	Name string `json:"name"`
+	Data string `json:"data"`
+}
+
 type PhotoResponse struct {
 	Message   string       `json:"error_message,omitempty"`
 	Version   string       `json:"version"`

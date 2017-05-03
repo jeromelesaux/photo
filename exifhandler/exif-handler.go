@@ -96,9 +96,8 @@ func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
 	}
 }
 
-
-func GetBase64Photo(path string) (string,error) {
-	img,err :=imaging.Open(path)
+func GetBase64Photo(path string) (string, error) {
+	img, err := imaging.Open(path)
 	if err != nil {
 		logger.Error("Error while retreiving image content with error " + err.Error())
 		return "", err
