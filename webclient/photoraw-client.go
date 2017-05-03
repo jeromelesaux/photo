@@ -8,6 +8,7 @@ import (
 	"photo/database"
 	"photo/modele"
 	"photo/slavehandler"
+	"strings"
 	"sync"
 	"time"
 )
@@ -77,7 +78,7 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 		return
 	}
 	client := &http.Client{}
-	uri := fmt.Sprintf("%s:%d/photo?filepath=%s", slave.Url, slave.Port, remotePath)
+	uri := fmt.Sprintf("%s:%d/photo?filepath=%s", slave.Url, slave.Port, strings.Replace(remotePath, " ", "%20", -1))
 	request, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
@@ -86,20 +87,21 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	}
 	logger.Info("Calling uri : " + uri)
 	response, err := client.Do(request)
-	defer func() {
-		if response.Body != nil {
-			response.Body.Close()
-		}
-	}()
 	if err != nil {
 		logger.Error("error with : " + err.Error())
 		p.rawPhotoChan <- ""
 		return
 	}
-	content := &modele.RawPhoto{}
+	defer func() {
+		if response.Body != nil {
+			response.Body.Close()
+		}
+	}()
 
+	content := &modele.RawPhoto{}
+	logger.Info(response.Body)
 	if err := json.NewDecoder(response.Body).Decode(content); err != nil {
-		logger.Error("error with : " + err.Error())
+		logger.Error("error with : " + err.Error() + " for uri:" + uri)
 		p.rawPhotoChan <- content.Data
 		return
 	}
