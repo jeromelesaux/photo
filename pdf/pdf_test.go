@@ -27,8 +27,20 @@ func TestGeneratorPdf2(t *testing.T) {
 	images = append(images, imgToBase64("img2.jpg"))
 	images = append(images, imgToBase64("img3.jpg"))
 	images = append(images, imgToBase64("img1.jpg"))
-	pdf := CreateFilePdfAlbum("unittest", images, Images3XPerPages)
-	if pdf != "unittest.pdf" {
+	pdf := CreateFilePdfAlbum("unittest2", images, Images3XPerPages)
+	if pdf != "unittest2.pdf" {
+		t.Fatal("expected test.pdf and get " + pdf)
+	}
+}
+
+func TestGeneratorPdf3(t *testing.T) {
+	images := make([]string, 0)
+	images = append(images, imgToBase64("img1.jpg"))
+	images = append(images, imgToBase64("img2.jpg"))
+	images = append(images, imgToBase64("img3.jpg"))
+	images = append(images, imgToBase64("img1.jpg"))
+	pdf := CreateFilePdfAlbum("unittest3", images, Images4XPerPages)
+	if pdf != "unittest3.pdf" {
 		t.Fatal("expected test.pdf and get " + pdf)
 	}
 }

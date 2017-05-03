@@ -12,19 +12,19 @@ import (
 	"time"
 )
 
-type PdfClient struct {
+type RawPhotoClient struct {
 	rawPhotoChan chan string
 	Album        *database.DatabaseAlbumRecord
 }
 
-func NewPdfClient(albumRecord *database.DatabaseAlbumRecord) *PdfClient {
-	return &PdfClient{
+func NewRawPhotoClient(albumRecord *database.DatabaseAlbumRecord) *RawPhotoClient {
+	return &RawPhotoClient{
 		rawPhotoChan: make(chan string, 4),
 		Album:        albumRecord,
 	}
 }
 
-func (p *PdfClient) GetRemoteRawPhotosAlbum() []string {
+func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []string {
 	var startTime time.Time
 	photosContent := make([]string, 0)
 
@@ -60,7 +60,7 @@ func (p *PdfClient) GetRemoteRawPhotosAlbum() []string {
 	return photosContent
 }
 
-func (p *PdfClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.WaitGroup) {
+func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.WaitGroup) {
 	var startTime time.Time
 	defer func() {
 		endTime := time.Now()
