@@ -22,7 +22,7 @@ BUILDHASH=$(shell git rev-parse --short HEAD)
 
 
 BUILD_TIME=`date +%FT%T%z`
-PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db  github.com/pkg/errors  github.com/disintegration/imaging  github.com/Sirupsen/logrus github.com/bshuster-repo/logrus-logstash-hook
+PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db  github.com/pkg/errors  github.com/disintegration/imaging  github.com/Sirupsen/logrus github.com/bshuster-repo/logrus-logstash-hook github.com/tgulacsi/picago
 
 
 LIBS= 
@@ -79,7 +79,7 @@ kill:
 clean:
 		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi
 		@if [ -f "${EXEC2}-${VERSION}" ] ; then rm ${EXEC2}-${VERSION} ; fi
-		@rm -fr database_photo.db
+#		@rm -fr database_photo.db
 		@rm -f *.log
 		@echo "    Nettoyage effectuee"
 
