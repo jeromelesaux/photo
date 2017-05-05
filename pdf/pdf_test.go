@@ -60,4 +60,3 @@ func imgToBase64(path string) string {
 	}
 	return base64.StdEncoding.EncodeToString(buf.Bytes())
 }
-

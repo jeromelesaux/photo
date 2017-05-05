@@ -5,6 +5,7 @@ type AlbumMessage struct {
 	Md5sums     []string `json:"md5sums"`
 	Description string   `json:"description,omitempty"`
 	Tags        []string `json:"tags, omitempty"`
+	Type        string   `json:"type,omitempty"`
 }
 
 func NewAlbumMessage() *AlbumMessage {

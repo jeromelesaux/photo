@@ -27,14 +27,14 @@ func TestInsertAndQueryAll(t *testing.T) {
 	if err != nil {
 		t.Fatal("database must not be on error with error " + err.Error())
 	}
-	photoResponse := &modele.TagsPhoto{Md5Sum: "mymdsum",
+	photoResponse := &modele.PhotoInformations{Md5Sum: "mymdsum",
 		Filepath: "/some/filepath/filename",
 		Filename: "filename"}
 
 	db.InsertNewData(&modele.PhotoResponse{MachineId: "mymachineid",
 		Message: "hello world",
 		Version: "1.0",
-		Photos:  []*modele.TagsPhoto{photoResponse}})
+		Photos:  []*modele.PhotoInformations{photoResponse}})
 	response, _ := db.QueryAll()
 
 	if len(response) != 1 {
@@ -47,14 +47,14 @@ func TestGetByName(t *testing.T) {
 	if err != nil {
 		t.Fatal("database must not be on error with error " + err.Error())
 	}
-	photoResponse := &modele.TagsPhoto{Md5Sum: "mymdsum",
+	photoResponse := &modele.PhotoInformations{Md5Sum: "mymdsum",
 		Filepath: "/some/filepath/filename",
 		Filename: "filename"}
 
 	db.InsertNewData(&modele.PhotoResponse{MachineId: "mymachineid",
 		Message: "hello world",
 		Version: "1.0",
-		Photos:  []*modele.TagsPhoto{photoResponse}})
+		Photos:  []*modele.PhotoInformations{photoResponse}})
 	response, _ := db.QueryFilename("file")
 
 	if len(response) != 1 {

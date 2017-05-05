@@ -12,6 +12,8 @@ var (
 	FILESIZE_BIG    = "big"
 	FILESIZE_MEDIUM = "medium"
 	FILESIZE_LITTLE = "little"
+	ORIGIN_GOOGLE   = "www.google.com"
+	LOCAL_ORIGINE   = "localhost"
 )
 
 type Configuration struct {
@@ -23,7 +25,7 @@ type RegisteredSlave struct {
 	Ip        string `json:"ipv4"`
 }
 
-type TagsPhoto struct {
+type PhotoInformations struct {
 	Tags      map[string]string `json:"tags"`
 	Md5Sum    string            `json:"md5sum"`
 	Filename  string            `json:"filename"`
@@ -32,18 +34,19 @@ type TagsPhoto struct {
 }
 
 type RawPhoto struct {
-	Name string `json:"name"`
-	Data string `json:"data"`
+	Name string `json:"name,omitempty"`
+	Data string `json:"data,omitempty"`
 }
 
 type PhotoResponse struct {
-	Message   string       `json:"error_message,omitempty"`
-	Version   string       `json:"version"`
-	MachineId string       `json:"machine"`
-	Photos    []*TagsPhoto `json:"photos"`
+	Message   string               `json:"error_message,omitempty"`
+	Origin    string               `json:"origin,omitempty"`
+	Version   string               `json:"version"`
+	MachineId string               `json:"machine"`
+	Photos    []*PhotoInformations `json:"photos"`
 }
 
-func NewPhotoResponse(message string, version string, machineid string, photos []*TagsPhoto) *PhotoResponse {
+func NewPhotoResponse(message string, version string, machineid string, photos []*PhotoInformations) *PhotoResponse {
 	return &PhotoResponse{
 		Message:   message,
 		Version:   version,

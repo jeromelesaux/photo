@@ -32,7 +32,7 @@ func main() {
 	starttime := time.Now()
 	response := &modele.PhotoResponse{
 		Version: modele.VERSION,
-		Photos:  make([]*modele.TagsPhoto, 0),
+		Photos:  make([]*modele.PhotoInformations, 0),
 	}
 	flag.Parse()
 	if *logFormat != "" {

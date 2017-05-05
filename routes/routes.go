@@ -343,7 +343,7 @@ func GetFileInformations(w http.ResponseWriter, r *http.Request) {
 	logger.Info("file to scan " + filepathValue)
 	response := &modele.PhotoResponse{
 		Version: modele.VERSION,
-		Photos:  make([]*modele.TagsPhoto, 0),
+		Photos:  make([]*modele.PhotoInformations, 0),
 	}
 	pinfos, err := exifhandler.GetPhotoInformations(filepathValue)
 	if err != nil {
@@ -359,7 +359,7 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
 	response := &modele.PhotoResponse{
 		Version: modele.VERSION,
-		Photos:  make([]*modele.TagsPhoto, 0),
+		Photos:  make([]*modele.PhotoInformations, 0),
 	}
 	directorypath := r.URL.Query().Get("value")
 	logger.Info("directory to scan " + directorypath)
