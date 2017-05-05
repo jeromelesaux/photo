@@ -11,7 +11,6 @@ import (
 	"photo/modele"
 	"strconv"
 	"sync"
-	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 type GooglePhotoClient struct {
