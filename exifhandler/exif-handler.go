@@ -173,7 +173,7 @@ func GetBase64ThumbnailUrl(url string) (string, error) {
 
 	img, err := imaging.Decode(response.Body)
 	if err != nil {
-		logger.Error("Error while retreiving thumbnail with error " + err.Error())
+		logger.Errorf("Error while retreiving thumbnail for url %s  with error %v",url ,err)
 		return "", err
 	}
 	var dst *image.NRGBA

@@ -2,6 +2,7 @@ package google_photos_client
 
 import (
 	"encoding/json"
+	"fmt"
 	logger "github.com/Sirupsen/logrus"
 	"github.com/tgulacsi/picago"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 	"photo/modele"
 	"strconv"
 	"sync"
-	"fmt"
+	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 type GooglePhotoClient struct {

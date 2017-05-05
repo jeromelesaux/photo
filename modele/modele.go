@@ -33,9 +33,9 @@ type PhotoInformations struct {
 	Thumbnail string            `json:"thumbnail"`
 }
 
-func NewPhotoInformations() *PhotoInformations{
+func NewPhotoInformations() *PhotoInformations {
 	return &PhotoInformations{
-		Tags:make(map[string]string,0),
+		Tags: make(map[string]string, 0),
 	}
 }
 
