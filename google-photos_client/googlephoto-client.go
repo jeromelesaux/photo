@@ -6,19 +6,19 @@ import (
 	"github.com/tgulacsi/picago"
 	"net/http"
 	"os"
+	"photo/exifhandler"
 	"photo/modele"
 	"strconv"
 	"sync"
-	"photo/exifhandler"
+	"fmt"
 )
 
 type GooglePhotoClient struct {
 	tokenCacheFile string
 	client         *http.Client
-
-	UserID string
-	Secret string
-	ID     string
+	UserID         string
+	Secret         string
+	ID             string
 }
 
 var configGoogleLock sync.Mutex
@@ -89,7 +89,7 @@ func (g *GooglePhotoClient) GetData() []*modele.PhotoResponse {
 	}
 	logger.Infof("user %s has %d albums.", g.UserID, len(albums))
 	for _, album := range albums {
-		response := *modele.PhotoResponse{
+		response := &modele.PhotoResponse{
 			MachineId: modele.ORIGIN_GOOGLE,
 			Version:   modele.VERSION,
 			Origin:    album.Name,
@@ -103,28 +103,28 @@ func (g *GooglePhotoClient) GetData() []*modele.PhotoResponse {
 		logger.Info(album.Name + " contains " + strconv.Itoa(len(photos)) + " photos.")
 
 		for _, photo := range photos {
-			p := &modele.PhotoInformations{}
+			p := modele.NewPhotoInformations()
 			p.Filename = photo.Filename
 			if photo.Exif != nil {
-				p.Tags["exposure"] = photo.Exif.Exposure
-				p.Tags["flash"] = photo.Exif.Flash
-				p.Tags["focal length"] = photo.Exif.FocalLength
-				p.Tags["fstop"] = photo.Exif.FStop
-				p.Tags["iso"] = photo.Exif.ISO
+				p.Tags["exposure"] = fmt.Sprintf("%f", photo.Exif.Exposure)
+				p.Tags["flash"] = fmt.Sprintf("%s", photo.Exif.Flash)
+				p.Tags["focal length"] = fmt.Sprintf("%d", photo.Exif.FocalLength)
+				p.Tags["fstop"] = fmt.Sprintf("%f", photo.Exif.FStop)
+				p.Tags["iso"] = fmt.Sprintf("%d", photo.Exif.ISO)
 				p.Tags["make"] = photo.Exif.Make
 				p.Tags["model"] = photo.Exif.Model
-				p.Tags["timestamp"] = photo.Exif.Timestamp
+				p.Tags["timestamp"] = fmt.Sprintf("%d", photo.Exif.Timestamp)
 				p.Tags["uid"] = photo.Exif.UID
 			}
 			p.Filepath = photo.URL
-			p.Thumbnail,_ = exifhandler.GetBase64Thumbnail(photo.URL)
-			p.Tags["with"] = photo.Width
-			p.Tags["height"] = photo.Height
+			p.Thumbnail, _ = exifhandler.GetBase64ThumbnailUrl(photo.URL)
+			p.Tags["with"] = fmt.Sprintf("%d", photo.Width)
+			p.Tags["height"] = fmt.Sprintf("%d", photo.Height)
 			p.Tags["location"] = photo.Location
 			p.Tags["description"] = photo.Description
-			p.Tags["latitude"] = photo.Latitude
-			p.Tags["longitude"] = photo.Longitude
-			response.Photos = append(response.Photos,p)
+			p.Tags["latitude"] = fmt.Sprintf("%.2f", photo.Latitude)
+			p.Tags["longitude"] = fmt.Sprintf("%.2f", photo.Longitude)
+			response.Photos = append(response.Photos, p)
 
 		}
 		responses = append(responses, response)

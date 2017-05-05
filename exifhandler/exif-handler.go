@@ -16,6 +16,7 @@ import (
 	"photo/hash"
 	"photo/modele"
 	"strings"
+	"net/http"
 )
 
 func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
@@ -111,9 +112,66 @@ func GetBase64Photo(path string) (string, error) {
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
+
+
 func GetBase64Thumbnail(path string) (string, error) {
 
 	img, err := imaging.Open(path)
+	if err != nil {
+		logger.Error("Error while retreiving thumbnail with error " + err.Error())
+		return "", err
+	}
+	var dst *image.NRGBA
+	width := img.Bounds().Max.X
+	height := img.Bounds().Max.Y
+	if height > width {
+		if height < 100 {
+			thumb := imaging.Thumbnail(img, width, height, imaging.CatmullRom)
+			dst = imaging.New(width, height, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		} else {
+			thumb := imaging.Thumbnail(img, 100, 100, imaging.CatmullRom)
+			dst = imaging.New(100, 100, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		}
+	} else {
+		if width < 100 {
+			thumb := imaging.Thumbnail(img, width, height, imaging.CatmullRom)
+			dst = imaging.New(width, height, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		} else {
+			thumb := imaging.Thumbnail(img, 100, 100, imaging.CatmullRom)
+			dst = imaging.New(100, 100, color.NRGBA{0, 0, 0, 0})
+			dst = imaging.Paste(dst, thumb, image.Pt(0, 0))
+		}
+	}
+
+	buf := new(bytes.Buffer)
+	err = png.Encode(buf, dst)
+	if err != nil {
+		logger.Error("Error while retreiving thumbnail with error " + err.Error())
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+
+}
+
+
+func GetBase64ThumbnailUrl(url string) (string, error) {
+	client := &http.Client{}
+	response,err := client.Get(url)
+	if err != nil {
+		logger.Errorf("Error while getting image from url %s with error %v",url,err)
+		return "",err
+	}
+	defer func() {
+		if response.Body != nil {
+			response.Body.Close()
+		}
+	}()
+
+
+	img, err := imaging.Decode(response.Body)
 	if err != nil {
 		logger.Error("Error while retreiving thumbnail with error " + err.Error())
 		return "", err

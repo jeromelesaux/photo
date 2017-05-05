@@ -33,6 +33,12 @@ type PhotoInformations struct {
 	Thumbnail string            `json:"thumbnail"`
 }
 
+func NewPhotoInformations() *PhotoInformations{
+	return &PhotoInformations{
+		Tags:make(map[string]string,0),
+	}
+}
+
 type RawPhoto struct {
 	Name string `json:"name,omitempty"`
 	Data string `json:"data,omitempty"`

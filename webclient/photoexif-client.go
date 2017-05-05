@@ -44,16 +44,17 @@ func (p *PhotoExifClient) scanExifClient(remotePath string, salve *slavehandler.
 	}
 	logger.Info("Calling uri : " + uri)
 	response, err := client.Do(request)
-	defer func() {
-		if response.Body != nil {
-			response.Body.Close()
-		}
-	}()
+
 	if err != nil {
 		logger.Error("error with : " + err.Error())
 		p.photoResponseChan <- &modele.PhotoResponse{}
 		return
 	}
+	defer func() {
+		if response.Body != nil {
+			response.Body.Close()
+		}
+	}()
 	photoResponse := &modele.PhotoResponse{}
 	if err := json.NewDecoder(response.Body).Decode(photoResponse); err != nil {
 		logger.Error("error with : " + err.Error())
