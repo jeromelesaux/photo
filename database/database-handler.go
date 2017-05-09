@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 	"photo/album"
+	"photo/configurationapp"
 	"photo/modele"
 	"photo/slavehandler"
 	"strconv"
@@ -61,7 +62,7 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 
 	collectionExists := false
 	albumExists := false
-	databasePath := modele.GetConfiguration().DatabasePath
+	databasePath := configurationapp.GetConfiguration().DatabasePath
 	if databasePath == "" {
 		err = errors.New("No database path defined")
 		return dbInstance, err

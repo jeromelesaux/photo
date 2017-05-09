@@ -52,13 +52,59 @@ func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []string {
 	for _, record := range p.Album.Records {
 		logger.Info("call get photo content for " + record.Filepath + " at the machine " + record.MachineId)
 		wg.Add(1)
-		go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg)
+		if record.MachineId != modele.ORIGIN_GOOGLE {
+			go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg)
+		} else {
+			go p.CallGetRemoteRawPhoto(record.Filepath, wg)
+		}
 	}
 
 	wg.Wait()
 	close(p.rawPhotoChan)
 	wgp.Wait()
 	return photosContent
+}
+
+func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitGroup) {
+	var startTime time.Time
+	defer func() {
+		endTime := time.Now()
+		computeDuration := endTime.Sub(startTime)
+		logger.Infof("Job done in %f seconds\n", computeDuration.Minutes())
+		wg.Done()
+	}()
+	startTime = time.Now()
+
+	client := &http.Client{}
+	request, err := http.NewRequest("GET", remotePath, nil)
+	if err != nil {
+		logger.Error("error with : " + err.Error())
+		p.rawPhotoChan <- ""
+		return
+	}
+	logger.Info("Calling uri : " + remotePath)
+	response, err := client.Do(request)
+	if err != nil {
+		logger.Error("error with : " + err.Error())
+		p.rawPhotoChan <- ""
+		return
+	}
+	defer func() {
+		if response.Body != nil {
+			response.Body.Close()
+		}
+	}()
+
+	content := &modele.RawPhoto{}
+	logger.Info(response.Body)
+	if err := json.NewDecoder(response.Body).Decode(content); err != nil {
+		logger.Error("error with : " + err.Error() + " for uri:" + remotePath)
+		p.rawPhotoChan <- content.Data
+		return
+	}
+	p.rawPhotoChan <- content.Data
+	return
+
 }
 
 func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.WaitGroup) {

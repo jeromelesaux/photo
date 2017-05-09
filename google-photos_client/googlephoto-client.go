@@ -14,11 +14,11 @@ import (
 )
 
 type GooglePhotoClient struct {
-	tokenCacheFile string
-	client         *http.Client
-	UserID         string
-	Secret         string
-	ID             string
+	tokenCacheFile string       `json:"_"`
+	client         *http.Client `json:"_"`
+	UserID         string       `json:"user_id"`
+	Secret         string       `json:"secret"`
+	ID             string       `json:"id"`
 }
 
 var configGoogleLock sync.Mutex
@@ -105,6 +105,7 @@ func (g *GooglePhotoClient) GetData() []*modele.PhotoResponse {
 		for _, photo := range photos {
 			p := modele.NewPhotoInformations()
 			p.Filename = photo.Filename
+			p.Md5Sum = photo.Exif.UID
 			if photo.Exif != nil {
 				p.Tags["exposure"] = fmt.Sprintf("%f", photo.Exif.Exposure)
 				p.Tags["flash"] = fmt.Sprintf("%s", photo.Exif.Flash)

@@ -1,13 +1,5 @@
 package modele
 
-import (
-	"encoding/json"
-	logger "github.com/Sirupsen/logrus"
-	"os"
-	"strings"
-	"sync"
-)
-
 var (
 	FILESIZE_BIG    = "big"
 	FILESIZE_MEDIUM = "medium"
@@ -15,10 +7,6 @@ var (
 	ORIGIN_GOOGLE   = "www.google.com"
 	LOCAL_ORIGINE   = "localhost"
 )
-
-type Configuration struct {
-	DatabasePath string `json:"database_path"`
-}
 
 type RegisteredSlave struct {
 	MachineId string `json:"machineId"`
@@ -61,10 +49,6 @@ func NewPhotoResponse(message string, version string, machineid string, photos [
 	}
 }
 
-type FileExtension struct {
-	Extensions []string
-}
-
 type FolderToScan struct {
 	MachineId string   `json:"machineid"`
 	Folders   []string `json:"folders_toscan"`
@@ -92,49 +76,3 @@ type DirectoryItemResponse struct {
 }
 
 const VERSION = "1.0Beta"
-
-var confFileExtensionMut sync.Mutex
-var confPhotoExifMut sync.Mutex
-var configuration *Configuration
-
-func LoadPhotoExifConfiguration(configurationPathfile string) *Configuration {
-
-	confPhotoExifMut.Lock()
-	file, errOpen := os.Open(configurationPathfile)
-	if errOpen != nil {
-		logger.Error("Error while opening file " + configurationPathfile + " with error :" + errOpen.Error())
-	}
-	decoder := json.NewDecoder(file)
-	err := decoder.Decode(&configuration)
-	if err != nil {
-		logger.Error("error:", err)
-	}
-	logger.Debug(*configuration)
-	confPhotoExifMut.Unlock()
-	return configuration
-}
-
-func GetConfiguration() *Configuration {
-	return configuration
-}
-func LoadConfiguration(configurationFile string) FileExtension {
-	configuration := FileExtension{}
-	confFileExtensionMut.Lock()
-	file, errOpen := os.Open(configurationFile)
-	if errOpen != nil {
-		logger.Error("Error while opening file " + configurationFile + " with error :" + errOpen.Error())
-	}
-	decoder := json.NewDecoder(file)
-	err := decoder.Decode(&configuration)
-	if err != nil {
-		logger.Error("error:", err)
-	}
-	confFileExtensionMut.Unlock()
-	logger.Info("File extensions supported : " + strings.Join(configuration.Extensions, ","))
-
-	return configuration
-}
-
-func LoadConfigurationAtOnce() FileExtension {
-	return LoadConfiguration("extension-file.json")
-}

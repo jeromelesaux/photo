@@ -11,6 +11,8 @@ import (
 	"photo/slavehandler"
 	"strconv"
 
+	"photo/configurationapp"
+	"photo/configurationexif"
 	"sync"
 	"time"
 )
@@ -72,7 +74,7 @@ type Job struct {
 	sid string
 }
 
-func (p *PhotoExifClient) ScanFoldersClient(remotepaths []string, slaveid string, conf *modele.Configuration) {
+func (p *PhotoExifClient) ScanFoldersClient(remotepaths []string, slaveid string, conf *configurationapp.Configuration) {
 
 	wgp := sync.WaitGroup{}
 	wgp.Add(1)
@@ -136,7 +138,7 @@ func (p *PhotoExifClient) ScanFoldersClient(remotepaths []string, slaveid string
 
 }
 
-func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (error, *modele.FileExtension) {
+func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (error, *configurationexif.FileExtension) {
 	var startTime time.Time
 
 	defer func() {
@@ -151,19 +153,19 @@ func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (err
 	request, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		return err, &modele.FileExtension{}
+		return err, &configurationexif.FileExtension{}
 	}
 	logger.Info("Calling uri : " + uri)
 	response, err := client.Do(request)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		return err, &modele.FileExtension{}
+		return err, &configurationexif.FileExtension{}
 	}
 	defer response.Body.Close()
-	extensions := &modele.FileExtension{}
+	extensions := &configurationexif.FileExtension{}
 	if err := json.NewDecoder(response.Body).Decode(extensions); err != nil {
 		logger.Error("error with : " + err.Error())
-		return nil, &modele.FileExtension{}
+		return nil, &configurationexif.FileExtension{}
 	}
 	return nil, extensions
 }

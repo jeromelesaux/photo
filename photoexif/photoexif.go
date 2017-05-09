@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"photo/configurationexif"
 	"photo/exifhandler"
 	"photo/logger"
 	"photo/modele"
@@ -28,7 +29,7 @@ var GitHash string
 var BuildStmp string
 
 func main() {
-	conf := modele.LoadConfigurationAtOnce()
+	conf := configurationexif.LoadConfigurationAtOnce()
 	starttime := time.Now()
 	response := &modele.PhotoResponse{
 		Version: modele.VERSION,

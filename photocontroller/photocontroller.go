@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"photo/modele"
+	"photo/configurationapp"
 	"photo/routes"
 	"runtime/pprof"
 	"strconv"
@@ -45,7 +45,7 @@ func main() {
 	defer f.Close()
 	if *httpport != "" && *configurationfile != "" {
 		logger.Info(wellcomeMessage)
-		modele.LoadPhotoExifConfiguration(*configurationfile)
+		configurationapp.LoadPhotoExifConfiguration(*configurationfile)
 		http.HandleFunc("/register", routes.RegisterSlave)
 		http.HandleFunc("/registeredslaves", routes.GetRegisteredSlaves)
 		http.HandleFunc("/browse", routes.Browse)
@@ -63,6 +63,7 @@ func main() {
 		http.HandleFunc("/deletealbum", routes.DeleteAlbum)
 		http.HandleFunc("/deletephotosalbum", routes.DeletePhotosAlbum)
 		http.HandleFunc("/pdfalbum", routes.GenerateAlbumPdf)
+		http.HandleFunc("/googlesave", routes.SaveGoogleConfiguration)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

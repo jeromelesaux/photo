@@ -11,12 +11,14 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"net/http"
 	"os"
 	"path/filepath"
 	"photo/hash"
+
+	"photo/configurationexif"
 	"photo/modele"
 	"strings"
-	"net/http"
 )
 
 func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
@@ -67,14 +69,14 @@ func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
 
 var Tags = make([]*modele.PhotoInformations, 0)
 
-func GetPhotosInformations(directorypath string, conf modele.FileExtension) ([]*modele.PhotoInformations, error) {
+func GetPhotosInformations(directorypath string, conf configurationexif.FileExtension) ([]*modele.PhotoInformations, error) {
 	Tags = Tags[:0]
 	err := filepath.Walk(directorypath, ScanExifFile(conf))
 	return Tags, err
 
 }
 
-func ScanExifFile(fileExtension modele.FileExtension) filepath.WalkFunc {
+func ScanExifFile(fileExtension configurationexif.FileExtension) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {
@@ -111,8 +113,6 @@ func GetBase64Photo(path string) (string, error) {
 	}
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
-
-
 
 func GetBase64Thumbnail(path string) (string, error) {
 
@@ -156,13 +156,12 @@ func GetBase64Thumbnail(path string) (string, error) {
 
 }
 
-
 func GetBase64ThumbnailUrl(url string) (string, error) {
 	client := &http.Client{}
-	response,err := client.Get(url)
+	response, err := client.Get(url)
 	if err != nil {
-		logger.Errorf("Error while getting image from url %s with error %v",url,err)
-		return "",err
+		logger.Errorf("Error while getting image from url %s with error %v", url, err)
+		return "", err
 	}
 	defer func() {
 		if response.Body != nil {
@@ -170,10 +169,9 @@ func GetBase64ThumbnailUrl(url string) (string, error) {
 		}
 	}()
 
-
 	img, err := imaging.Decode(response.Body)
 	if err != nil {
-		logger.Errorf("Error while retreiving thumbnail for url %s  with error %v",url ,err)
+		logger.Errorf("Error while retreiving thumbnail for url %s  with error %v", url, err)
 		return "", err
 	}
 	var dst *image.NRGBA

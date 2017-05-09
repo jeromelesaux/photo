@@ -7,9 +7,12 @@ import (
 	"net/http"
 	"path/filepath"
 	"photo/album"
+	"photo/configurationapp"
+	"photo/configurationexif"
 	"photo/database"
 	"photo/exifhandler"
 	"photo/folder"
+	"photo/google-photos_client"
 	"photo/modele"
 	"photo/pdf"
 	"photo/slavehandler"
@@ -17,6 +20,63 @@ import (
 	"strconv"
 	"time"
 )
+
+func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	defer r.Body.Close()
+	googleConf := &google_photos_client.GooglePhotoClient{}
+	err := json.NewDecoder(r.Body).Decode(googleConf)
+	if err != nil {
+		logger.Info("Cannot not decode body received for google client with error " + err.Error())
+		body, _ := ioutil.ReadAll(r.Body)
+		logger.Debug("Body received : " + string(body))
+		http.Error(w, "Cannot not decode body received for google client", 400)
+		return
+	}
+	conf := configurationapp.GetConfiguration()
+	conf.GoogleID = googleConf.ID
+	conf.GoogleSecret = googleConf.Secret
+	conf.GoogleUser = googleConf.UserID
+
+	if err := conf.Save(); err != nil {
+		http.Error(w, "cannot save google client configuration", 400)
+		return
+	}
+
+	// import data from google account
+	go func() {
+		if err := googleConf.Connect(); err != nil {
+			logger.Errorf("cannot connect to google photo account with error %v", err)
+			return
+		}
+		data := googleConf.GetData()
+		db, err := database.NewDatabaseHandler()
+		if err != nil {
+			logger.Errorf("cannot connect to database with error %v", err)
+			return
+		}
+		for _, response := range data {
+			if err := db.InsertNewData(response); err != nil {
+				logger.Errorf("cannot import google data into database with error %v", err)
+			}
+			md5sums := make([]string, 0)
+			for _, photo := range response.Photos {
+				md5sums = append(md5sums, photo.Md5Sum)
+			}
+			msg := album.NewAlbumMessage()
+			msg.AlbumName = response.Origin
+			msg.Md5sums = md5sums
+			if err := db.InsertNewAlbum(msg); err != nil {
+				logger.Errorf("cannot import google data into database with error %v", err)
+			}
+		}
+	}()
+
+	JsonAsResponse(w, googleConf)
+}
 
 // route create a new album by the name and the md5sums of the photos
 func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +247,7 @@ func GetAlbumData(w http.ResponseWriter, r *http.Request) {
 
 // route : return the extension files list from the configuration file
 func GetExtensionList(w http.ResponseWriter, r *http.Request) {
-	conf := modele.LoadConfigurationAtOnce()
+	conf := configurationexif.LoadConfigurationAtOnce()
 	logger.Info("Ask for extension files")
 	JsonAsResponse(w, conf)
 }
@@ -316,7 +376,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 }
 
 func ScanFolders(w http.ResponseWriter, r *http.Request) {
-	conf := modele.GetConfiguration()
+	conf := configurationapp.GetConfiguration()
 	client := webclient.NewPhotoExifClient()
 	folders := &modele.FolderToScan{}
 	if r.Body == nil {
@@ -363,7 +423,7 @@ func GetDirectoryInformations(w http.ResponseWriter, r *http.Request) {
 	}
 	directorypath := r.URL.Query().Get("value")
 	logger.Info("directory to scan " + directorypath)
-	pinfos, err := exifhandler.GetPhotosInformations(directorypath, modele.LoadConfigurationAtOnce())
+	pinfos, err := exifhandler.GetPhotosInformations(directorypath, configurationexif.LoadConfigurationAtOnce())
 	response.Photos = pinfos
 	if err != nil {
 		response.Message = err.Error()

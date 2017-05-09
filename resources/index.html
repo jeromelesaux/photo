@@ -28,12 +28,32 @@
             <li><a href="#albums" data-toggle="tab">Manage your albums</a></li>
         </ul>
         <div id="my-tab-content" class="tab-content">
+            <!-- application configuration -->
             <div class="tab-pane active" id="home">
                 Registered machines :
                 <ul id="machineList" class="list-group"></ul>
                 <button type="button" name="refresh" onclick="refresh()" value="refresh" class="btn btn-primary start">
                     <span>refresh</span>
                 </button>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Google Account settings</div>
+                    <div class="panel-body">
+                        <!-- gallery of images found and returned by server -->
+                        <div class="row">
+                            <form id="googleConfigurationForm">
+                                Google User ID <input type="text" id="googleUserId" class="form-control">
+                                Google ID<input type="text" id="googleId" class="form-control">
+                                Google Secret Phrase<input type="text" id="googleSecret" class="form-control">
+                            </form>
+                            <button type="button" name="save google account" onclick="saveAndImportGoogleAccount()" value="save and import google account"
+                                    class="btn btn-primary start">
+                                <span>Save and import google account</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
 
             <div class="tab-pane" id="scantab">
@@ -281,6 +301,8 @@
                 });
 
 
+
+
                 // script javascript to manage selection of the photo
                 $("body").on("click", 'label',
                     function (event) {
@@ -296,6 +318,32 @@
                         }
                         event.preventDefault();
                     });
+
+
+                function saveAndImportGoogleAccount() {
+                    $(function(){
+                        googleUserId = $('#googleUserId').val();
+                        googleId = $('#googleId').val();
+                        googleSecret = $('#googleSecret').val();
+                        var body = {};
+                        body.id = googleId;
+                        body.secret = googleSecret;
+                        body.user_id = googleUserId;
+                        var jsondata = JSON.stringify(body);
+                        console.log(jsondata);
+                        $.ajax({
+                            dataType: "json",
+                            url: "googlesave",
+                            type: 'POST',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert(responsedata);
+                                }
+                            }
+                        });
+                    })
+                }
 
                 function getPdfAlbum() {
                     $(function () {
