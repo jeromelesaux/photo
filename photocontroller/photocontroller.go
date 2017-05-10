@@ -64,6 +64,7 @@ func main() {
 		http.HandleFunc("/deletephotosalbum", routes.DeletePhotosAlbum)
 		http.HandleFunc("/pdfalbum", routes.GenerateAlbumPdf)
 		http.HandleFunc("/googlesave", routes.SaveGoogleConfiguration)
+		http.HandleFunc("/googleload", routes.LoadGoogleConfiguration)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

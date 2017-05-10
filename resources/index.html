@@ -288,6 +288,7 @@
                 $(document).ready(function () {
                     getRegisteredMachines();
                     getExtensionList();
+                    loadGoogleAccount();
                 });
 
                 $(function () {
@@ -339,6 +340,23 @@
                             success: function (responsedata, codeHttp) {
                                 if (codeHttp == "success") {
                                     alert(responsedata);
+                                }
+                            }
+                        });
+                    })
+                }
+
+                function loadGoogleAccount() {
+                    $(function(){
+                        $.ajax({
+                            dataType: "json",
+                            url: "googleload",
+                            type: 'GET',
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    $('#googleUserId').val(responsedata.user_id);
+                                    $('#googleId').val(responsedata.id);
+                                    $('#googleSecret').val(responsedata.secret);
                                 }
                             }
                         });

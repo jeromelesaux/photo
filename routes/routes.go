@@ -21,6 +21,17 @@ import (
 	"time"
 )
 
+func LoadGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
+	conf := configurationapp.GetConfiguration()
+	googleconf := &google_photos_client.GooglePhotoClient{
+		UserID: conf.GoogleUser,
+		ID:     conf.GoogleID,
+		Secret: conf.GoogleSecret,
+	}
+	logger.Info(googleconf)
+	JsonAsResponse(w, googleconf)
+}
+
 func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
