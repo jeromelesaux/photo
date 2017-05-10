@@ -46,6 +46,8 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.Info(googleConf)
+
 	// import data from google account
 	go func() {
 		if err := googleConf.Connect(); err != nil {
@@ -75,7 +77,7 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	JsonAsResponse(w, googleConf)
+	JsonAsResponse(w, "Configuration saved and imported data, please check log file to accept account usage")
 }
 
 // route create a new album by the name and the md5sums of the photos

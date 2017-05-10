@@ -14,22 +14,21 @@ import (
 )
 
 type GooglePhotoClient struct {
-	tokenCacheFile string       `json:"_"`
-	client         *http.Client `json:"_"`
-	UserID         string       `json:"user_id"`
-	Secret         string       `json:"secret"`
-	ID             string       `json:"id"`
+	client *http.Client `json:"_"`
+	UserID string       `json:"user_id"`
+	Secret string       `json:"secret"`
+	ID     string       `json:"id"`
 }
 
 var configGoogleLock sync.Mutex
 var configurationFilename = "google-conf.json"
+var tokenCacheFile = "token-cache.json"
 
 func NewGooglePhotoClient(userId string, id string, secret string) *GooglePhotoClient {
 	return &GooglePhotoClient{
-		ID:             id,
-		UserID:         userId,
-		Secret:         secret,
-		tokenCacheFile: "token-cache.json",
+		ID:     id,
+		UserID: userId,
+		Secret: secret,
 	}
 }
 
@@ -70,7 +69,7 @@ func (g *GooglePhotoClient) saveConfigutation() {
 }
 
 func (g *GooglePhotoClient) Connect() error {
-	client, err := picago.NewClient(g.ID, g.Secret, "", g.tokenCacheFile)
+	client, err := picago.NewClient(g.ID, g.Secret, "", tokenCacheFile)
 	if err != nil {
 		logger.Error("Error while connecting to google photo with error : " + err.Error())
 		return err
