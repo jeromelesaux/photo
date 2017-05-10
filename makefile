@@ -12,8 +12,8 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go' | grep -v '/vendor/')
 #GOARM=7
 
 EXEC=photo
-EXEC1=photoexif
-EXEC2=photocontroller
+EXEC1=photo-exif
+EXEC2=photo-controller
 
 
 VERSION=1
@@ -35,21 +35,21 @@ LDFLAGS=-ldflags "-s -X main.Version=$(VERSION) -X main.GitHash=$(BUILDHASH) -X 
 $(EXEC2): organize $(SOURCES)  ${EXEC1}
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
-		    	GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
+		    	GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
 		else\
-       			GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2}-${VERSION} $(SOURCEDIR)/photocontroller/photocontroller.go;\
+       			GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
         fi
-		@echo "    ${EXEC2}-${VERSION} generated."
+		@echo "    ${EXEC2} generated."
 
 
 $(EXEC1): organize $(SOURCES)
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
-		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
+		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
 		else\
-	            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1}-${VERSION} $(SOURCEDIR)/photoexif/photoexif.go;\
+	            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
         fi
-		@echo "    ${EXEC1}-${VERSION} generated."
+		@echo "    ${EXEC1} generated."
 
 test: deps
 		@go test -v $(shell go list ./... | grep -v '/vendor/')
@@ -68,23 +68,23 @@ init: clean
 		@echo "    We compile for OS ${GOOS} and architecture ${GOARCH} and compiler $(shell go version)"
 
 execute:
-		./${EXEC1}-${VERSION}  -httpport 3001 -masteruri http://localhost:8000/register 2> photoexif.log &
-		./${EXEC2}-${VERSION}  -configurationfile confclient.json -httpport 8000  2> photocontroller.log &
+		./${EXEC1}  -httpport 3001 -masteruri http://localhost:8000/register 2> photoexif.log &
+		./${EXEC2}  -configurationfile confclient.json -httpport 8000  2> photocontroller.log &
 
 kill:
-		$(shell killall -v photoexif-1)
-		$(shell killall -v photocontroller-1)
+		$(shell killall -v photo-exif)
+		$(shell killall -v photo-controller)
 		@echo "    Processes killed."
 
 clean:
-		@if [ -f "${EXEC1}-${VERSION}" ] ; then rm ${EXEC1}-${VERSION} ; fi
-		@if [ -f "${EXEC2}-${VERSION}" ] ; then rm ${EXEC2}-${VERSION} ; fi
+		@if [ -f "${EXEC1}" ] ; then rm ${EXEC1} ; fi
+		@if [ -f "${EXEC2}" ] ; then rm ${EXEC2} ; fi
 #		@rm -fr database_photo.db
 		@rm -f *.log
 		@echo "    Nettoyage effectuee"
 
 package:  ${EXEC1} ${EXEC2} swagger
-		@zip -r ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip ./${EXEC1}-${VERSION} ./${EXEC2}-${VERSION} resources
+		@zip -r ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip ./${EXEC1} ./${EXEC2} resources
 		@echo "    Archive ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip created"
 
 audit:   ${EXEC1}

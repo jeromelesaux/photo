@@ -20,46 +20,45 @@ var (
 )
 
 func CreatePdfAlbum(albumName string, photos []string, imagesPerPage string) []byte {
-	filesnames := saveImage(photos)
 
 	f := gofpdf.New("P", "mm", "A4", "")
 	switch imagesPerPage {
 	case Images3XPerPages:
 		i := 0
-		for i < len(filesnames) {
+		for i < len(photos) {
 			var file1, file2, file3 string
-			if i < len(filesnames) {
-				file1 = filesnames[i]
+			if i < len(photos) {
+				file1 = photos[i]
 			}
 			i++
-			if i < len(filesnames) {
-				file2 = filesnames[i]
+			if i < len(photos) {
+				file2 = photos[i]
 			}
 			i++
-			if i < len(filesnames) {
-				file3 = filesnames[i]
+			if i < len(photos) {
+				file3 = photos[i]
 			}
 			i++
 			f = Add3Images(f, file1, file2, file3)
 		}
 	case Images4XPerPages:
 		i := 0
-		for i < len(filesnames) {
+		for i < len(photos) {
 			var file1, file2, file3, file4 string
-			if i < len(filesnames) {
-				file1 = filesnames[i]
+			if i < len(photos) {
+				file1 = photos[i]
 			}
 			i++
-			if i < len(filesnames) {
-				file2 = filesnames[i]
+			if i < len(photos) {
+				file2 = photos[i]
 			}
 			i++
-			if i < len(filesnames) {
-				file3 = filesnames[i]
+			if i < len(photos) {
+				file3 = photos[i]
 			}
 			i++
-			if i < len(filesnames) {
-				file4 = filesnames[i]
+			if i < len(photos) {
+				file4 = photos[i]
 			}
 			i++
 			f = Add4Images(f, file1, file2, file3, file4)
@@ -70,11 +69,11 @@ func CreatePdfAlbum(albumName string, photos []string, imagesPerPage string) []b
 
 	if err := f.Output(b); err != nil {
 		logger.Infof("error while saving the album %s in pdf format with error %v", albumName, err.Error())
-		removeImages(filesnames)
+		removeImages(photos)
 		return b.Bytes()
 	}
 
-	removeImages(filesnames)
+	removeImages(photos)
 
 	return b.Bytes()
 }

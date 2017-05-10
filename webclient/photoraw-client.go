@@ -1,10 +1,17 @@
 package webclient
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	logger "github.com/Sirupsen/logrus"
+	"image"
+	"image/jpeg"
+	"image/png"
+	"math/rand"
 	"net/http"
+	"os"
 	"photo/database"
 	"photo/modele"
 	"photo/slavehandler"
@@ -27,7 +34,7 @@ func NewRawPhotoClient(albumRecord *database.DatabaseAlbumRecord) *RawPhotoClien
 
 func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []string {
 	var startTime time.Time
-	photosContent := make([]string, 0)
+	photosFilenames := make([]string, 0)
 
 	defer func() {
 		endTime := time.Now()
@@ -41,8 +48,8 @@ func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []string {
 	wgp.Add(1)
 	go func() {
 		defer wgp.Done()
-		for content := range p.rawPhotoChan {
-			photosContent = append(photosContent, content)
+		for filename := range p.rawPhotoChan {
+			photosFilenames = append(photosFilenames, filename)
 		}
 	}()
 	startTime = time.Now()
@@ -53,19 +60,19 @@ func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []string {
 		logger.Info("call get photo content for " + record.Filepath + " at the machine " + record.MachineId)
 		wg.Add(1)
 		if record.MachineId != modele.ORIGIN_GOOGLE {
-			go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg)
+			go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg, true)
 		} else {
-			go p.CallGetRemoteRawPhoto(record.Filepath, wg)
+			go p.CallGetRemoteRawPhoto(record.Filepath, wg, true)
 		}
 	}
 
 	wg.Wait()
 	close(p.rawPhotoChan)
 	wgp.Wait()
-	return photosContent
+	return photosFilenames
 }
 
-func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitGroup) {
+func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitGroup, returnFilenameSaved bool) {
 	var startTime time.Time
 	defer func() {
 		endTime := time.Now()
@@ -94,20 +101,40 @@ func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitG
 			response.Body.Close()
 		}
 	}()
-
-	content := &modele.RawPhoto{}
-	logger.Info(response.Body)
-	if err := json.NewDecoder(response.Body).Decode(content); err != nil {
+	img, _, err := image.Decode(response.Body)
+	if err != nil {
 		logger.Error("error with : " + err.Error() + " for uri:" + remotePath)
-		p.rawPhotoChan <- content.Data
+		p.rawPhotoChan <- ""
 		return
 	}
-	p.rawPhotoChan <- content.Data
+
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, img); err != nil {
+		logger.Errorf("Cannot convert to png file : %v", err)
+	}
+
+	if returnFilenameSaved {
+		rand.Seed(time.Now().UTC().UnixNano())
+		filename := fmt.Sprintf("img_%d.jpg", rand.Int())
+		f, err := os.Create(filename)
+		if err != nil {
+			logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
+			p.rawPhotoChan <- ""
+		} else {
+			defer f.Close()
+			if err := jpeg.Encode(f, img, &jpeg.Options{Quality: 99}); err != nil {
+				logger.Infof("error in encoding temporary file %s with error %v", filename, err.Error())
+			}
+			p.rawPhotoChan <- filename
+		}
+	} else {
+		p.rawPhotoChan <- base64.StdEncoding.EncodeToString(buf.Bytes())
+	}
 	return
 
 }
 
-func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.WaitGroup) {
+func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.WaitGroup, returnFilenameSaved bool) {
 	var startTime time.Time
 	defer func() {
 		endTime := time.Now()
@@ -143,15 +170,38 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 			response.Body.Close()
 		}
 	}()
-
 	content := &modele.RawPhoto{}
 	logger.Info(response.Body)
 	if err := json.NewDecoder(response.Body).Decode(content); err != nil {
 		logger.Error("error with : " + err.Error() + " for uri:" + uri)
-		p.rawPhotoChan <- content.Data
+		p.rawPhotoChan <- ""
 		return
 	}
-	p.rawPhotoChan <- content.Data
+	if returnFilenameSaved {
+		rand.Seed(time.Now().UTC().UnixNano())
+		filename := fmt.Sprintf("img_%d.jpg", rand.Int())
+		f, err := os.Create(filename)
+		if err != nil {
+			logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
+		} else {
+			defer f.Close()
+			reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(content.Data))
+			img, err := png.Decode(reader)
+			if err != nil {
+				logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
+				os.Remove(filename)
+				p.rawPhotoChan <- ""
+			} else {
+				if err := jpeg.Encode(f, img, &jpeg.Options{Quality: 99}); err != nil {
+					logger.Infof("error in encoding temporary file %s with error %v", filename, err.Error())
+				}
+				p.rawPhotoChan <- filename
+			}
+		}
+
+	} else {
+		p.rawPhotoChan <- content.Data
+	}
 	return
 
 }

@@ -196,8 +196,8 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 	content := db.GetAlbumData(albumName)
 	if content.AlbumName == albumName && len(content.Records) > 0 {
 		logger.Info(content)
-		photos := webclient.NewRawPhotoClient(content).GetRemoteRawPhotosAlbum()
-		data := pdf.CreatePdfAlbum(content.AlbumName, photos, pdf.Images3XPerPages)
+		photosFilenames := webclient.NewRawPhotoClient(content).GetRemoteRawPhotosAlbum()
+		data := pdf.CreatePdfAlbum(content.AlbumName, photosFilenames, pdf.Images3XPerPages)
 		BinaryAsResponse(w, data, albumName+".pdf")
 		return
 	}

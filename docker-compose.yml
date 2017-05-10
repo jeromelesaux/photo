@@ -8,4 +8,4 @@ photo:
  ports:
   - "8020:8020"
   - "3001"
- command: bash -c " ./photocontroller-1 -configurationfile confclient.json -httpport 8020  2> photocontroller.log& ./photoexif-1 -httpport 3001 -masteruri http://localhost:8020/register 2> photoexif.log"
+ command: bash -c " ./photo-controller -configurationfile confclient.json -httpport 8020  2> photocontroller.log& ./photo-exif -httpport 3001 -masteruri http://localhost:8020/register 2> photoexif.log"
