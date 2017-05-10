@@ -175,8 +175,8 @@ func saveImage(photos []string) []string {
 func Add4Images(f *gofpdf.Fpdf, img1, img2, img3, img4 string) *gofpdf.Fpdf {
 	logger.Info("save files into page " + img1 + " " + img2 + " " + img3 + " " + img4)
 	f.AddPage()
-	f.Rect(0,0,210,297,"F")
-	f.SetFillColor(0,0,0)
+	f.Rect(0, 0, 210, 297, "F")
+	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
 		f.Image(img1, 10, 50, 90, 0, false, "", 0, "")
 	}
@@ -195,8 +195,8 @@ func Add4Images(f *gofpdf.Fpdf, img1, img2, img3, img4 string) *gofpdf.Fpdf {
 func Add3Images(f *gofpdf.Fpdf, img1, img2, img3 string) *gofpdf.Fpdf {
 	logger.Info("save files into page " + img1 + " " + img2 + " " + img3)
 	f.AddPage()
-	f.Rect(0,0,210,297,"F")
-	f.SetFillColor(0,0,0)
+	f.Rect(0, 0, 210, 297, "F")
+	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
 		f.Image(img1, 10, 50, 90, 0, false, "", 0, "")
 	}
