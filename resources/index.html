@@ -52,7 +52,45 @@
                         </div>
                     </div>
                 </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Flickr Account settings</div>
+                    <div class="panel-body">
+                        <!-- gallery of images found and returned by server -->
+                        <div class="row">
+                            <form id="flickrConfigurationForm">
+                                Flickr API Key <input type="text" id="flickrApiKey" class="form-control">
+                                Flickr API Secret<input type="text" id="flickrApiSecret" class="form-control">
+                            </form>
+                            <button type="button" class="btn btn-primary start" data-toggle="modal" data-target="#flickrOauthVerifer">
+                               <span>Get flickr token to import albums</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- modal page to update an album -->
+                <div id="flickrOauthVerifer" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Flickr Oauth verifier token</h4>
+                            </div>
+                            <div class="modal-body">
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goFlickr()">Get the flickr token
+                                </button>
+                                <div class="offset8">Flickr Oauth verifier Token :<input type="text" id="oauthVerifier"
+                                                                        name="oauthVerifier"
+                                                                        class="form-control"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goImportFlickrAlbum()">import flickr albums
+                                </button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 

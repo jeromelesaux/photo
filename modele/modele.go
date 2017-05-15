@@ -5,6 +5,7 @@ var (
 	FILESIZE_MEDIUM = "medium"
 	FILESIZE_LITTLE = "little"
 	ORIGIN_GOOGLE   = "www.google.com"
+	ORIGIN_FLICKR   = "www.flickr.com"
 	LOCAL_ORIGINE   = "localhost"
 )
 
