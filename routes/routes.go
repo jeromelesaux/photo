@@ -11,6 +11,7 @@ import (
 	"photo/configurationexif"
 	"photo/database"
 	"photo/exifhandler"
+	"photo/flickr_client"
 	"photo/folder"
 	"photo/google-photos_client"
 	"photo/modele"
@@ -20,6 +21,74 @@ import (
 	"strconv"
 	"time"
 )
+
+var FlickrClient *flickr_client.Flickr
+
+func SaveFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	defer r.Body.Close()
+	flickrconf := &flickr_client.Flickr{}
+	err := json.NewDecoder(r.Body).Decode(flickrconf)
+	if err != nil {
+		logger.Info("Cannot not decode body received for flickr client with error " + err.Error())
+		body, _ := ioutil.ReadAll(r.Body)
+		logger.Debug("Body received : " + string(body))
+		http.Error(w, "Cannot not decode body received for flickr client", 400)
+		return
+	}
+	FlickrClient := flickr_client.NewFlickrClient(flickrconf.ApiKey, flickrconf.ApiSecret)
+	FlickrClient.Connect()
+	FlickrClient.GetUrlRequestToken()
+	JsonAsResponse(w, flickrconf)
+}
+
+func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
+	if r.Body == nil {
+		http.Error(w, "empty body", 400)
+		return
+	}
+	defer r.Body.Close()
+	flickrconf := &flickr_client.Flickr{}
+	err := json.NewDecoder(r.Body).Decode(flickrconf)
+	if err != nil {
+		logger.Info("Cannot not decode body received for flickr client with error " + err.Error())
+		body, _ := ioutil.ReadAll(r.Body)
+		logger.Debug("Body received : " + string(body))
+		http.Error(w, "Cannot not decode body received for flickr client", 400)
+		return
+	}
+
+	// import data from google account
+	go func() {
+
+		FlickrClient.FlickrToken = flickrconf.FlickrToken
+		data := FlickrClient.GetData()
+		db, err := database.NewDatabaseHandler()
+		if err != nil {
+			logger.Errorf("cannot connect to database with error %v", err)
+			return
+		}
+		for _, response := range data {
+			if err := db.InsertNewData(response); err != nil {
+				logger.Errorf("cannot import google data into database with error %v", err)
+			}
+			md5sums := make([]string, 0)
+			for _, photo := range response.Photos {
+				md5sums = append(md5sums, photo.Md5Sum)
+			}
+			msg := album.NewAlbumMessage()
+			msg.AlbumName = response.Origin
+			msg.Md5sums = md5sums
+			if err := db.InsertNewAlbum(msg); err != nil {
+				logger.Errorf("cannot import google data into database with error %v", err)
+			}
+		}
+	}()
+	JsonAsResponse(w, "Configuration saved and imported data from your flickr account")
+}
 
 func LoadGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 	conf := configurationapp.GetConfiguration()

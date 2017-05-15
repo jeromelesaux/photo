@@ -9,11 +9,12 @@ import (
 )
 
 type Flickr struct {
-	ApiKey      string               `json:"api_key"`
-	ApiSecret   string               `json:"api_secret"`
-	FlickrToken string               `json:"flickr_token"`
-	client      *flickr.FlickrClient `json:"_"`
-	requestTok  *flickr.RequestToken `json:"_"`
+	ApiKey           string               `json:"api_key"`
+	ApiSecret        string               `json:"api_secret"`
+	FlickrToken      string               `json:"flickr_token"`
+	client           *flickr.FlickrClient `json:"_"`
+	requestTok       *flickr.RequestToken `json:"_"`
+	UrlAuthorization string               `json:"url_authorization"`
 }
 
 func NewFlickrClient(apikey, apisecret string) *Flickr {
@@ -24,13 +25,18 @@ func NewFlickrClient(apikey, apisecret string) *Flickr {
 	}
 }
 
+func (f *Flickr) Connect() {
+	f.client = flickr.NewFlickrClient(f.ApiKey, f.ApiSecret)
+}
+
 func (f *Flickr) GetUrlRequestToken() string {
 	requestTok, _ := flickr.GetRequestToken(f.client)
 
 	// build the authorizatin URL
-	url, _ := flickr.GetAuthorizeUrl(f.client, requestTok)
-	logger.Infof("flickr token url : %v", url)
-	return url
+	f.UrlAuthorization, _ = flickr.GetAuthorizeUrl(f.client, requestTok)
+	logger.Infof("flickr token url : %v", f.UrlAuthorization)
+
+	return f.UrlAuthorization
 }
 
 func (f *Flickr) GetData() []*modele.PhotoResponse {
@@ -61,18 +67,33 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 			for _, photo := range photoListResponse.Photoset.Photos {
 				p := modele.NewPhotoInformations()
 				p.Filename = photo.Title
+				p.Md5Sum = photo.Id
 				photoInfoResponse, err := photos.GetInfo(f.client, photo.Id, f.ApiSecret)
 				if err != nil {
 					logger.Errorf("Error while getting photo information %d with error %v", photo.Id, err)
 				} else {
-					p.Filepath = photoInfoResponse.Photo.Urls[0].Url
+					if len(photoInfoResponse.Photo.Urls) > 0 {
+						p.Filepath = photoInfoResponse.Photo.Urls[0].Url
+					}
 				}
+				exifs := f.GetExif(photoInfoResponse.Photo)
+				for _, exif := range exifs {
+					p.Tags[exif.Label] = exif.Raw
+				}
+				response.Photos = append(response.Photos, p)
 			}
 		}
+		responses = append(responses, response)
 
 	}
+	return responses
 }
 
-func (f *Flickr) GetExif(pinfo *photos.PhotoInfo) string {
-	flickr.DoGet(f.client)
+func (f *Flickr) GetExif(pinfo photos.PhotoInfo) []photos.Exif {
+	response, err := photos.GetExifs(f.client, pinfo.Id, pinfo.Secret)
+	if err != nil {
+		logger.Errorf("Error while getting flickr exif information on photo id %s with error %v", pinfo.Id, err)
+		return make([]photos.Exif, 0)
+	}
+	return response.PhotoExif.Exifs
 }
