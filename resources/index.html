@@ -43,7 +43,7 @@
                             <form id="googleConfigurationForm">
                                 Google User ID <input type="text" id="googleUserId" class="form-control">
                                 Google ID<input type="text" id="googleId" class="form-control">
-                                Google Secret Phrase<input type="text" id="googleSecret" class="form-control">
+                                Google Secret Phrase<input type="password" id="googleSecret" class="form-control">
                             </form>
                             <button type="button" name="save google account" onclick="saveAndImportGoogleAccount()" value="save and import google account"
                                     class="btn btn-primary start">
@@ -59,16 +59,22 @@
                         <div class="row">
                             <form id="flickrConfigurationForm">
                                 Flickr API Key <input type="text" id="flickrApiKey" class="form-control">
-                                Flickr API Secret<input type="text" id="flickrApiSecret" class="form-control">
+                                Flickr API Secret<input type="password" id="flickrApiSecret" class="form-control">
+                                Flickr Oauth verifier Token :<input type="text" id="flickrToken"
+                                                                    name="flickrToken"
+                                                                    class="form-control">
                             </form>
                             <button type="button" class="btn btn-primary start" data-toggle="modal" data-target="#flickrOauthVerifer">
                                <span>Get flickr token to import albums</span>
+                            </button>
+                            <button type="button" class="btn btn-primary start" data-dismiss="modal" onclick="goImportFlickrAlbum()">
+                                <span>import flickr albums</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- modal page to update an album -->
+                <!-- modal page to set flickr account settings -->
                 <div id="flickrOauthVerifer" class="modal fade" role="dialog">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -79,13 +85,9 @@
                             <div class="modal-body">
                                 <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goFlickr()">Get the flickr token
                                 </button>
-                                <div class="offset8">Flickr Oauth verifier Token :<input type="text" id="oauthVerifier"
-                                                                        name="oauthVerifier"
-                                                                        class="form-control"></div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goImportFlickrAlbum()">import flickr albums
-                                </button>
+
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                             </div>
                         </div>
@@ -358,6 +360,53 @@
                         event.preventDefault();
                     });
 
+
+                function goImportFlickrAlbum() {
+                    $(function(){
+                        flickrKey = $('#flickrApiKey').val();
+                        flickrSecret = $('#flickrApiSecret').val();
+                        flickrToken = $('#flickrToken').val();
+                        var body = {};
+                        body.api_key = flickrKey;
+                        body.api_secret = flickrSecret;
+                        body.flickr_token = flickrToken;
+                        var jsondata = JSON.stringify(body);
+                        $.ajax({
+                            dataType: "json",
+                            url: "flickrload",
+                            type: 'POST',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    alert(responsedata);
+                                }
+                            }
+                        });
+                    })
+                }
+
+                function goFlickr() {
+                    $(function() {
+                        flickrKey = $('#flickrApiKey').val();
+                        flickrSecret = $('#flickrApiSecret').val();
+                        var body = {};
+                        body.api_key = flickrKey;
+                        body.api_secret = flickrSecret;
+                        var jsondata = JSON.stringify(body);
+                        $.ajax({
+                            dataType: "json",
+                            url: "flickrsave",
+                            type: 'POST',
+                            data: jsondata,
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    msg = "Go and set the flickr token after authorization " + responsedata.url_authorization;
+                                    alert(msg);
+                                }
+                            }
+                        });
+                    })
+                }
 
                 function saveAndImportGoogleAccount() {
                     $(function(){

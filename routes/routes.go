@@ -42,6 +42,7 @@ func SaveFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
 	FlickrClient := flickr_client.NewFlickrClient(flickrconf.ApiKey, flickrconf.ApiSecret)
 	FlickrClient.Connect()
 	FlickrClient.GetUrlRequestToken()
+	flickrconf.UrlAuthorization = FlickrClient.UrlAuthorization
 	JsonAsResponse(w, flickrconf)
 }
 
