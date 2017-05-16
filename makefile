@@ -68,8 +68,8 @@ init: clean
 		@echo "    We compile for OS ${GOOS} and architecture ${GOARCH} and compiler $(shell go version)"
 
 execute:
-		./${EXEC1}  -httpport 3001 -masteruri http://localhost:8000/register 2> photoexif.log &
-		./${EXEC2}  -configurationfile confclient.json -httpport 8000  2> photocontroller.log &
+		./${EXEC1}  -httpport 3001 -masteruri http://localhost:3000/register 2> photoexif.log &
+		./${EXEC2}  -configurationfile confclient.json -httpport 3000  2> photocontroller.log &
 
 kill:
 		$(shell killall -v photo-exif)

@@ -373,7 +373,7 @@
                         var jsondata = JSON.stringify(body);
                         $.ajax({
                             dataType: "json",
-                            url: "flickrload",
+                            url: "flickrloadalbums",
                             type: 'POST',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {

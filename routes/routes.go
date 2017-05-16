@@ -22,8 +22,6 @@ import (
 	"time"
 )
 
-var FlickrClient *flickr_client.Flickr
-
 func SaveFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
@@ -39,10 +37,14 @@ func SaveFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cannot not decode body received for flickr client", 400)
 		return
 	}
-	FlickrClient := flickr_client.NewFlickrClient(flickrconf.ApiKey, flickrconf.ApiSecret)
-	FlickrClient.Connect()
-	FlickrClient.GetUrlRequestToken()
-	flickrconf.UrlAuthorization = FlickrClient.UrlAuthorization
+
+	flickrClient := flickr_client.GetCurrentFlickrClient()
+	flickrClient.ApiKey = flickrconf.ApiKey
+	flickrClient.ApiSecret = flickrconf.ApiSecret
+	flickrClient.Connect()
+	flickrClient.GetUrlRequestToken()
+	flickrconf.UrlAuthorization = flickrClient.UrlAuthorization
+	flickr_client.SaveCurrentFlickrClient(flickrClient)
 	JsonAsResponse(w, flickrconf)
 }
 
@@ -64,9 +66,11 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 
 	// import data from google account
 	go func() {
-
-		FlickrClient.FlickrToken = flickrconf.FlickrToken
-		data := FlickrClient.GetData()
+		flickrClient := flickr_client.GetCurrentFlickrClient()
+		logger.Info(flickrconf)
+		logger.Info(flickrClient)
+		flickrClient.FlickrToken = flickrconf.FlickrToken
+		data := flickrClient.GetData()
 		db, err := database.NewDatabaseHandler()
 		if err != nil {
 			logger.Errorf("cannot connect to database with error %v", err)
