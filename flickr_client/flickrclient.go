@@ -10,6 +10,7 @@ import (
 	"photo/exifhandler"
 	"photo/modele"
 	"sync"
+	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 var currentFlickrClient *Flickr
@@ -138,13 +139,7 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 				if err != nil {
 					logger.Errorf("Error while getting photo information %d with error %v", photo.Id, err)
 				} else {
-					if len(photoInfoResponse.Photo.Urls) > 0 {
-						p.Filepath = photoInfoResponse.Photo.Urls[0].Url
-						p.Thumbnail = f.GetThumbnail(photo.Id)
-						if err != nil {
-							logger.Errorf("Cannot get the thumbnail from url : %s with error %v", p.Filepath, err)
-						}
-					}
+					p.Thumbnail, p.Filepath = f.GetThumbnailAndOriginal( photo.Id)
 				}
 				exifs := f.GetExif(photoInfoResponse.Photo)
 				for _, exif := range exifs {
@@ -159,7 +154,9 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 	return responses
 }
 
-func (f *Flickr) GetThumbnail(id string) string {
+func (f *Flickr) GetThumbnailAndOriginal(id string) (string,string) {
+	var originalUrl string
+	var thumbnail string
 	response, err := photos.GetSizes(f.Client, id)
 	if err != nil {
 		logger.Errorf("Error while getting thumbnail with error %v for id photo %s", err, id)
@@ -167,14 +164,19 @@ func (f *Flickr) GetThumbnail(id string) string {
 	}
 	for _, size := range response.Sizes.Sizes {
 		if size.Label == "Thumbnail" {
-			thumbnail, err := exifhandler.GetBase64ThumbnailUrl(size.Source)
+			thumbnail, err = exifhandler.GetBase64ThumbnailUrl(size.Source)
 			if err != nil {
 				logger.Errorf("Error while transform thumbnail from url %s into base64 string with error %v", size.Source, err)
 			}
-			return thumbnail
+
+		} else {
+			if size.Label == "Original" {
+				originalUrl = size.Source
+			}
 		}
+
 	}
-	return ""
+	return thumbnail,originalUrl
 }
 
 func (f *Flickr) GetExif(pinfo photos.PhotoInfo) []photos.Exif {

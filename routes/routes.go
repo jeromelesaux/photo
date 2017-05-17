@@ -97,6 +97,7 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 				logger.Errorf("cannot import google data into database with error %v", err)
 			}
 		}
+		logger.Info("Import flickr albums finished")
 	}()
 	JsonAsResponse(w, "Configuration saved and imported data from your flickr account")
 }
