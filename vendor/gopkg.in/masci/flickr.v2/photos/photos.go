@@ -60,6 +60,28 @@ type PhotoInfo struct {
 	Urls []Url `xml:"urls"`
 }
 
+type Sizes struct {
+	Canblog int `xml:"canblog,attr"`
+	CanPrint int `xml:"canprint,attr"`
+	CanDowwload int `xml:"candownload,attr"`
+	Sizes []Size `xml:"size"`
+}
+
+type Size struct {
+	Label string `xml:"label,attr"`
+	Width int `xml:"width,attr"`
+	Height int `xml:"height,attr"`
+	Source string `xml:"source,attr"`
+	Url string `xml:"url,attr"`
+	Media string `xml:"media,attr"`
+}
+
+type SizesResponse struct {
+	flickr.BasicResponse
+	Sizes Sizes `xml:"sizes"`
+}
+
+
 type Url struct {
 	Url string `xml:"url"`
 }
@@ -92,6 +114,20 @@ type PhotoExifResponse struct {
 type PhotoInfoResponse struct {
 	flickr.BasicResponse
 	Photo PhotoInfo `xml:"photo"`
+}
+
+func GetSizes(client *flickr.FlickrClient,id string) (*SizesResponse,error) {
+	client.Init()
+	client.EndpointUrl = flickr.API_ENDPOINT
+	client.HTTPVerb = "GET"
+	client.Args.Set("method", "flickr.photos.getSizes")
+	client.Args.Set("photo_id", id)
+	client.OAuthSign()
+
+	response := &SizesResponse{}
+	err := flickr.DoGet(client, response)
+	return response, err
+	
 }
 
 func GetExifs(client *flickr.FlickrClient, id string, secret string) (*PhotoExifResponse,error) {

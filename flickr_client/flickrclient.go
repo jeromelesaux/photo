@@ -7,6 +7,7 @@ import (
 	"gopkg.in/masci/flickr.v2/photos"
 	"gopkg.in/masci/flickr.v2/photosets"
 	"os"
+	"photo/exifhandler"
 	"photo/modele"
 	"sync"
 )
@@ -139,6 +140,10 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 				} else {
 					if len(photoInfoResponse.Photo.Urls) > 0 {
 						p.Filepath = photoInfoResponse.Photo.Urls[0].Url
+						p.Thumbnail = f.GetThumbnail(photo.Id)
+						if err != nil {
+							logger.Errorf("Cannot get the thumbnail from url : %s with error %v", p.Filepath, err)
+						}
 					}
 				}
 				exifs := f.GetExif(photoInfoResponse.Photo)
@@ -152,6 +157,24 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 
 	}
 	return responses
+}
+
+func (f *Flickr) GetThumbnail(id string) string {
+	response, err := photos.GetSizes(f.Client, id)
+	if err != nil {
+		logger.Errorf("Error while getting thumbnail with error %v for id photo %s", err, id)
+		return ""
+	}
+	for _, size := range response.Sizes.Sizes {
+		if size.Label == "Thumbnail" {
+			thumbnail, err := exifhandler.GetBase64ThumbnailUrl(size.Source)
+			if err != nil {
+				logger.Errorf("Error while transform thumbnail from url %s into base64 string with error %v", size.Source, err)
+			}
+			return thumbnail
+		}
+	}
+	return ""
 }
 
 func (f *Flickr) GetExif(pinfo photos.PhotoInfo) []photos.Exif {
