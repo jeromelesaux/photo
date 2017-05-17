@@ -1,18 +1,55 @@
 package flickr_client
 
 import (
+	"encoding/json"
 	logger "github.com/Sirupsen/logrus"
 	"gopkg.in/masci/flickr.v2"
 	"gopkg.in/masci/flickr.v2/photos"
 	"gopkg.in/masci/flickr.v2/photosets"
+	"os"
 	"photo/modele"
 	"sync"
 )
 
 var currentFlickrClient *Flickr
 var flickrClientOnce sync.Once
+var configFlickrLock sync.Mutex
+var configurationFilename = "flickr-conf.json"
+
+func (f *Flickr) saveConfiguration() {
+	configFlickrLock.Lock()
+	defer configFlickrLock.Unlock()
+
+	conf, err := os.Create(configurationFilename)
+	if err != nil {
+		logger.Error("Error while saving the google configuration file with error : " + err.Error())
+		return
+	}
+	defer conf.Close()
+	if err = json.NewEncoder(conf).Encode(f); err != nil {
+		logger.Error("Error while unmarshaling google configuration file with error : " + err.Error())
+		return
+	}
+}
+
+func (f *Flickr) LoadConfiguration() {
+	configFlickrLock.Lock()
+	defer configFlickrLock.Unlock()
+
+	conf, err := os.Open(configurationFilename)
+	if err != nil {
+		logger.Error("Error while saving the google configuration file with error : " + err.Error())
+		return
+	}
+	defer conf.Close()
+	if err = json.NewDecoder(conf).Decode(f); err != nil {
+		logger.Error("Error while unmarshaling google configuration file with error : " + err.Error())
+		return
+	}
+}
 
 func GetCurrentFlickrClient() *Flickr {
+
 	flickrClientOnce.Do(func() {
 		currentFlickrClient = &Flickr{}
 	})
@@ -24,15 +61,16 @@ func SaveCurrentFlickrClient(f *Flickr) {
 	currentFlickrClient.ApiKey = f.ApiKey
 	currentFlickrClient.UrlAuthorization = f.UrlAuthorization
 	currentFlickrClient.FlickrToken = f.FlickrToken
+	currentFlickrClient.saveConfiguration()
 }
 
 type Flickr struct {
 	ApiKey           string               `json:"api_key"`
 	ApiSecret        string               `json:"api_secret"`
-	FlickrToken      string               `json:"flickr_token"`
+	FlickrToken      string               `json:"flickr_token,omitempty"`
 	Client           *flickr.FlickrClient `json:"_"`
 	RequestTok       *flickr.RequestToken `json:"_"`
-	UrlAuthorization string               `json:"url_authorization"`
+	UrlAuthorization string               `json:"url_authorization,omitempty"`
 }
 
 func NewFlickrClient(apikey, apisecret string) *Flickr {
@@ -48,10 +86,17 @@ func (f *Flickr) Connect() {
 }
 
 func (f *Flickr) GetUrlRequestToken() string {
-	requestTok, _ := flickr.GetRequestToken(f.Client)
+	requestTok, err := flickr.GetRequestToken(f.Client)
+	if err != nil {
+		logger.Errorf("Error while getting  request token url from flickr with error : %v", err)
+	}
 
 	// build the authorizatin URL
-	f.UrlAuthorization, _ = flickr.GetAuthorizeUrl(f.Client, requestTok)
+	f.UrlAuthorization, err = flickr.GetAuthorizeUrl(f.Client, requestTok)
+	f.RequestTok = requestTok
+	if err != nil {
+		logger.Errorf("Error while getting authorize url from flickr with error : %v", err)
+	}
 	logger.Infof("flickr token url : %v", f.UrlAuthorization)
 
 	return f.UrlAuthorization

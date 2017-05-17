@@ -22,6 +22,12 @@ import (
 	"time"
 )
 
+func LoadFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
+	flickrconf := &flickr_client.Flickr{}
+	flickrconf.LoadConfiguration()
+	JsonAsResponse(w, flickrconf)
+}
+
 func SaveFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)

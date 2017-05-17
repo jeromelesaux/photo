@@ -329,6 +329,7 @@
                     getRegisteredMachines();
                     getExtensionList();
                     loadGoogleAccount();
+                    loadFlickrAccount();
                 });
 
                 $(function () {
@@ -360,6 +361,23 @@
                         event.preventDefault();
                     });
 
+
+                function loadFlickrAccount() {
+                    $(function(){
+                        $.ajax({
+                            dataType: "json",
+                            url: "flickrload",
+                            type: 'GET',
+                            success: function (responsedata, codeHttp) {
+                                if (codeHttp == "success") {
+                                    $('#flickrApiKey').val(responsedata.api_key );
+                                    $('#flickrApiSecret').val(responsedata.api_secret);
+                                    $('#flickrToken').val(responsedata.flickr_token);
+                                }
+                            }
+                        });
+                    })
+                }
 
                 function goImportFlickrAlbum() {
                     $(function(){

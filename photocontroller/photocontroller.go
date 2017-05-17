@@ -65,6 +65,7 @@ func main() {
 		http.HandleFunc("/pdfalbum", routes.GenerateAlbumPdf)
 		http.HandleFunc("/googlesave", routes.SaveGoogleConfiguration)
 		http.HandleFunc("/googleload", routes.LoadGoogleConfiguration)
+		http.HandleFunc("/flickrload", routes.LoadFlickrAlbums)
 		http.HandleFunc("/flickrsave", routes.SaveFlickrConfiguration)
 		http.HandleFunc("/flickrloadalbums", routes.LoadFlickrAlbums)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
