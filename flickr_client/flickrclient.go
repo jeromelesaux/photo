@@ -10,7 +10,6 @@ import (
 	"photo/exifhandler"
 	"photo/modele"
 	"sync"
-	"golang.org/x/tools/go/gcimporter15/testdata"
 )
 
 var currentFlickrClient *Flickr
@@ -139,7 +138,7 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 				if err != nil {
 					logger.Errorf("Error while getting photo information %d with error %v", photo.Id, err)
 				} else {
-					p.Thumbnail, p.Filepath = f.GetThumbnailAndOriginal( photo.Id)
+					p.Thumbnail, p.Filepath = f.GetThumbnailAndOriginal(photo.Id)
 				}
 				exifs := f.GetExif(photoInfoResponse.Photo)
 				for _, exif := range exifs {
@@ -154,13 +153,13 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 	return responses
 }
 
-func (f *Flickr) GetThumbnailAndOriginal(id string) (string,string) {
+func (f *Flickr) GetThumbnailAndOriginal(id string) (string, string) {
 	var originalUrl string
 	var thumbnail string
 	response, err := photos.GetSizes(f.Client, id)
 	if err != nil {
 		logger.Errorf("Error while getting thumbnail with error %v for id photo %s", err, id)
-		return ""
+		return thumbnail, originalUrl
 	}
 	for _, size := range response.Sizes.Sizes {
 		if size.Label == "Thumbnail" {
@@ -176,7 +175,7 @@ func (f *Flickr) GetThumbnailAndOriginal(id string) (string,string) {
 		}
 
 	}
-	return thumbnail,originalUrl
+	return thumbnail, originalUrl
 }
 
 func (f *Flickr) GetExif(pinfo photos.PhotoInfo) []photos.Exif {
