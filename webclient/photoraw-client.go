@@ -59,10 +59,13 @@ func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []string {
 	for _, record := range p.Album.Records {
 		logger.Info("call get photo content for " + record.Filepath + " at the machine " + record.MachineId)
 		wg.Add(1)
-		if record.MachineId != modele.ORIGIN_GOOGLE {
-			go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg, true)
-		} else {
+		switch record.MachineId {
+		case modele.ORIGIN_GOOGLE:
 			go p.CallGetRemoteRawPhoto(record.Filepath, wg, true)
+		case modele.ORIGIN_FLICKR:
+			go p.CallGetRemoteRawPhoto(record.Filepath, wg, true)
+		default:
+			go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg, true)
 		}
 	}
 

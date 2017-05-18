@@ -92,7 +92,7 @@ type Exif struct {
 	Tagspace string `xml:"tagspace,attr"`
 	Tagspaceid string `xml:"tagspaceid,attr"`
 	Tag string `xml:"tag,attr"`
-	Label string `xml:"label;attr"`
+	Label string `xml:"label,attr"`
 	Raw string `xml:"raw"`
 }
 
