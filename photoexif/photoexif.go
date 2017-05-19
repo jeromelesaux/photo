@@ -7,6 +7,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"photo/configurationexif"
 	"photo/exifhandler"

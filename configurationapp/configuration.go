@@ -1,3 +1,5 @@
+// package for google account and application configuration
+//
 package configurationapp
 
 import (
@@ -7,6 +9,9 @@ import (
 	"sync"
 )
 
+// global application configuration structure
+// it stores the database location path (file system)
+// and google account informations
 type Configuration struct {
 	DatabasePath string `json:"database_path"`
 	GoogleID     string `json:"google_id"`
@@ -18,6 +23,8 @@ var confPhotoExifMut sync.Mutex
 var configuration *Configuration
 var configurationFilepath string
 
+// load configuration from the file location stored in variable configurationPathFile
+// it returns the pointer to the structure
 func LoadPhotoExifConfiguration(configurationPathfile string) *Configuration {
 	configurationFilepath = configurationPathfile
 	confPhotoExifMut.Lock()
@@ -35,10 +42,13 @@ func LoadPhotoExifConfiguration(configurationPathfile string) *Configuration {
 	return configuration
 }
 
+// function returns the singleton of the configuration
 func GetConfiguration() *Configuration {
 	return configuration
 }
 
+// function which saves the configuration into the location configurationFilepath
+// (this variable is set in the LoadPhotoExifConfiguration function)
 func (c *Configuration) Save() error {
 	confPhotoExifMut.Lock()
 	defer confPhotoExifMut.Unlock()

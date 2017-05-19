@@ -1,3 +1,5 @@
+// package managing the images files extensions to scan
+//
 package configurationexif
 
 import (
@@ -10,10 +12,12 @@ import (
 
 var confFileExtensionMut sync.Mutex
 
+// list of the file extensions available
 type FileExtension struct {
 	Extensions []string
 }
 
+// function loads the list of the file extensions available from the file path (configurationFile)
 func LoadConfiguration(configurationFile string) FileExtension {
 	configuration := FileExtension{}
 	confFileExtensionMut.Lock()
@@ -32,6 +36,7 @@ func LoadConfiguration(configurationFile string) FileExtension {
 	return configuration
 }
 
+// function loads the structure from the static file path "extension-file.json"
 func LoadConfigurationAtOnce() FileExtension {
 	return LoadConfiguration("extension-file.json")
 }

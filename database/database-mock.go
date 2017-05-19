@@ -9,6 +9,7 @@ type DatabaseMock struct {
 	data []*DatabasePhotoRecord
 }
 
+// valide the interface contract !
 var _ DatabaseInterface = (*DatabaseMock)(nil)
 
 func NewDataBaseMock() (*DatabaseMock, error) {
