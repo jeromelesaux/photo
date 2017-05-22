@@ -251,6 +251,11 @@
                         class="btn btn-primary start">
                     <span>Retreive the albums list</span>
                 </button>
+		 <div class="form-group">
+                    <span class="glyphicon glyphicon-search"></span>
+                    <input class="input-control" type="text" id="keySearch" onkeyup="searchKeyword()" placeholder="Search for albums..">
+		   <button type="button" class="btn btn-default" onclick="cleanKeyword()">X</button>
+		</div>
                 <div class="panel panel-default">
                     <div class="panel-heading">Albums</div>
                     <div class="panel-body">
@@ -360,6 +365,26 @@
                         }
                         event.preventDefault();
                     });
+
+		function cleanKeyword() {
+			$('#keySearch').val("");
+		}
+	
+		function searchKeyword() {
+			var input, filter, albums;
+			input = document.getElementById("keySearch");
+                        filter = input.value.toUpperCase();
+			albums = document.getElementById("albumListId").childNodes;
+			for (i = 0; i < albums.length; i++) {
+				var label = albums[i].innerText.toUpperCase();
+				if (label.indexOf(filter) == -1) {
+					albums[i].style.display = "none";
+				} else {
+					albums[i].style.display = "";
+				}	
+			}
+			
+		}
 
 
                 function loadFlickrAccount() {
