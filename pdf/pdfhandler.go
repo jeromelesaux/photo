@@ -178,16 +178,16 @@ func Add4Images(f *gofpdf.Fpdf, img1, img2, img3, img4 string) *gofpdf.Fpdf {
 	f.Rect(0, 0, 210, 297, "F")
 	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
-		f.Image(img1, 10, 50, 90, 0, false, "", 0, "")
+		f.Image(img1, 10, 50, 90, 80, false, "", 0, "")
 	}
 	if img2 != "" {
-		f.Image(img2, 10, 150, 90, 0, false, "", 0, "")
+		f.Image(img2, 10, 150, 90, 80, false, "", 0, "")
 	}
 	if img3 != "" {
-		f.Image(img3, 110, 50, 90, 0, false, "", 0, "")
+		f.Image(img3, 110, 50, 90, 80, false, "", 0, "")
 	}
 	if img4 != "" {
-		f.Image(img4, 110, 150, 90, 0, false, "", 0, "")
+		f.Image(img4, 110, 150, 90, 80, false, "", 0, "")
 	}
 	return f
 }
@@ -198,13 +198,13 @@ func Add3Images(f *gofpdf.Fpdf, img1, img2, img3 string) *gofpdf.Fpdf {
 	f.Rect(0, 0, 210, 297, "F")
 	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
-		f.Image(img1, 10, 50, 90, 0, false, "", 0, "")
+		f.Image(img1, 10, 50, 90, 80, false, "", 0, "")
 	}
 	if img3 != "" {
-		f.Image(img3, 110, 50, 90, 0, false, "", 0, "")
+		f.Image(img3, 110, 50, 90, 80, false, "", 0, "")
 	}
 	if img2 != "" {
-		f.Image(img2, 20, 150, 170, 0, false, "", 0, "")
+		f.Image(img2, 20, 150, 170, 130, false, "", 0, "")
 	}
 
 	return f
