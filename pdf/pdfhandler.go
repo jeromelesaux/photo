@@ -198,10 +198,10 @@ func Add3Images(f *gofpdf.Fpdf, img1, img2, img3 string) *gofpdf.Fpdf {
 	f.Rect(0, 0, 210, 297, "F")
 	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
-		f.Image(img1, 10, 50, 90, 80, false, "", 0, "")
+		f.Image(img1, 10, 50, 90, 75, false, "", 0, "")
 	}
 	if img3 != "" {
-		f.Image(img3, 110, 50, 90, 80, false, "", 0, "")
+		f.Image(img3, 110, 50, 90, 75, false, "", 0, "")
 	}
 	if img2 != "" {
 		f.Image(img2, 20, 150, 170, 130, false, "", 0, "")
