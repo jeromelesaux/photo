@@ -1,3 +1,4 @@
+// package to get exif values from local images
 package exifhandler
 
 import (
@@ -21,6 +22,8 @@ import (
 	"strings"
 )
 
+// function returns all exifs values ot a local image
+// filepath is the file path of the image to treat.
 func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
 	abspath, err := filepath.Abs(filePath)
 	filename := path.Base(filePath)
@@ -67,8 +70,11 @@ func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
 	}, err
 }
 
+
 var Tags = make([]*modele.PhotoInformations, 0)
 
+// function searches and returns all imformations of photos found in this local directory (directorypath)
+// conf is the structure containing all images suffix to match.
 func GetPhotosInformations(directorypath string, conf configurationexif.FileExtension) ([]*modele.PhotoInformations, error) {
 	Tags = Tags[:0]
 	err := filepath.Walk(directorypath, ScanExifFile(conf))
@@ -76,6 +82,7 @@ func GetPhotosInformations(directorypath string, conf configurationexif.FileExte
 
 }
 
+// file walker function to match all suffix from fileextention
 func ScanExifFile(fileExtension configurationexif.FileExtension) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 
@@ -99,6 +106,7 @@ func ScanExifFile(fileExtension configurationexif.FileExtension) filepath.WalkFu
 	}
 }
 
+// function returns the base64 content of the image path
 func GetBase64Photo(path string) (string, error) {
 	img, err := imaging.Open(path)
 	if err != nil {
@@ -114,6 +122,7 @@ func GetBase64Photo(path string) (string, error) {
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
+// function returns the base64 thumbnail of the image path
 func GetBase64Thumbnail(path string) (string, error) {
 
 	img, err := imaging.Open(path)
@@ -156,6 +165,7 @@ func GetBase64Thumbnail(path string) (string, error) {
 
 }
 
+// function returns the base64 content of the image url (web mode)
 func GetBase64ThumbnailUrl(url string) (string, error) {
 	client := &http.Client{}
 	response, err := client.Get(url)
