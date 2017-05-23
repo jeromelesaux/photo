@@ -121,33 +121,33 @@ func (d *DatabaseHandler) createIndexes() error {
 
 	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 
-	if err := feeds.Index([]string{MACHINEID_INDEX}); err != nil {
+	if err = feeds.Index([]string{MACHINEID_INDEX}); err != nil {
 		logger.Error("Error while indexing MachineId with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{FILENAME_INDEX}); err != nil {
+	if err = feeds.Index([]string{FILENAME_INDEX}); err != nil {
 		logger.Error("Error while indexing Filename with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{FILENAMES_INDEX}); err != nil {
+	if err = feeds.Index([]string{FILENAMES_INDEX}); err != nil {
 		logger.Error("Error while indexing Filenames with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{FILEPATHS_INDEX}); err != nil {
+	if err = feeds.Index([]string{FILEPATHS_INDEX}); err != nil {
 		logger.Error("Error while indexing Filepaths with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{FILEPATH_INDEX}); err != nil {
+	if err = feeds.Index([]string{FILEPATH_INDEX}); err != nil {
 		logger.Error("Error while indexing Filepath with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{MD5SUM_INDEX}); err != nil {
+	if err = feeds.Index([]string{MD5SUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Md5sum with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{FILETYPE_INDEX}); err != nil {
+	if err = feeds.Index([]string{FILETYPE_INDEX}); err != nil {
 		logger.Error("Error while indexing Type with error : " + err.Error())
 	}
-	if err := feeds.Index([]string{FILENAME_INDEX, FILEPATH_INDEX, FILETYPE_INDEX}); err != nil {
+	if err = feeds.Index([]string{FILENAME_INDEX, FILEPATH_INDEX, FILETYPE_INDEX}); err != nil {
 		logger.Error("Error while indexing Filename,Filepath,Type with error : " + err.Error())
 	}
 
 	feeds = dbInstance.Use(DBALBUM_COLLECTION)
-	if err := feeds.Index([]string{ALBUM_INDEX}); err != nil {
+	if err = feeds.Index([]string{ALBUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Album with error : " + err.Error())
 	}
 
@@ -268,6 +268,7 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 }
 
 func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
+	var err error
 	dbInstance, err := d.openDB()
 	if err != nil {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
@@ -281,12 +282,13 @@ func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
 
 	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
 	logger.Info(query)
-	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+	if err = db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
 	}
 	photosToKeep := make([]string, 0)
 	for id := range queryResult {
-		readback, err := feedsAlbum.Read(id)
+		var readback map[string]interface{}
+		readback, err = feedsAlbum.Read(id)
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
@@ -354,7 +356,7 @@ func (d *DatabaseHandler) DeleteAlbum(response *album.AlbumMessage) error {
 	var query interface{}
 	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
 	logger.Info(query)
-	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+	if err = db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
 		return err
 	}
@@ -389,7 +391,7 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 	var query interface{}
 	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
 	logger.Info(query)
-	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+	if err = db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
 		return err
 	}
@@ -398,7 +400,8 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 	}
 	md5sumsMerged = append(md5sumsMerged, response.Md5sums...)
 	for id := range queryResult {
-		readback, err := feedsAlbum.Read(id)
+		var readback map[string]interface{}
+		readback, err = feedsAlbum.Read(id)
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {

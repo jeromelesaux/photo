@@ -88,7 +88,7 @@ package:  ${EXEC1} ${EXEC2} swagger
 		@echo "    Archive ${EXEC}-${GOOS}-${GOARCH}-${VERSION}.zip created"
 
 audit:   ${EXEC1}
-		@golint $(shell go list ./... | grep -v /vendor/ | sed 's/photo\///')
+		@golint ${SOURCES}
 		@go tool vet -all -shadow ${SOURCES}
 		@echo "    Audit effectue"
 

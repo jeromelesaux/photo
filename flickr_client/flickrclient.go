@@ -69,8 +69,8 @@ type Flickr struct {
 	ApiKey           string               `json:"api_key"`
 	ApiSecret        string               `json:"api_secret"`
 	FlickrToken      string               `json:"flickr_token,omitempty"`
-	Client           *flickr.FlickrClient `json:"_"`
-	RequestTok       *flickr.RequestToken `json:"_"`
+	Client           *flickr.FlickrClient `json:"-"`
+	RequestTok       *flickr.RequestToken `json:"-"`
 	UrlAuthorization string               `json:"url_authorization,omitempty"`
 }
 
@@ -136,7 +136,7 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 				p.Md5Sum = photo.Id
 				photoInfoResponse, err := photos.GetInfo(f.Client, photo.Id, f.ApiSecret)
 				if err != nil {
-					logger.Errorf("Error while getting photo information %d with error %v", photo.Id, err)
+					logger.Errorf("Error while getting photo information %s with error %v", photo.Id, err)
 				} else {
 					p.Thumbnail, p.Filepath = f.GetThumbnailAndOriginal(photo.Id)
 				}
