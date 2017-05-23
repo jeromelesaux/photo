@@ -6,7 +6,7 @@ var (
 	FILESIZE_LITTLE = "little"
 	ORIGIN_GOOGLE   = "www.google.com"
 	ORIGIN_FLICKR   = "www.flickr.com"
-	LOCAL_ORIGINE   = "localhost"
+	ORIGIN_LOCAL    = "localhost"
 )
 
 type RegisteredSlave struct {
@@ -29,8 +29,9 @@ func NewPhotoInformations() *PhotoInformations {
 }
 
 type RawPhoto struct {
-	Name string `json:"name,omitempty"`
-	Data string `json:"data,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Data        string `json:"data,omitempty"`
+	Orientation string `json:"orientation,omiptempty"`
 }
 
 type PhotoResponse struct {
@@ -39,6 +40,17 @@ type PhotoResponse struct {
 	Version   string               `json:"version"`
 	MachineId string               `json:"machine"`
 	Photos    []*PhotoInformations `json:"photos"`
+}
+
+var (
+	Landscape = "landscape"
+	Portrait  = "Portrait"
+)
+
+type ExportPdf struct {
+	Filename      string `json:"filename"`
+	Base64Content string `json:"base64_content"`
+	Orientation   string `json:"orientation"`
 }
 
 func NewPhotoResponse(message string, version string, machineid string, photos []*PhotoInformations) *PhotoResponse {

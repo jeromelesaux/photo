@@ -70,7 +70,6 @@ func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
 	}, err
 }
 
-
 var Tags = make([]*modele.PhotoInformations, 0)
 
 // function searches and returns all imformations of photos found in this local directory (directorypath)
@@ -107,19 +106,19 @@ func ScanExifFile(fileExtension configurationexif.FileExtension) filepath.WalkFu
 }
 
 // function returns the base64 content of the image path
-func GetBase64Photo(path string) (string, error) {
+func GetBase64Photo(path string) (string, string, error) {
 	img, err := imaging.Open(path)
 	if err != nil {
 		logger.Error("Error while retreiving image content with error " + err.Error())
-		return "", err
+		return "", "", err
 	}
 	buf := new(bytes.Buffer)
 	err = png.Encode(buf, img)
 	if err != nil {
 		logger.Error("Error while retreiving image content with error " + err.Error())
-		return "", err
+		return "", "", err
 	}
-	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), Orientation(img), nil
 }
 
 // function returns the base64 thumbnail of the image path
@@ -162,6 +161,17 @@ func GetBase64Thumbnail(path string) (string, error) {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+
+}
+
+func Orientation(img image.Image) string {
+	width := img.Bounds().Max.X
+	height := img.Bounds().Max.Y
+	if height > width {
+		return modele.Portrait
+	} else {
+		return modele.Landscape
+	}
 
 }
 

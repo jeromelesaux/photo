@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"photo/database"
+	"photo/exifhandler"
 	"photo/modele"
 	"photo/slavehandler"
 	"strings"
@@ -21,20 +22,20 @@ import (
 )
 
 type RawPhotoClient struct {
-	rawPhotoChan chan string
+	rawPhotoChan chan *modele.ExportPdf
 	Album        *database.DatabaseAlbumRecord
 }
 
 func NewRawPhotoClient(albumRecord *database.DatabaseAlbumRecord) *RawPhotoClient {
 	return &RawPhotoClient{
-		rawPhotoChan: make(chan string, 4),
+		rawPhotoChan: make(chan *modele.ExportPdf, 4),
 		Album:        albumRecord,
 	}
 }
 
-func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []string {
+func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []*modele.ExportPdf {
 	var startTime time.Time
-	photosFilenames := make([]string, 0)
+	photosFilenames := make([]*modele.ExportPdf, 0)
 
 	defer func() {
 		endTime := time.Now()
@@ -89,14 +90,14 @@ func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitG
 	request, err := http.NewRequest("GET", remotePath, nil)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- ""
+		p.rawPhotoChan <- &modele.ExportPdf{}
 		return
 	}
 	logger.Info("Calling uri : " + remotePath)
 	response, err := client.Do(request)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- ""
+		p.rawPhotoChan <- &modele.ExportPdf{}
 		return
 	}
 	defer func() {
@@ -107,7 +108,7 @@ func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitG
 	img, _, err := image.Decode(response.Body)
 	if err != nil {
 		logger.Error("error with : " + err.Error() + " for uri:" + remotePath)
-		p.rawPhotoChan <- ""
+		p.rawPhotoChan <- &modele.ExportPdf{}
 		return
 	}
 
@@ -122,16 +123,24 @@ func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitG
 		f, err := os.Create(filename)
 		if err != nil {
 			logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
-			p.rawPhotoChan <- ""
+			p.rawPhotoChan <- &modele.ExportPdf{}
 		} else {
 			defer f.Close()
 			if err := jpeg.Encode(f, img, &jpeg.Options{Quality: 99}); err != nil {
 				logger.Infof("error in encoding temporary file %s with error %v", filename, err.Error())
 			}
-			p.rawPhotoChan <- filename
+
+			e := &modele.ExportPdf{Filename: filename,
+				Orientation: exifhandler.Orientation(img),
+			}
+			p.rawPhotoChan <- e
 		}
 	} else {
-		p.rawPhotoChan <- base64.StdEncoding.EncodeToString(buf.Bytes())
+
+		e := &modele.ExportPdf{Base64Content: base64.StdEncoding.EncodeToString(buf.Bytes()),
+			Orientation: exifhandler.Orientation(img),
+		}
+		p.rawPhotoChan <- e
 	}
 	return
 
@@ -150,7 +159,7 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	slave := slaves.Slaves[machineid]
 	if slave == nil {
 		logger.Error("Slave for machineId:" + machineid + " not found. Skiped")
-		p.rawPhotoChan <- ""
+		p.rawPhotoChan <- &modele.ExportPdf{}
 		return
 	}
 	client := &http.Client{}
@@ -158,14 +167,14 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	request, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- ""
+		p.rawPhotoChan <- &modele.ExportPdf{}
 		return
 	}
 	logger.Info("Calling uri : " + uri)
 	response, err := client.Do(request)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- ""
+		p.rawPhotoChan <- &modele.ExportPdf{}
 		return
 	}
 	defer func() {
@@ -177,7 +186,7 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	logger.Info(response.Body)
 	if err := json.NewDecoder(response.Body).Decode(content); err != nil {
 		logger.Error("error with : " + err.Error() + " for uri:" + uri)
-		p.rawPhotoChan <- ""
+		p.rawPhotoChan <- &modele.ExportPdf{}
 		return
 	}
 	if returnFilenameSaved {
@@ -193,17 +202,23 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 			if err != nil {
 				logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
 				os.Remove(filename)
-				p.rawPhotoChan <- ""
+				p.rawPhotoChan <- &modele.ExportPdf{}
 			} else {
 				if err := jpeg.Encode(f, img, &jpeg.Options{Quality: 99}); err != nil {
 					logger.Infof("error in encoding temporary file %s with error %v", filename, err.Error())
 				}
-				p.rawPhotoChan <- filename
+				e := &modele.ExportPdf{Filename: filename,
+					Orientation: exifhandler.Orientation(img),
+				}
+				p.rawPhotoChan <- e
 			}
 		}
 
 	} else {
-		p.rawPhotoChan <- content.Data
+		e := &modele.ExportPdf{Base64Content: content.Data,
+			Orientation: content.Orientation,
+		}
+		p.rawPhotoChan <- e
 	}
 	return
 

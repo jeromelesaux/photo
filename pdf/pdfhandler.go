@@ -10,6 +10,7 @@ import (
 	"image/png"
 	"math/rand"
 	"os"
+	"photo/modele"
 	"strings"
 	"time"
 )
@@ -19,49 +20,65 @@ var (
 	Images4XPerPages = "Images4XPerPages"
 )
 
-func CreatePdfAlbum(albumName string, photos []string, imagesPerPage string) []byte {
-
+func CreatePdfAlbum(albumName string, photos []*modele.ExportPdf, imagesPerPage string) []byte {
+	filenames := make([]string, 0)
 	f := gofpdf.New("P", "mm", "A4", "")
 	switch imagesPerPage {
 	case Images3XPerPages:
 		i := 0
 		for i < len(photos) {
 			var file1, file2, file3 string
+			var or1, or2, or3 string
 			if i < len(photos) {
-				file1 = photos[i]
+				file1 = photos[i].Filename
+				or1 = photos[i].Orientation
+				filenames = append(filenames, photos[i].Filename)
 			}
 			i++
 			if i < len(photos) {
-				file2 = photos[i]
+				file2 = photos[i].Filename
+				or2 = photos[i].Orientation
+				filenames = append(filenames, photos[i].Filename)
 			}
 			i++
 			if i < len(photos) {
-				file3 = photos[i]
+				file3 = photos[i].Filename
+				or3 = photos[i].Orientation
+				filenames = append(filenames, photos[i].Filename)
 			}
 			i++
-			f = Add3Images(f, file1, file2, file3)
+			f = Add3Images(f, file1, or1, file2, or2, file3, or3)
 		}
 	case Images4XPerPages:
 		i := 0
 		for i < len(photos) {
 			var file1, file2, file3, file4 string
+			var or1, or2, or3, or4 string
 			if i < len(photos) {
-				file1 = photos[i]
+				file1 = photos[i].Filename
+				or1 = photos[i].Orientation
+				filenames = append(filenames, photos[i].Filename)
 			}
 			i++
 			if i < len(photos) {
-				file2 = photos[i]
+				file2 = photos[i].Filename
+				or2 = photos[i].Orientation
+				filenames = append(filenames, photos[i].Filename)
 			}
 			i++
 			if i < len(photos) {
-				file3 = photos[i]
+				file3 = photos[i].Filename
+				or3 = photos[i].Orientation
+				filenames = append(filenames, photos[i].Filename)
 			}
 			i++
 			if i < len(photos) {
-				file4 = photos[i]
+				file4 = photos[i].Filename
+				or4 = photos[i].Orientation
+				filenames = append(filenames, photos[i].Filename)
 			}
 			i++
-			f = Add4Images(f, file1, file2, file3, file4)
+			f = Add4Images(f, file1, or1, file2, or2, file3, or3, file4, or4)
 		}
 	}
 
@@ -69,16 +86,16 @@ func CreatePdfAlbum(albumName string, photos []string, imagesPerPage string) []b
 
 	if err := f.Output(b); err != nil {
 		logger.Infof("error while saving the album %s in pdf format with error %v", albumName, err.Error())
-		removeImages(photos)
+		removeImages(filenames)
 		return b.Bytes()
 	}
 
-	removeImages(photos)
+	removeImages(filenames)
 
 	return b.Bytes()
 }
 
-func CreateFilePdfAlbum(albumName string, photos []string, imagesPerPage string) string {
+func CreateFilePdfAlbum(albumName string, photos []*modele.ExportPdf, imagesPerPage string) string {
 	filesnames := saveImage(photos)
 
 	f := gofpdf.New("P", "mm", "A4", "")
@@ -87,41 +104,50 @@ func CreateFilePdfAlbum(albumName string, photos []string, imagesPerPage string)
 		i := 0
 		for i < len(filesnames) {
 			var file1, file2, file3 string
+			var or1, or2, or3 string
 			if i < len(filesnames) {
 				file1 = filesnames[i]
+				or1 = photos[i].Orientation
 			}
 			i++
 			if i < len(filesnames) {
 				file2 = filesnames[i]
+				or2 = photos[i].Orientation
 			}
 			i++
 			if i < len(filesnames) {
 				file3 = filesnames[i]
+				or3 = photos[i].Orientation
 			}
 			i++
-			f = Add3Images(f, file1, file2, file3)
+			f = Add3Images(f, file1, or1, file2, or2, file3, or3)
 		}
 	case Images4XPerPages:
 		i := 0
 		for i < len(filesnames) {
 			var file1, file2, file3, file4 string
+			var or1, or2, or3, or4 string
 			if i < len(filesnames) {
 				file1 = filesnames[i]
+				or1 = photos[i].Orientation
 			}
 			i++
 			if i < len(filesnames) {
 				file2 = filesnames[i]
+				or2 = photos[i].Orientation
 			}
 			i++
 			if i < len(filesnames) {
 				file3 = filesnames[i]
+				or3 = photos[i].Orientation
 			}
 			i++
 			if i < len(filesnames) {
 				file4 = filesnames[i]
+				or4 = photos[i].Orientation
 			}
 			i++
-			f = Add4Images(f, file1, file2, file3, file4)
+			f = Add4Images(f, file1, or1, file2, or2, file3, or3, file4, or4)
 		}
 	}
 
@@ -143,7 +169,7 @@ func removeImages(files []string) {
 
 }
 
-func saveImage(photos []string) []string {
+func saveImage(photos []*modele.ExportPdf) []string {
 	files := make([]string, 0)
 	rand.Seed(time.Now().UTC().UnixNano())
 	for index, content := range photos {
@@ -153,7 +179,7 @@ func saveImage(photos []string) []string {
 			logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
 		} else {
 			defer f.Close()
-			reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(content))
+			reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(content.Base64Content))
 			img, err := png.Decode(reader)
 			if err != nil {
 				logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
@@ -172,39 +198,76 @@ func saveImage(photos []string) []string {
 	return files
 }
 
-func Add4Images(f *gofpdf.Fpdf, img1, img2, img3, img4 string) *gofpdf.Fpdf {
+func Add4Images(f *gofpdf.Fpdf, img1, orientation1, img2, orientation2, img3, orientation3, img4, orientation4 string) *gofpdf.Fpdf {
 	logger.Info("save files into page " + img1 + " " + img2 + " " + img3 + " " + img4)
 	f.AddPage()
 	f.Rect(0, 0, 210, 297, "F")
 	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
-		f.Image(img1, 10, 50, 90, 80, false, "", 0, "")
+		logger.Infof("%s:%s", img1, orientation1)
+		if orientation1 == modele.Landscape {
+			f.Image(img1, 10, 50, 90, 80, false, "", 0, "")
+		} else {
+			f.Image(img1, 20, 50, 70, 80, false, "", 0, "")
+		}
 	}
 	if img2 != "" {
-		f.Image(img2, 10, 150, 90, 80, false, "", 0, "")
+		logger.Infof("%s:%s", img2, orientation2)
+		if orientation2 == modele.Landscape {
+			f.Image(img2, 10, 180, 90, 80, false, "", 0, "")
+		} else {
+			f.Image(img2, 20, 180, 70, 80, false, "", 0, "")
+		}
 	}
 	if img3 != "" {
-		f.Image(img3, 110, 50, 90, 80, false, "", 0, "")
+		logger.Infof("%s:%s", img3, orientation3)
+		if orientation3 == modele.Landscape {
+			f.Image(img3, 110, 50, 90, 80, false, "", 0, "")
+		} else {
+			f.Image(img3, 120, 50, 70, 80, false, "", 0, "")
+		}
+
 	}
 	if img4 != "" {
-		f.Image(img4, 110, 150, 90, 80, false, "", 0, "")
+		logger.Infof("%s:%s", img4, orientation4)
+		if orientation4 == modele.Landscape {
+			f.Image(img4, 110, 180, 90, 80, false, "", 0, "")
+		} else {
+			f.Image(img4, 120, 180, 70, 80, false, "", 0, "")
+		}
 	}
 	return f
 }
 
-func Add3Images(f *gofpdf.Fpdf, img1, img2, img3 string) *gofpdf.Fpdf {
+func Add3Images(f *gofpdf.Fpdf, img1, orientation1, img2, orientation2, img3, orientation3 string) *gofpdf.Fpdf {
 	logger.Info("save files into page " + img1 + " " + img2 + " " + img3)
 	f.AddPage()
 	f.Rect(0, 0, 210, 297, "F")
 	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
-		f.Image(img1, 10, 50, 90, 75, false, "", 0, "")
+		if orientation1 == modele.Landscape {
+			f.Image(img1, 10, 50, 90, 75, false, "", 0, "")
+		} else {
+			f.Image(img1, 20, 50, 70, 75, false, "", 0, "")
+		}
 	}
 	if img3 != "" {
-		f.Image(img3, 110, 50, 90, 75, false, "", 0, "")
+		logger.Infof("%s:%s", img3, orientation3)
+		if orientation3 == modele.Landscape {
+			f.Image(img3, 110, 50, 90, 75, false, "", 0, "")
+		} else {
+			f.Image(img3, 120, 50, 70, 75, false, "", 0, "")
+		}
 	}
 	if img2 != "" {
-		f.Image(img2, 20, 150, 170, 130, false, "", 0, "")
+		logger.Infof("%s:%s", img2, orientation2)
+		if orientation2 == modele.Landscape {
+
+			f.Image(img2, 20, 150, 170, 130, false, "", 0, "")
+
+		} else {
+			f.Image(img2, 50, 150, 110, 130, false, "", 0, "")
+		}
 	}
 
 	return f

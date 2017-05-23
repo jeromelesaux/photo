@@ -385,12 +385,12 @@ func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 // route thumbnail  of the filpath (encoded in url)
 func GetPhoto(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-	response, err := exifhandler.GetBase64Photo(filePath)
+	content, orientation, err := exifhandler.GetBase64Photo(filePath)
 	if err != nil {
 		JsonAsResponse(w, err)
 		return
 	}
-	JsonAsResponse(w, &modele.RawPhoto{Name: filePath, Data: response})
+	JsonAsResponse(w, &modele.RawPhoto{Name: filePath, Data: content, Orientation: orientation})
 }
 
 // route thumbnail  of the filpath (encoded in url)
