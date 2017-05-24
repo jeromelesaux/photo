@@ -135,7 +135,7 @@ func (p *PhotoExifClient) ScanFoldersClient(remotepaths []string, slaveid string
 	close(p.photoResponseChan)
 
 	wgp.Wait()
-
+	modele.PostActionMessage("scan folders ended for machineid " + slaveid)
 }
 
 func (p *PhotoExifClient) GetFileExtensionValues(slave *slavehandler.Slave) (error, *configurationexif.FileExtension) {

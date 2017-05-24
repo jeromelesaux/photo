@@ -6,7 +6,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.css">
 </head>
 <body>
 <div class="container">
@@ -26,6 +27,7 @@
             <li><a href="#scantab" data-toggle="tab">Scan Directories</a></li>
             <li><a href="#search" data-toggle="tab">Search Photos</a></li>
             <li><a href="#albums" data-toggle="tab">Manage your albums</a></li>
+            <li><a href="#history" data-toggle="tab">History actions</a></li>
         </ul>
         <div id="my-tab-content" class="tab-content">
             <!-- application configuration -->
@@ -311,6 +313,26 @@
                     </div>
                 </div>
             </div>
+            <div class="tab-pane active" id="history">
+                <div class="panel panel-default">
+                    <div class="panel-heading">application actions history
+                    <button id="refreshTable" class="btn btn-default" onclick="refreshTable()">Refresh data</button></div>
+                    <div class="panel-body">
+                        <table  data-toggle="table" class="display" data-url="./history" id="tableActionsMessages" data-toolbar="#toolbar"
+                                data-sort-name="date" data-sort-order="desc">
+                            <tr>
+                                <td>actions messages</td>
+                            </tr>
+                            <thead>
+                            <tr>
+                                <th data-field="date" data-sortable="true">date</th>
+                                <th data-field="message" data-sortable="false">message</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
             <style type="text/css">
                 img {
                     filter: gray; /* IE6-9 */
@@ -365,6 +387,11 @@
                         }
                         event.preventDefault();
                     });
+
+         function refreshTable() {
+             table = $('#tableActionsMessages');
+             table.bootstrapTable('refresh');
+         }
 
 		function cleanKeyword() {
 			$('#keySearch').val("");

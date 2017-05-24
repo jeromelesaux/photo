@@ -1,13 +1,45 @@
 package modele
 
-var (
-	FILESIZE_BIG    = "big"
-	FILESIZE_MEDIUM = "medium"
-	FILESIZE_LITTLE = "little"
-	ORIGIN_GOOGLE   = "www.google.com"
-	ORIGIN_FLICKR   = "www.flickr.com"
-	ORIGIN_LOCAL    = "localhost"
+import (
+	"sync"
+	"time"
 )
+
+var (
+	FILESIZE_BIG      = "big"
+	FILESIZE_MEDIUM   = "medium"
+	FILESIZE_LITTLE   = "little"
+	ORIGIN_GOOGLE     = "www.google.com"
+	ORIGIN_FLICKR     = "www.flickr.com"
+	ORIGIN_LOCAL      = "localhost"
+	ActionHistoryChan chan *ActionHistory
+	ActionsHistory    []*ActionHistory
+	ActionHistoryOnce sync.Once
+)
+
+func InitActionsHistory() {
+	ActionHistoryOnce.Do(
+		func() {
+			ActionHistoryChan = make(chan *ActionHistory, 1)
+			ActionsHistory = make([]*ActionHistory, 0)
+			go func() {
+				for a := range ActionHistoryChan {
+					ActionsHistory = append(ActionsHistory, a)
+				}
+			}()
+
+		})
+}
+
+func PostActionMessage(message string) {
+	ActionHistoryChan <- &ActionHistory{Message: message,
+		Date: time.Now().String()}
+}
+
+type ActionHistory struct {
+	Date    string `json:"date"`
+	Message string `json:"message"`
+}
 
 type RegisteredSlave struct {
 	MachineId string `json:"machineId"`

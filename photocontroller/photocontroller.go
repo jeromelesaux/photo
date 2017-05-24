@@ -8,6 +8,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"photo/configurationapp"
+	"photo/modele"
 	"photo/routes"
 	"strconv"
 	"time"
@@ -45,6 +46,7 @@ func main() {
 	if *httpport != "" && *configurationfile != "" {
 		logger.Info(wellcomeMessage)
 		configurationapp.LoadPhotoExifConfiguration(*configurationfile)
+		modele.InitActionsHistory()
 		http.HandleFunc("/register", routes.RegisterSlave)
 		http.HandleFunc("/registeredslaves", routes.GetRegisteredSlaves)
 		http.HandleFunc("/browse", routes.Browse)
@@ -67,6 +69,7 @@ func main() {
 		http.HandleFunc("/flickrload", routes.LoadFlickrConfiguration)
 		http.HandleFunc("/flickrsave", routes.SaveFlickrConfiguration)
 		http.HandleFunc("/flickrloadalbums", routes.LoadFlickrAlbums)
+		http.HandleFunc("/history", routes.GetHistory)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

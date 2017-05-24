@@ -22,13 +22,20 @@ import (
 	"time"
 )
 
+func GetHistory(w http.ResponseWriter, r *http.Request) {
+	JsonAsResponse(w, modele.ActionsHistory)
+}
+
 func LoadFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling load flickr configuration.")
 	flickrconf := &flickr_client.Flickr{}
 	flickrconf.LoadConfiguration()
+	modele.PostActionMessage("calling load flickr configuration ended.")
 	JsonAsResponse(w, flickrconf)
 }
 
 func SaveFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling save flickr configuration.")
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
@@ -51,10 +58,12 @@ func SaveFlickrConfiguration(w http.ResponseWriter, r *http.Request) {
 	flickrClient.GetUrlRequestToken()
 	flickrconf.UrlAuthorization = flickrClient.UrlAuthorization
 	flickr_client.SaveCurrentFlickrClient(flickrClient)
+	modele.PostActionMessage("calling save flickr configuration ended.")
 	JsonAsResponse(w, flickrconf)
 }
 
 func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling load flickr albums.")
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
@@ -98,11 +107,13 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		logger.Info("Import flickr albums finished")
+		modele.PostActionMessage("calling load flickr albums ended.")
 	}()
 	JsonAsResponse(w, "Configuration saved and imported data from your flickr account")
 }
 
 func LoadGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling load google configuration.")
 	conf := configurationapp.GetConfiguration()
 	googleconf := &google_photos_client.GooglePhotoClient{
 		UserID: conf.GoogleUser,
@@ -110,10 +121,12 @@ func LoadGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 		Secret: conf.GoogleSecret,
 	}
 	logger.Info(googleconf)
+	modele.PostActionMessage("calling load google configuration ended.")
 	JsonAsResponse(w, googleconf)
 }
 
 func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling save google configuration and load albums from google photos.")
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
@@ -167,6 +180,7 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 				logger.Errorf("cannot import google data into database with error %v", err)
 			}
 		}
+		modele.PostActionMessage("calling save google configuration and load albums from google photos ended.")
 	}()
 
 	JsonAsResponse(w, "Configuration saved and imported data, please check log file to accept account usage")
@@ -174,6 +188,7 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 
 // route create a new album by the name and the md5sums of the photos
 func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling create new album.")
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
@@ -190,8 +205,10 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cannot not decode body received for registering", 400)
 		return
 	}
+
 	logger.Info(albumMessage)
 	db, err := database.NewDatabaseHandler()
+	modele.PostActionMessage("calling create new album ended.")
 	if err != nil {
 		JsonAsResponse(w, err)
 		return
@@ -204,6 +221,8 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, "Album "+albumMessage.AlbumName+" recorded.")
 }
 func DeleteAlbum(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling delete album content.")
+	defer modele.PostActionMessage("calling delete album content ended.")
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
@@ -221,12 +240,14 @@ func DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Info(albumMessage)
+
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		JsonAsResponse(w, err)
 		return
 	}
 	if err = db.DeleteAlbum(albumMessage); err != nil {
+
 		JsonAsResponse(w, err)
 		return
 	}
@@ -236,6 +257,8 @@ func DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling delete photos from album content.")
+	defer modele.PostActionMessage("calling delete photos from album content ended.")
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
@@ -268,6 +291,8 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 
 func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 	albumName := r.URL.Query().Get("albumName")
+	modele.PostActionMessage("calling generate pdf album for album : " + albumName)
+
 	logger.Info("Generate album : " + albumName)
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
@@ -279,6 +304,7 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 		logger.Info(content)
 		photosFilenames := webclient.NewRawPhotoClient(content).GetRemoteRawPhotosAlbum()
 		data := pdf.CreatePdfAlbum(content.AlbumName, photosFilenames, pdf.Images3XPerPages)
+		modele.PostActionMessage("calling generate pdf album for album : " + albumName + " ended.")
 		BinaryAsResponse(w, data, albumName+".pdf")
 		return
 	}
@@ -286,6 +312,7 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling update album content.")
 	if r.Body == nil {
 		http.Error(w, "empty body", 400)
 		return
@@ -304,6 +331,7 @@ func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Info(albumMessage)
 	db, err := database.NewDatabaseHandler()
+	modele.PostActionMessage("calling update album content ended.")
 	if err != nil {
 		JsonAsResponse(w, err)
 		return
@@ -319,23 +347,28 @@ func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
 
 // return all albums names
 func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling get albums list.")
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		JsonAsResponse(w, err)
 		return
 	}
 	albums := db.GetAlbumList()
+	modele.PostActionMessage("calling get albums list ended.")
 	JsonAsResponse(w, albums)
 }
 
 func GetAlbumData(w http.ResponseWriter, r *http.Request) {
+
 	albumName := r.URL.Query().Get("albumName")
+	modele.PostActionMessage("calling get album content for album : " + albumName)
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		JsonAsResponse(w, err)
 		return
 	}
 	content := db.GetAlbumData(albumName)
+	modele.PostActionMessage("calling get album content for album : " + albumName + " ended.")
 	JsonAsResponse(w, content)
 }
 
@@ -348,6 +381,7 @@ func GetExtensionList(w http.ResponseWriter, r *http.Request) {
 
 //  route : purpose get the images files extension supported by the application
 func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling get extension files")
 	logger.Info("get image files extension list")
 	conf := slavehandler.GetSlaves()
 	client := webclient.NewPhotoExifClient()
@@ -366,11 +400,13 @@ func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+	modele.PostActionMessage("calling get extension files ended.")
 }
 
 // route : purpose clean the database redundance
 func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 	db, err := database.NewDatabaseHandler()
+	modele.PostActionMessage("calling clean database.")
 	if err != nil {
 		JsonAsResponse(w, err)
 		return
@@ -379,6 +415,7 @@ func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
+	modele.PostActionMessage("calling clean database ended.")
 	JsonAsResponse(w, "ok")
 }
 
@@ -406,12 +443,14 @@ func GetThumbnail(w http.ResponseWriter, r *http.Request) {
 
 // route: return the registered slaves on the controller
 func GetRegisteredSlaves(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling registered slaves.")
 	conf := slavehandler.GetSlaves()
 	message := make([]modele.RegisteredSlave, 0)
 	for _, slave := range conf.Slaves {
 		message = append(message, modele.RegisteredSlave{MachineId: slave.Name, Ip: slave.Url})
 	}
 	logger.Infof("Ask for registered slave machines %v", message)
+	modele.PostActionMessage("exiting registered slaves.")
 	JsonAsResponse(w, message)
 }
 
@@ -434,15 +473,18 @@ func RegisterSlave(w http.ResponseWriter, r *http.Request) {
 	}
 	slavehandler.AddSlave(slave)
 	logger.Infof("%v %s\n", *slave, "is registered")
+
 	JsonAsResponse(w, "ok")
 }
 
 // route : browse the directory (encoded in the value variable) on the machineId
 func Browse(w http.ResponseWriter, r *http.Request) {
 	//usr, _ := user.Current()
+
 	starttime := time.Now()
 	directorypath := r.URL.Query().Get("value")
 	machineId := r.URL.Query().Get("machineId")
+	modele.PostActionMessage("calling browse directory with directory : " + directorypath + " and machineid : " + machineId)
 	logger.Info("Browse directory " + directorypath + " machineid " + machineId)
 	response := &modele.DirectoryItemResponse{
 		Name:             "Root",
@@ -466,10 +508,12 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 		logger.Error(err.Error())
 	}
 	logger.Info("Scan directory completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	modele.PostActionMessage("scan directory completed for directory : " + directorypath + " and machineid : " + machineId)
 	JsonAsResponse(w, response)
 }
 
 func ScanFolders(w http.ResponseWriter, r *http.Request) {
+
 	conf := configurationapp.GetConfiguration()
 	client := webclient.NewPhotoExifClient()
 	folders := &modele.FolderToScan{}
@@ -486,6 +530,7 @@ func ScanFolders(w http.ResponseWriter, r *http.Request) {
 	} else {
 		response = "Scans launched."
 	}
+	modele.PostActionMessage("calling scan folders for machineid " + folders.MachineId)
 	go client.ScanFoldersClient(folders.Folders, folders.MachineId, conf)
 
 	JsonAsResponse(w, response)
@@ -535,6 +580,7 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	if size == "" {
 		size = modele.FILESIZE_LITTLE
 	}
+	modele.PostActionMessage("calling query extension with value : " + filename + " and filesize : " + size)
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		logger.Error("Error while getting dabatabse with error" + err.Error())
@@ -544,6 +590,7 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 	response, err := db.QueryExtension(filename)
 	response = database.Reduce(response, size)
 	logger.Info("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	modele.PostActionMessage("calling query extension with value : " + filename + " and filesize : " + size + " ended.")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -559,6 +606,7 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 	if size == "" {
 		size = modele.FILESIZE_LITTLE
 	}
+	modele.PostActionMessage("calling query exif with value : " + pattern + " and exiftag : " + exiftag + " and filesize : " + size)
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		logger.Error("Error while getting dabatabse with error" + err.Error())
@@ -568,6 +616,7 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 	response, err := db.QueryExifTag(pattern, exiftag)
 	response = database.Reduce(response, size)
 	logger.Info("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	modele.PostActionMessage("calling query exif with value : " + pattern + " and exiftag : " + exiftag + " and filesize : " + size + " ended.")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -582,6 +631,7 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 	if size == "" {
 		size = modele.FILESIZE_LITTLE
 	}
+	modele.PostActionMessage("calling query filename with value : " + filename + " and filesize : " + size)
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		logger.Error("Error while getting dabatabse with error" + err.Error())
@@ -591,6 +641,7 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 	response, err := db.QueryFilename(filename)
 	response = database.Reduce(response, size)
 	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	modele.PostActionMessage("calling query filename with value : " + filename + " and filesize : " + size + " ended.")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
@@ -600,6 +651,7 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 
 func QueryAll(w http.ResponseWriter, r *http.Request) {
 	starttime := time.Now()
+	modele.PostActionMessage("calling query all.")
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		logger.Error("Error while getting dabatabse with error" + err.Error())
@@ -609,6 +661,7 @@ func QueryAll(w http.ResponseWriter, r *http.Request) {
 	response, err := db.QueryAll()
 
 	logger.Info("QueryAll completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	modele.PostActionMessage("calling query ended.")
 	if err != nil {
 		JsonAsResponse(w, err)
 	} else {
