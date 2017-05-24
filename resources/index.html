@@ -318,7 +318,7 @@
                     <div class="panel-heading">application actions history
                     <button id="refreshTable" class="btn btn-default" onclick="refreshTable()">Refresh data</button></div>
                     <div class="panel-body">
-                        <table  data-toggle="table" class="display" data-url="./history" id="tableActionsMessages" data-toolbar="#toolbar"
+                        <table  data-toggle="table" class="display" data-url="./history" id="tableActionsMessages"
                                 data-sort-name="date" data-sort-order="desc">
                             <tr>
                                 <td>actions messages</td>
@@ -714,12 +714,24 @@
                                         '<img class="img-responsive " src="data:image/png;base64,' + item.thumbnail + '" alt="' + item.filename + '"/>' +
                                         '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden album" autocomplete="off">' +
                                         '</label>' +
-                                        '<span><br>' + item.filename + '<br>' + displayExifTags(item.exiftags) + '</span>' +
+                                        '<button onclick="toggler(\'' + item.md5sum +'\')"   class="btn">+</button>' +
+                                        '<div id="#'+ item.md5sum +'" style="display: none;">' +
+                                        '<br>' + item.filename + '<br>' + displayExifTags(item.exiftags) +
+                                        '</div>' +
                                         '</div>')
                                 })
                             }
                         });
                     });
+                }
+
+                function toggler(divId) {
+                    var x = document.getElementById('#'+divId);
+                    if (x.style.display === 'none') {
+                        x.style.display = 'block';
+                    } else {
+                        x.style.display = 'none';
+                    }
                 }
 
                 function listAlbums() {
