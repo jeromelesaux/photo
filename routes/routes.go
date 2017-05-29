@@ -639,14 +639,14 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryFilename(filename)
+	if err != nil {
+		JsonAsResponse(w, err)
+	}
+	logger.Infof("QueryFilename returns %d records", len(response))
 	response = database.Reduce(response, size)
 	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	modele.PostActionMessage("calling query filename with value : " + filename + " and filesize : " + size + " ended.")
-	if err != nil {
-		JsonAsResponse(w, err)
-	} else {
-		JsonAsResponse(w, response)
-	}
+	JsonAsResponse(w, response)
 }
 
 func QueryAll(w http.ResponseWriter, r *http.Request) {
