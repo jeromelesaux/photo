@@ -208,7 +208,7 @@ func Add4Images(f *gofpdf.Fpdf, img1, orientation1, img2, orientation2, img3, or
 		if orientation1 == modele.Landscape {
 			f.Image(img1, 10, 50, 90, 80, false, "", 0, "")
 		} else {
-			f.Image(img1, 20, 50, 70, 80, false, "", 0, "")
+			f.Image(img1, 20, 50, 65, 80, false, "", 0, "")
 		}
 	}
 	if img2 != "" {
@@ -216,7 +216,7 @@ func Add4Images(f *gofpdf.Fpdf, img1, orientation1, img2, orientation2, img3, or
 		if orientation2 == modele.Landscape {
 			f.Image(img2, 10, 180, 90, 80, false, "", 0, "")
 		} else {
-			f.Image(img2, 20, 180, 70, 80, false, "", 0, "")
+			f.Image(img2, 20, 180, 65, 80, false, "", 0, "")
 		}
 	}
 	if img3 != "" {
@@ -224,7 +224,7 @@ func Add4Images(f *gofpdf.Fpdf, img1, orientation1, img2, orientation2, img3, or
 		if orientation3 == modele.Landscape {
 			f.Image(img3, 110, 50, 90, 80, false, "", 0, "")
 		} else {
-			f.Image(img3, 120, 50, 70, 80, false, "", 0, "")
+			f.Image(img3, 120, 50, 65, 80, false, "", 0, "")
 		}
 
 	}
@@ -233,7 +233,7 @@ func Add4Images(f *gofpdf.Fpdf, img1, orientation1, img2, orientation2, img3, or
 		if orientation4 == modele.Landscape {
 			f.Image(img4, 110, 180, 90, 80, false, "", 0, "")
 		} else {
-			f.Image(img4, 120, 180, 70, 80, false, "", 0, "")
+			f.Image(img4, 120, 180, 65, 80, false, "", 0, "")
 		}
 	}
 	return f
@@ -246,27 +246,27 @@ func Add3Images(f *gofpdf.Fpdf, img1, orientation1, img2, orientation2, img3, or
 	f.SetFillColor(0, 0, 0)
 	if img1 != "" {
 		if orientation1 == modele.Landscape {
-			f.Image(img1, 10, 50, 90, 75, false, "", 0, "")
+			f.Image(img1, 10, 50, 90, 65, false, "", 0, "")
 		} else {
-			f.Image(img1, 20, 50, 70, 75, false, "", 0, "")
+			f.Image(img1, 20, 50, 65, 75, false, "", 0, "")
 		}
 	}
 	if img3 != "" {
 		logger.Infof("%s:%s", img3, orientation3)
 		if orientation3 == modele.Landscape {
-			f.Image(img3, 110, 50, 90, 75, false, "", 0, "")
+			f.Image(img3, 110, 50, 90, 65, false, "", 0, "")
 		} else {
-			f.Image(img3, 120, 50, 70, 75, false, "", 0, "")
+			f.Image(img3, 120, 50, 65, 75, false, "", 0, "")
 		}
 	}
 	if img2 != "" {
 		logger.Infof("%s:%s", img2, orientation2)
 		if orientation2 == modele.Landscape {
 
-			f.Image(img2, 20, 150, 170, 130, false, "", 0, "")
+			f.Image(img2, 20, 150, 170, 120, false, "", 0, "")
 
 		} else {
-			f.Image(img2, 50, 150, 110, 130, false, "", 0, "")
+			f.Image(img2, 50, 150, 105, 130, false, "", 0, "")
 		}
 	}
 
