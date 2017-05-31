@@ -522,8 +522,34 @@
 
                 function getPdfAlbum() {
                     $(function () {
+                        var values = [];
+                        var valuesUrl = "" ;
+                        var partial = false;
+                        $('input.album[type=checkbox]').each(function () {
+                            if ($(this).is(":checked") == true) {
+                                values.push($(this).val());
+                            }
+                        });
                         albumName = $('#albumNameId').val();
+                        if (values.length > 0) {
+                            if (confirm("You have selected " + values.length + " photos for the pdf. Do you want to create a pdf with only this selection ?") == true) {
+                                for (i=0;i < values.length; i++) {
+                                       valuesUrl +=  values[i];
+                                       if ((i+1) < values.length) {
+                                           valuesUrl += ",";
+                                       }
+                                }
+                                valuesUrl += "";
+                                partial = true;
+                                //console.log(valuesUrl);
+                            }
+                        }
+                        
                         url = "pdfalbum?albumName=" + albumName;
+                        if (partial) {
+                            url += "&photosid=" + valuesUrl;
+                        }
+                        console.log(url);
                         // Get file name from url.
                         var filename =albumName +".pdf";
                         var xhr = new XMLHttpRequest();

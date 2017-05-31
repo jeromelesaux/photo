@@ -5,6 +5,7 @@ import (
 	logger "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"photo/album"
 	"photo/configurationapp"
@@ -19,6 +20,7 @@ import (
 	"photo/slavehandler"
 	"photo/webclient"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -290,7 +292,15 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 }
 
 func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
+
 	albumName := r.URL.Query().Get("albumName")
+	c, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		JsonAsResponse(w, "An error occured while generating pdf for album :"+albumName+" "+err.Error())
+		return
+	}
+
+	photosid := strings.Split(c["photosid"][0], ",")
 	modele.PostActionMessage("calling generate pdf album for album : " + albumName)
 
 	logger.Info("Generate album : " + albumName)
@@ -301,8 +311,24 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 	}
 	content := db.GetAlbumData(albumName)
 	if content.AlbumName == albumName && len(content.Records) > 0 {
-		logger.Info(content)
-		photosFilenames := webclient.NewRawPhotoClient(content).GetRemoteRawPhotosAlbum()
+		selected := database.NewDatabaseAlbumRecord()
+		logger.Infof("photosid:%v", photosid)
+		if len(photosid) > 0 {
+			selected.AlbumName = content.AlbumName
+			for _, id := range photosid {
+				for _, photo := range content.Records {
+					if photo.Md5sum == id {
+						selected.Records = append(selected.Records, photo)
+						break
+					}
+				}
+			}
+		} else {
+			selected = content
+		}
+
+		logger.Info(selected)
+		photosFilenames := webclient.NewRawPhotoClient(selected).GetRemoteRawPhotosAlbum()
 		data := pdf.CreatePdfAlbum(content.AlbumName, photosFilenames, pdf.Images3XPerPages)
 		modele.PostActionMessage("calling generate pdf album for album : " + albumName + " ended.")
 		BinaryAsResponse(w, data, albumName+".pdf")
