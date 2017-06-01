@@ -292,15 +292,19 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 }
 
 func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
-
+	var photosid []string
 	albumName := r.URL.Query().Get("albumName")
 	c, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
 		JsonAsResponse(w, "An error occured while generating pdf for album :"+albumName+" "+err.Error())
 		return
 	}
+	if c["photosid"] != nil {
+		photosid = strings.Split(c["photosid"][0], ",")
+	} else {
+		photosid = make([]string, 0)
+	}
 
-	photosid := strings.Split(c["photosid"][0], ",")
 	modele.PostActionMessage("calling generate pdf album for album : " + albumName)
 
 	logger.Info("Generate album : " + albumName)
@@ -311,6 +315,12 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 	}
 	content := db.GetAlbumData(albumName)
 	if content.AlbumName == albumName && len(content.Records) > 0 {
+		logger.Infof("album %s contents %d photos.", content.AlbumName, len(content.Records))
+		if (len(content.Records) > 150 && len(photosid) == 0) || len(photosid) > 150 {
+			modele.PostActionMessage("Cannot generate pdf album :" + albumName + " to much photos from this album please select a set of photos.")
+			JsonAsResponse(w, "Cannot generate pdf album :"+albumName+" to much photos from this album please select a set of photos.")
+			return
+		}
 		selected := database.NewDatabaseAlbumRecord()
 		logger.Infof("photosid:%v", photosid)
 		if len(photosid) > 0 {
@@ -334,6 +344,7 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 		BinaryAsResponse(w, data, albumName+".pdf")
 		return
 	}
+	modele.PostActionMessage("An error occured while generating pdf for album :" + albumName)
 	JsonAsResponse(w, "An error occured while generating pdf for album :"+albumName)
 }
 
