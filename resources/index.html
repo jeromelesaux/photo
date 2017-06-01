@@ -47,7 +47,8 @@
                                 Google ID<input type="text" id="googleId" class="form-control">
                                 Google Secret Phrase<input type="password" id="googleSecret" class="form-control">
                             </form>
-                            <button type="button" name="save google account" onclick="saveAndImportGoogleAccount()" value="save and import google account"
+                            <button type="button" name="save google account" onclick="saveAndImportGoogleAccount()"
+                                    value="save and import google account"
                                     class="btn btn-primary start">
                                 <span>Save and import google account</span>
                             </button>
@@ -67,7 +68,7 @@
                                                                     class="form-control">
                             </form>
                             <button type="button" class="btn btn-primary start" data-toggle="modal" data-target="#flickrOauthVerifer">
-                               <span>Get flickr token to import albums</span>
+                                <span>Get flickr token to import albums</span>
                             </button>
                             <button type="button" class="btn btn-primary start" data-dismiss="modal" onclick="goImportFlickrAlbum()">
                                 <span>import flickr albums</span>
@@ -253,11 +254,13 @@
                         class="btn btn-primary start">
                     <span>Retreive the albums list</span>
                 </button>
-		 <div class="form-group">
+                <div class="form-group">
                     <span class="glyphicon glyphicon-search"></span>
                     <input class="input-control" type="text" id="keySearch" onkeyup="searchKeyword()" placeholder="Search for albums..">
-		   <button type="button" class="btn btn-default" onclick="cleanKeyword()">X</button>
-		</div>
+                    <button type="button" class="btn btn-default" onclick="cleanKeyword()">X</button>
+                    <!--<button type="button" class="btn btn-primary start" onclick="selectGoogleAlbums()">Google Albums</button>-->
+                    <!--<button type="button" class="btn btn-primary start" onclick="selectFlickrAlbums()">Flickr Albums</button>-->
+                </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">Albums</div>
                     <div class="panel-body">
@@ -286,7 +289,8 @@
                                     class="btn btn-info start">
                                 <span>delete selected photos from the album</span>
                             </button>
-                            <button type="button" name="Clear photos selection" onclick="clearSelectionAlbum()"
+                            <button type="button" name="Clear photos selection"
+                                    id="uncheckAlbumsSelection"
                                     value="Clear photos selection"
                                     class="btn btn-info start">
                                 <span>clear photos selection</span>
@@ -316,10 +320,11 @@
             <div class="tab-pane" id="history">
                 <div class="panel panel-default">
                     <div class="panel-heading">application actions history
-                    <button id="refreshTable" class="btn btn-default" onclick="refreshTable()">Refresh data</button></div>
+                        <button id="refreshTable" class="btn btn-default" onclick="refreshTable()">Refresh data</button>
+                    </div>
                     <div class="panel-body">
-                        <table  data-toggle="table" class="display" data-url="./history" id="tableActionsMessages"
-                                data-sort-name="date" data-sort-order="desc">
+                        <table data-toggle="table" class="display" data-url="./history" id="tableActionsMessages"
+                               data-sort-name="date" data-sort-order="desc">
                             <tr>
                                 <td>actions messages</td>
                             </tr>
@@ -357,6 +362,9 @@
                     getExtensionList();
                     loadGoogleAccount();
                     loadFlickrAccount();
+                    $("#uncheckAlbumsSelection").click(function(){
+                        $(this).find('input.album[type=checkbox]').prop("checked",false);
+                    })
                 });
 
                 $(function () {
@@ -368,8 +376,6 @@
                         $('#loadingImage').hide();
                     });
                 });
-
-
 
 
                 // script javascript to manage selection of the photo
@@ -388,41 +394,41 @@
                         event.preventDefault();
                     });
 
-         function refreshTable() {
-             table = $('#tableActionsMessages');
-             table.bootstrapTable('refresh');
-         }
+                function refreshTable() {
+                    table = $('#tableActionsMessages');
+                    table.bootstrapTable('refresh');
+                }
 
-		function cleanKeyword() {
-			$('#keySearch').val("");
-		}
-	
-		function searchKeyword() {
-			var input, filter, albums;
-			input = document.getElementById("keySearch");
-                        filter = input.value.toUpperCase();
-			albums = document.getElementById("albumListId").childNodes;
-			for (i = 0; i < albums.length; i++) {
-				var label = albums[i].innerText.toUpperCase();
-				if (label.indexOf(filter) == -1) {
-					albums[i].style.display = "none";
-				} else {
-					albums[i].style.display = "";
-				}	
-			}
-			
-		}
+                function cleanKeyword() {
+                    $('#keySearch').val("");
+                }
+
+                function searchKeyword() {
+                    var input, filter, albums;
+                    input = document.getElementById("keySearch");
+                    filter = input.value.toUpperCase();
+                    albums = document.getElementById("albumListId").childNodes;
+                    for (i = 0; i < albums.length; i++) {
+                        var label = albums[i].innerText.toUpperCase();
+                        if (label.indexOf(filter) == -1) {
+                            albums[i].style.display = "none";
+                        } else {
+                            albums[i].style.display = "";
+                        }
+                    }
+
+                }
 
 
                 function loadFlickrAccount() {
-                    $(function(){
+                    $(function () {
                         $.ajax({
                             dataType: "json",
                             url: "flickrload",
                             type: 'GET',
                             success: function (responsedata, codeHttp) {
                                 if (codeHttp == "success") {
-                                    $('#flickrApiKey').val(responsedata.api_key );
+                                    $('#flickrApiKey').val(responsedata.api_key);
                                     $('#flickrApiSecret').val(responsedata.api_secret);
                                     $('#flickrToken').val(responsedata.flickr_token);
                                 }
@@ -432,7 +438,7 @@
                 }
 
                 function goImportFlickrAlbum() {
-                    $(function(){
+                    $(function () {
                         flickrKey = $('#flickrApiKey').val();
                         flickrSecret = $('#flickrApiSecret').val();
                         flickrToken = $('#flickrToken').val();
@@ -456,7 +462,7 @@
                 }
 
                 function goFlickr() {
-                    $(function() {
+                    $(function () {
                         flickrKey = $('#flickrApiKey').val();
                         flickrSecret = $('#flickrApiSecret').val();
                         var body = {};
@@ -479,7 +485,7 @@
                 }
 
                 function saveAndImportGoogleAccount() {
-                    $(function(){
+                    $(function () {
                         googleUserId = $('#googleUserId').val();
                         googleId = $('#googleId').val();
                         googleSecret = $('#googleSecret').val();
@@ -504,7 +510,7 @@
                 }
 
                 function loadGoogleAccount() {
-                    $(function(){
+                    $(function () {
                         $.ajax({
                             dataType: "json",
                             url: "googleload",
@@ -523,7 +529,7 @@
                 function getPdfAlbum() {
                     $(function () {
                         var values = [];
-                        var valuesUrl = "" ;
+                        var valuesUrl = "";
                         var partial = false;
                         $('input.album[type=checkbox]').each(function () {
                             if ($(this).is(":checked") == true) {
@@ -533,25 +539,25 @@
                         albumName = $('#albumNameId').val();
                         if (values.length > 0) {
                             if (confirm("You have selected " + values.length + " photos for the pdf. Do you want to create a pdf with only this selection ?") == true) {
-                                for (i=0;i < values.length; i++) {
-                                       valuesUrl +=  values[i];
-                                       if ((i+1) < values.length) {
-                                           valuesUrl += ",";
-                                       }
+                                for (i = 0; i < values.length; i++) {
+                                    valuesUrl += values[i];
+                                    if ((i + 1) < values.length) {
+                                        valuesUrl += ",";
+                                    }
                                 }
                                 valuesUrl += "";
                                 partial = true;
                                 //console.log(valuesUrl);
                             }
                         }
-                        
+
                         url = "pdfalbum?albumName=" + albumName;
                         if (partial) {
                             url += "&photosid=" + valuesUrl;
                         }
                         console.log(url);
                         // Get file name from url.
-                        var filename =albumName +".pdf";
+                        var filename = albumName + ".pdf";
                         var xhr = new XMLHttpRequest();
                         xhr.responseType = 'blob';
                         xhr.onload = function () {
@@ -571,9 +577,14 @@
 
                 function clearSelectionAlbum() {
                     $(function () {
-                        $('input.album[type=checkbox]').each(function () {
-                            $(this).prop('checked', false);
-                        });
+                        $(this).find('input.album[type=checkbox]').prop("checked",false);
+//                        $('input.album[type=checkbox]').attr('checked',false);
+//                        $('input.album[type=checkbox]').each(function () {
+//                            var input = $(this);
+//                            if (input.is(":checked") == true) {
+//                                input.type(":checkbox:enabled").attr("checked",false);
+//                            }
+//                        });
                     })
                 }
 
@@ -740,8 +751,8 @@
                                         '<img class="img-responsive " src="data:image/png;base64,' + item.thumbnail + '" alt="' + item.filename + '"/>' +
                                         '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden album" autocomplete="off">' +
                                         '</label>' +
-                                        '<button onclick="toggler(\'' + item.md5sum +'\')"   class="btn">+</button>' +
-                                        '<div id="#'+ item.md5sum +'" style="display: none;">' +
+                                        '<button onclick="toggler(\'' + item.md5sum + '\')"   class="btn">+</button>' +
+                                        '<div id="#' + item.md5sum + '" style="display: none;">' +
                                         '<br>' + item.filename + '<br>' + displayExifTags(item.exiftags) +
                                         '</div>' +
                                         '</div>')
@@ -752,13 +763,57 @@
                 }
 
                 function toggler(divId) {
-                    var x = document.getElementById('#'+divId);
+                    var x = document.getElementById('#' + divId);
                     if (x.style.display === 'none') {
                         x.style.display = 'block';
                     } else {
                         x.style.display = 'none';
                     }
                 }
+
+                //                function selectGoogleAlbums() {
+                //                    $(function(){
+                //                        $.ajax({
+                //                            dataType: "json",
+                //                            url: "/albums?type=google",
+                //                            type: 'GET',
+                //                            success: function (jsondata, codeHttp) {
+                //                                //  console.log(jsondata);
+                //                                $('#albumListId').empty();
+                //                                if (jQuery.isEmptyObject(jsondata)) {
+                //                                    alert("No albums set.");
+                //                                } else {
+                //                                    $.each(jsondata, function (i, item) {
+                //                                        $('#albumListId').append('<button type="button" name="' + item +
+                //                                            '" onclick="getAlbum(\'' + item + '\')" value="' + item + ' " class="btn btn-primary start">' + item + '</button>');
+                //                                    });
+                //                                }
+                //                            }
+                //                        })
+                //                    })
+                //                }
+                //
+                //                function selectFlickrAlbums() {
+                //                    $(function(){
+                //                        $.ajax({
+                //                            dataType: "json",
+                //                            url: "/albums?type=flickr",
+                //                            type: 'GET',
+                //                            success: function (jsondata, codeHttp) {
+                //                                //  console.log(jsondata);
+                //                                $('#albumListId').empty();
+                //                                if (jQuery.isEmptyObject(jsondata)) {
+                //                                    alert("No albums set.");
+                //                                } else {
+                //                                    $.each(jsondata, function (i, item) {
+                //                                        $('#albumListId').append('<button type="button" name="' + item +
+                //                                            '" onclick="getAlbum(\'' + item + '\')" value="' + item + ' " class="btn btn-primary start">' + item + '</button>');
+                //                                    });
+                //                                }
+                //                            }
+                //                        })
+                //                    })
+                //                }
 
                 function listAlbums() {
                     $(function () {

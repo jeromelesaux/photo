@@ -385,6 +385,7 @@ func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
 // return all albums names
 func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
 	modele.PostActionMessage("calling get albums list.")
+
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -398,6 +399,7 @@ func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
 func GetAlbumData(w http.ResponseWriter, r *http.Request) {
 
 	albumName := r.URL.Query().Get("albumName")
+
 	modele.PostActionMessage("calling get album content for album : " + albumName)
 	db, err := database.NewDatabaseHandler()
 	if err != nil {

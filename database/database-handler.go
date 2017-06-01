@@ -607,7 +607,6 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord,
 		if a[FILENAMES_INDEX] != nil {
 			for _, val := range a[FILENAMES_INDEX].([]interface{}) {
 				if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
-					logger.Infof("Document", id, "is", string(docContent))
 					var exif map[string]interface{}
 					if a[EXIFTAGS_INDEX] != nil {
 						exif = a[EXIFTAGS_INDEX].(map[string]interface{})
@@ -626,7 +625,6 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord,
 		if a[FILEPATHS_INDEX] != nil {
 			for _, val := range a[FILEPATHS_INDEX].([]interface{}) {
 				if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
-					logger.Infof("Document", id, "is", string(docContent))
 					var exif map[string]interface{}
 					if a[EXIFTAGS_INDEX] != nil {
 						exif = a[EXIFTAGS_INDEX].(map[string]interface{})
