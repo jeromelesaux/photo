@@ -5,7 +5,7 @@ MV=mv
 
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go' | grep -v '/vendor/')
-#GOPATH=$(SOURCEDIR)/
+
 #GOOS=linux
 #GOARCH=amd64
 #GOARCH=arm
@@ -35,9 +35,9 @@ LDFLAGS=-ldflags "-s -X main.Version=$(VERSION) -X main.GitHash=$(BUILDHASH) -X 
 $(EXEC2): organize $(SOURCES)  ${EXEC1}
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
-		    	GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
+		    	GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
 		else\
-       			GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
+       			GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
         fi
 		@echo "    ${EXEC2} generated."
 
@@ -45,9 +45,9 @@ $(EXEC2): organize $(SOURCES)  ${EXEC1}
 $(EXEC1): organize $(SOURCES)
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
-		    GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
+		    GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
 		else\
-	            GOPATH=$(PWD)/../.. GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
+	            GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
         fi
 		@echo "    ${EXEC1} generated."
 
@@ -94,7 +94,7 @@ audit:   ${EXEC1}
 
 swagger:
 	@echo "Generate swagger json file specs"
-	@GOPATH=$(PWD)/../.. GOOS=linux GOARCH=amd64 go run ${GOPATH}/src/github.com/go-swagger/go-swagger/cmd/swagger/swagger.go generate spec -m -b ./routes > resources/swagger.json
+	@GOOS=linux GOARCH=amd64 go run ${GOPATH}/src/github.com/go-swagger/go-swagger/cmd/swagger/swagger.go generate spec -m -b ./routes > resources/swagger.json
 	@echo "Specs generate at resources/swagger.json"
 
 #----------------------------------------------------------------------#

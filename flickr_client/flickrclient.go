@@ -3,12 +3,12 @@ package flickr_client
 import (
 	"encoding/json"
 	logger "github.com/Sirupsen/logrus"
+	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/modele"
 	"gopkg.in/masci/flickr.v2"
 	"gopkg.in/masci/flickr.v2/photos"
 	"gopkg.in/masci/flickr.v2/photosets"
 	"os"
-	"photo/exifhandler"
-	"photo/modele"
 	"sync"
 )
 

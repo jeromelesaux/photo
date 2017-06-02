@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	logger "github.com/Sirupsen/logrus"
+	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/modele"
 	"github.com/tgulacsi/picago"
 	"net/http"
 	"os"
-	"photo/exifhandler"
-	"photo/modele"
 	"strconv"
 	"sync"
 )

@@ -1,9 +1,8 @@
 package exifhandler
 
 import (
-	"testing"
-
 	"strconv"
+	"testing"
 )
 
 func TestExtractThumbnail(t *testing.T) {

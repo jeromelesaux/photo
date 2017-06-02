@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/base64"
 	"github.com/Sirupsen/logrus"
+	"github.com/jeromelesaux/photo/modele"
 	"image"
 	"image/png"
 	"os"
-	"photo/modele"
 	"testing"
 )
 

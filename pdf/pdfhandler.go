@@ -5,12 +5,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	logger "github.com/Sirupsen/logrus"
+	"github.com/jeromelesaux/photo/modele"
 	"github.com/jung-kurt/gofpdf"
 	"image/jpeg"
 	"image/png"
 	"math/rand"
 	"os"
-	"photo/modele"
 	"strings"
 	"time"
 )

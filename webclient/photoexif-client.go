@@ -2,17 +2,17 @@ package webclient
 
 import (
 	logger "github.com/Sirupsen/logrus"
-	"photo/modele"
+	"github.com/jeromelesaux/photo/modele"
 
 	"encoding/json"
 	"fmt"
+	"github.com/jeromelesaux/photo/database"
+	"github.com/jeromelesaux/photo/slavehandler"
 	"net/http"
-	"photo/database"
-	"photo/slavehandler"
 	"strconv"
 
-	"photo/configurationapp"
-	"photo/configurationexif"
+	"github.com/jeromelesaux/photo/configurationapp"
+	"github.com/jeromelesaux/photo/configurationexif"
 	"sync"
 	"time"
 )
