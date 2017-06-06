@@ -2,7 +2,7 @@
 package database
 
 import (
-	"photo/modele"
+	"github.com/jeromelesaux/photo/modele"
 )
 
 // interface of all mandatories functions

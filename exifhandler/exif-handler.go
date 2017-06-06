@@ -9,16 +9,16 @@ import (
 	"bytes"
 	"encoding/base64"
 	"github.com/disintegration/imaging"
+	"github.com/jeromelesaux/photo/hash"
 	"image"
 	"image/color"
 	"image/png"
 	"net/http"
 	"os"
 	"path/filepath"
-	"photo/hash"
 
-	"photo/configurationexif"
-	"photo/modele"
+	"github.com/jeromelesaux/photo/configurationexif"
+	"github.com/jeromelesaux/photo/modele"
 	"strings"
 )
 

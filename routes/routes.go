@@ -3,22 +3,24 @@ package routes
 import (
 	"encoding/json"
 	logger "github.com/Sirupsen/logrus"
+	"github.com/jeromelesaux/photo/album"
+	"github.com/jeromelesaux/photo/configurationapp"
+	"github.com/jeromelesaux/photo/configurationexif"
+	"github.com/jeromelesaux/photo/database"
+	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/flickr_client"
+	"github.com/jeromelesaux/photo/folder"
+	"github.com/jeromelesaux/photo/google-photos_client"
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jeromelesaux/photo/pdf"
+	"github.com/jeromelesaux/photo/slavehandler"
+	"github.com/jeromelesaux/photo/webclient"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"path/filepath"
-	"photo/album"
-	"photo/configurationapp"
-	"photo/configurationexif"
-	"photo/database"
-	"photo/exifhandler"
-	"photo/flickr_client"
-	"photo/folder"
-	"photo/google-photos_client"
-	"photo/modele"
-	"photo/pdf"
-	"photo/slavehandler"
-	"photo/webclient"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -290,7 +292,19 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 }
 
 func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
+	var photosid []string
 	albumName := r.URL.Query().Get("albumName")
+	c, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		JsonAsResponse(w, "An error occured while generating pdf for album :"+albumName+" "+err.Error())
+		return
+	}
+	if c["photosid"] != nil {
+		photosid = strings.Split(c["photosid"][0], ",")
+	} else {
+		photosid = make([]string, 0)
+	}
+
 	modele.PostActionMessage("calling generate pdf album for album : " + albumName)
 
 	logger.Info("Generate album : " + albumName)
@@ -301,13 +315,36 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 	}
 	content := db.GetAlbumData(albumName)
 	if content.AlbumName == albumName && len(content.Records) > 0 {
-		logger.Info(content)
-		photosFilenames := webclient.NewRawPhotoClient(content).GetRemoteRawPhotosAlbum()
+		logger.Infof("album %s contents %d photos.", content.AlbumName, len(content.Records))
+		if (len(content.Records) > 150 && len(photosid) == 0) || len(photosid) > 150 {
+			modele.PostActionMessage("Cannot generate pdf album :" + albumName + " to much photos from this album please select a set of photos.")
+			JsonAsResponse(w, "Cannot generate pdf album :"+albumName+" to much photos from this album please select a set of photos.")
+			return
+		}
+		selected := database.NewDatabaseAlbumRecord()
+		logger.Infof("photosid:%v", photosid)
+		if len(photosid) > 0 {
+			selected.AlbumName = content.AlbumName
+			for _, id := range photosid {
+				for _, photo := range content.Records {
+					if photo.Md5sum == id {
+						selected.Records = append(selected.Records, photo)
+						break
+					}
+				}
+			}
+		} else {
+			selected = content
+		}
+
+		logger.Info(selected)
+		photosFilenames := webclient.NewRawPhotoClient(selected).GetRemoteRawPhotosAlbum()
 		data := pdf.CreatePdfAlbum(content.AlbumName, photosFilenames, pdf.Images3XPerPages)
 		modele.PostActionMessage("calling generate pdf album for album : " + albumName + " ended.")
 		BinaryAsResponse(w, data, albumName+".pdf")
 		return
 	}
+	modele.PostActionMessage("An error occured while generating pdf for album :" + albumName)
 	JsonAsResponse(w, "An error occured while generating pdf for album :"+albumName)
 }
 
@@ -348,6 +385,7 @@ func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
 // return all albums names
 func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
 	modele.PostActionMessage("calling get albums list.")
+
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -361,6 +399,7 @@ func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
 func GetAlbumData(w http.ResponseWriter, r *http.Request) {
 
 	albumName := r.URL.Query().Get("albumName")
+
 	modele.PostActionMessage("calling get album content for album : " + albumName)
 	db, err := database.NewDatabaseHandler()
 	if err != nil {
@@ -639,14 +678,14 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := db.QueryFilename(filename)
+	if err != nil {
+		JsonAsResponse(w, err)
+	}
+	logger.Infof("QueryFilename returns %d records", len(response))
 	response = database.Reduce(response, size)
 	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
 	modele.PostActionMessage("calling query filename with value : " + filename + " and filesize : " + size + " ended.")
-	if err != nil {
-		JsonAsResponse(w, err)
-	} else {
-		JsonAsResponse(w, response)
-	}
+	JsonAsResponse(w, response)
 }
 
 func QueryAll(w http.ResponseWriter, r *http.Request) {

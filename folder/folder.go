@@ -2,9 +2,9 @@ package folder
 
 import (
 	logger "github.com/Sirupsen/logrus"
+	"github.com/jeromelesaux/photo/modele"
 	"os"
 	"path/filepath"
-	"photo/modele"
 	"strings"
 )
 

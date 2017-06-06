@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"github.com/HouzuoGuo/tiedot/db"
 	logger "github.com/Sirupsen/logrus"
+	"github.com/jeromelesaux/photo/album"
+	"github.com/jeromelesaux/photo/configurationapp"
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jeromelesaux/photo/slavehandler"
 	"github.com/pkg/errors"
 	"path/filepath"
-	"photo/album"
-	"photo/configurationapp"
-	"photo/modele"
-	"photo/slavehandler"
 	"strconv"
 	"strings"
 	"sync"
@@ -596,7 +596,6 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord,
 	defer dbInstance.Close()
 
 	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
-
 	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
 		var a map[string]interface{}
 		err := json.Unmarshal(docContent, &a)
@@ -605,42 +604,44 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord,
 			return false
 		}
 
-		for _, val := range a[FILENAMES_INDEX].([]interface{}) {
-			if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
-				//logger.LogLn("Document",id,"is",string(docContent))
-				var exif map[string]interface{}
-				if a[EXIFTAGS_INDEX] != nil {
-					exif = a[EXIFTAGS_INDEX].(map[string]interface{})
+		if a[FILENAMES_INDEX] != nil {
+			for _, val := range a[FILENAMES_INDEX].([]interface{}) {
+				if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
+					var exif map[string]interface{}
+					if a[EXIFTAGS_INDEX] != nil {
+						exif = a[EXIFTAGS_INDEX].(map[string]interface{})
+					}
+					response = append(response, NewDatabasePhotoResponse(
+						a[MD5SUM_INDEX].(string),
+						a[FILENAME_INDEX].(string),
+						a[FILEPATH_INDEX].(string),
+						a[MACHINEID_INDEX].(string),
+						a[THUMBNAIL_INDEX].(string),
+						exif))
 				}
-				response = append(response, NewDatabasePhotoResponse(
-					a[MD5SUM_INDEX].(string),
-					a[FILENAME_INDEX].(string),
-					a[FILEPATH_INDEX].(string),
-					a[MACHINEID_INDEX].(string),
-					a[THUMBNAIL_INDEX].(string),
-					exif))
-			}
 
+			}
 		}
-		for _, val := range a[FILEPATHS_INDEX].([]interface{}) {
-			if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
-				var exif map[string]interface{}
-				if a[EXIFTAGS_INDEX] != nil {
-					exif = a[EXIFTAGS_INDEX].(map[string]interface{})
+		if a[FILEPATHS_INDEX] != nil {
+			for _, val := range a[FILEPATHS_INDEX].([]interface{}) {
+				if strings.Contains(strings.ToLower(val.(string)), strings.ToLower(pattern)) {
+					var exif map[string]interface{}
+					if a[EXIFTAGS_INDEX] != nil {
+						exif = a[EXIFTAGS_INDEX].(map[string]interface{})
+					}
+					response = append(response, NewDatabasePhotoResponse(
+						a[MD5SUM_INDEX].(string),
+						a[FILENAME_INDEX].(string),
+						a[FILEPATH_INDEX].(string),
+						a[MACHINEID_INDEX].(string),
+						a[THUMBNAIL_INDEX].(string),
+						exif))
 				}
-				response = append(response, NewDatabasePhotoResponse(
-					a[MD5SUM_INDEX].(string),
-					a[FILENAME_INDEX].(string),
-					a[FILEPATH_INDEX].(string),
-					a[MACHINEID_INDEX].(string),
-					a[THUMBNAIL_INDEX].(string),
-					exif))
-			}
 
+			}
 		}
 		return true
 	})
-
 	logger.Infof("request returns %d results for filename %s\n", len(response), pattern)
 	return response, nil
 }
