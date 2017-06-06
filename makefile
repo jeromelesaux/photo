@@ -22,7 +22,7 @@ BUILDHASH=$(shell git rev-parse --short HEAD)
 
 
 BUILD_TIME=`date +%FT%T%z`
-PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db  github.com/pkg/errors  github.com/disintegration/imaging  github.com/Sirupsen/logrus github.com/bshuster-repo/logrus-logstash-hook github.com/tgulacsi/picago
+PACKAGES := github.com/xiam/exif github.com/HouzuoGuo/tiedot/db  github.com/pkg/errors  github.com/disintegration/imaging  github.com/Sirupsen/logrus github.com/bshuster-repo/logrus-logstash-hook github.com/tgulacsi/picago github.com/jung-kurt/gofpdf
 
 
 LIBS= 
