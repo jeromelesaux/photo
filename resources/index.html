@@ -14,109 +14,40 @@
     <div id="content">
 
         <div id="loadingImage"
-             style="display: none; position:fixed; z-index: 1104; background:url(ajax-loader.gif) no-repeat center center #D3D3D3; opacity: 0.5; width:100%;height: 100%">
+             style="display: none; position:fixed; z-index: 1104; background:url(ajax-loader.gif) no-repeat center center #D3D3D3; opacity: 0.3; width:100%;height: 100%">
         </div>
         <ul class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#home" data-toggle="tab">Wellcome</a></li>
-            <li><a href="#scantab" data-toggle="tab">Scan Directories</a></li>
+
             <li><a href="#search" data-toggle="tab">Search Photos</a></li>
             <li><a href="#albums" data-toggle="tab">Manage your albums</a></li>
+            <li><a href="#scantab" data-toggle="tab">Scan Directories</a></li>
+            <li><a href="#configuration" data-toggle="tab">Configure your cloud accounts</a></li>
             <li><a href="#history" data-toggle="tab">History actions</a></li>
         </ul>
         <div id="my-tab-content" class="tab-content">
             <!-- application configuration -->
             <div class="tab-pane active" id="home">
-                Registered machines :
-                <ul id="machineList" class="list-group"></ul>
-                <button type="button" name="refresh" onclick="refresh()" value="refresh" class="btn btn-primary start">
-                    <span>refresh</span>
-                </button>
                 <div class="panel panel-default">
-                    <div class="panel-heading">Google Account settings</div>
+                    <div class="panel-heading">News from app.</div>
                     <div class="panel-body">
-                        <!-- gallery of images found and returned by server -->
-                        <div class="row">
-                            <form id="googleConfigurationForm">
-                                Google User ID <input type="text" id="googleUserId" class="form-control">
-                                Google ID<input type="text" id="googleId" class="form-control">
-                                Google Secret Phrase<input type="password" id="googleSecret" class="form-control">
-                            </form>
-                            <button type="button" name="save google account" onclick="saveAndImportGoogleAccount()"
-                                    value="save and import google account"
-                                    class="btn btn-primary start">
-                                <span>Save and import google account</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">Flickr Account settings</div>
-                    <div class="panel-body">
-                        <!-- gallery of images found and returned by server -->
-                        <div class="row">
-                            <form id="flickrConfigurationForm">
-                                Flickr API Key <input type="text" id="flickrApiKey" class="form-control">
-                                Flickr API Secret<input type="password" id="flickrApiSecret" class="form-control">
-                                Flickr Oauth verifier Token :<input type="text" id="flickrToken"
-                                                                    name="flickrToken"
-                                                                    class="form-control">
-                            </form>
-                            <button type="button" class="btn btn-primary start" data-toggle="modal" data-target="#flickrOauthVerifer">
-                                <span>Get flickr token to import albums</span>
-                            </button>
-                            <button type="button" class="btn btn-primary start" data-dismiss="modal" onclick="goImportFlickrAlbum()">
-                                <span>import flickr albums</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- modal page to set flickr account settings -->
-                <div id="flickrOauthVerifer" class="modal fade" role="dialog">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                <h4 class="modal-title">Flickr Oauth verifier token</h4>
-                            </div>
-                            <div class="modal-body">
-                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goFlickr()">Get the flickr token
-                                </button>
-                            </div>
-                            <div class="modal-footer">
-
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            </div>
+                        <button data-toggle="collapse" data-target="#news" class="btn btn-primary">+ v1.0</button>
+                        <div id="news" class="collapse">
+                            <ul>
+                                <li>now you can browse your local hard-drives and index all your photo on local or remote machines (need to run the agent on the remote machines).</li>
+                                <li>you can configure flickr and google photo account and import your albums and photosets.</li>
+                                <li>search with multi criteria such as : exif tags, filename, size and extension image files.</li>
+                                <li>generate a pdf album from all the set or a partial set of your albums.</li>
+                                <li>filter on albums names.</li>
+                                <li>get all history of your actions.</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
 
             </div>
 
-            <div class="tab-pane" id="scantab">
-                <div class="form-group">
-                    <label for="activeMachineList">Select one machine:</label>
-                    <select class="form-control" id="activeMachineList">
-                    </select>
-                </div>
-                <form class="form-inline">
-                    <div class="form-group">
-                        Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue" class="form-control">
-                        <button type="button" name="Search folder" onclick="submitSearch()" value="Search folder" class="btn btn-primary start">
-                            <span>Search Folder</span>
-                        </button>
-                    </div>
-                    <br>
-                    Submit all folders to scan
-                    <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder" class="btn btn-primary start">
-                        <span>Scan Folder</span>
-                    </button>
-                </form>
-                <div>
-                    <input class="search-input form-control">
-                </div>
-                <div id="jstree"></div>
-            </div>
+
             <div class="tab-pane" id="search">
                 <form class="form-inline">
                     <div class="form-group">
@@ -153,6 +84,7 @@
                                             class="btn btn-primary start">
                                         <span>clean database</span>
                                     </button>
+                                    <br>
                                     <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new
                                         album
                                     </button>
@@ -303,6 +235,97 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="tab-pane" id="scantab">
+                <div class="form-group">
+                    <label for="activeMachineList">Select one machine:</label>
+                    <select class="form-control" id="activeMachineList">
+                    </select>
+                </div>
+                <form class="form-inline">
+                    <div class="form-group">
+                        Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue" class="form-control">
+                        <button type="button" name="Search folder" onclick="submitSearch()" value="Search folder" class="btn btn-primary start">
+                            <span>Search Folder</span>
+                        </button>
+                    </div>
+                    <br>
+                    Submit all folders to scan
+                    <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder" class="btn btn-primary start">
+                        <span>Scan Folder</span>
+                    </button>
+                </form>
+                <div>
+                    <input class="search-input form-control">
+                </div>
+                <div id="jstree"></div>
+            </div>
+            <div class="tab-pane" id="configuration">
+                Registered machines :
+                <ul id="machineList" class="list-group"></ul>
+                <button type="button" name="refresh" onclick="refresh()" value="refresh" class="btn btn-primary start">
+                    <span>refresh</span>
+                </button>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Google Account settings</div>
+                    <div class="panel-body">
+                        <!-- gallery of images found and returned by server -->
+                        <div class="row">
+                            <form id="googleConfigurationForm">
+                                Google User ID <input type="text" id="googleUserId" class="form-control">
+                                Google ID<input type="text" id="googleId" class="form-control">
+                                Google Secret Phrase<input type="password" id="googleSecret" class="form-control">
+                            </form>
+                            <button type="button" name="save google account" onclick="saveAndImportGoogleAccount()"
+                                    value="save and import google account"
+                                    class="btn btn-primary start">
+                                <span>Save and import google account</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Flickr Account settings</div>
+                    <div class="panel-body">
+                        <!-- gallery of images found and returned by server -->
+                        <div class="row">
+                            <form id="flickrConfigurationForm">
+                                Flickr API Key <input type="text" id="flickrApiKey" class="form-control">
+                                Flickr API Secret<input type="password" id="flickrApiSecret" class="form-control">
+                                Flickr Oauth verifier Token :<input type="text" id="flickrToken"
+                                                                    name="flickrToken"
+                                                                    class="form-control">
+                            </form>
+                            <button type="button" class="btn btn-primary start" data-toggle="modal" data-target="#flickrOauthVerifer">
+                                <span>Get flickr token to import albums</span>
+                            </button>
+                            <button type="button" class="btn btn-primary start" data-dismiss="modal" onclick="goImportFlickrAlbum()">
+                                <span>import flickr albums</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- modal page to set flickr account settings -->
+                <div id="flickrOauthVerifer" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Flickr Oauth verifier token</h4>
+                            </div>
+                            <div class="modal-body">
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goFlickr()">Get the flickr token
+                                </button>
+                            </div>
+                            <div class="modal-footer">
+
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             <div class="tab-pane" id="history">
                 <div class="panel panel-default">
@@ -907,7 +930,6 @@
                             url: "/getfileextension",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
-                                //  console.log(jsondata);
                                 $('#extensionList').empty();
                                 $.each(jsondata.Extensions, function (i, item) {
                                     $('#extensionList').append('<option value="' + item + '">' + item + '</option>');
@@ -930,6 +952,7 @@
 
                 function submitImagesSearch() {
                     $(function () {
+                        $('#imagesFoundNumber').empty();
                         var exifTag = $('#exifTagValue').val();
                         var exifValue = $('#exifValue').val();
                         var size = $('#fileSize').val();
@@ -937,7 +960,7 @@
                             ExtensionSelected = $(this).val();
                         });
                         var filename = $('#filename').val();
-                        $('#imagesFoundNumber').val('');
+
                         if (filename !== "") {
                             console.log("Calling /queryfilename?value=" + filename + "&filesize=" + size);
                             $.ajax({
@@ -969,7 +992,6 @@
                                         $('#imagesFound').empty();
                                         if (jQuery.isEmptyObject(jsondata)) {
                                             alert("No images found.");
-                                            $('#imagesFoundNumber').val('');
                                         } else {
                                             $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                             feedElementbyItems(jsondata, 'imagesFound', 'search', false);
@@ -986,7 +1008,6 @@
                                         $('#imagesFound').empty();
                                         if (jQuery.isEmptyObject(jsondata)) {
                                             alert("No images found.");
-                                            $('#imagesFoundNumber').val('');
                                         } else {
                                             $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
                                             feedElementbyItems(jsondata, 'imagesFound', 'search', false);
