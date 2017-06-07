@@ -329,9 +329,9 @@
                 img {
                     filter: gray; /* IE6-9 */
                     -webkit-filter: grayscale(0); /* Google Chrome, Safari 6+ & Opera 15+ */
-                    -webkit-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
-                    -moz-box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
-                    box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.75);
+                    -webkit-box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.75);
+                    -moz-box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.75);
+                    box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.75);
                     margin-bottom: 20px;
                 }
 
@@ -369,7 +369,7 @@
                 // script javascript to manage selection of the photo
                 $("body").on("click", 'label',
                     function (event) {
-                        input = $(this).find(":checkbox");
+                        var input = $(this).find(":checkbox");
                         if (input.is(":checked") === false) {
                             input.prop('checked', true);
                             console.log("checked");
@@ -383,7 +383,7 @@
                     });
 
                 function refreshTable() {
-                    table = $('#tableActionsMessages');
+                    var table = $('#tableActionsMessages');
                     table.bootstrapTable('refresh');
                 }
 
@@ -396,7 +396,7 @@
                     input = document.getElementById("keySearch");
                     filter = input.value.toUpperCase();
                     albums = document.getElementById("albumListId").childNodes;
-                    for (i = 0; i < albums.length; i++) {
+                    for (var i = 0; i < albums.length; i++) {
                         var label = albums[i].innerText.toUpperCase();
                         if (label.indexOf(filter) === -1) {
                             albums[i].style.display = "none";
@@ -427,9 +427,9 @@
 
                 function goImportFlickrAlbum() {
                     $(function () {
-                        flickrKey = $('#flickrApiKey').val();
-                        flickrSecret = $('#flickrApiSecret').val();
-                        flickrToken = $('#flickrToken').val();
+                        var flickrKey = $('#flickrApiKey').val();
+                        var flickrSecret = $('#flickrApiSecret').val();
+                        var flickrToken = $('#flickrToken').val();
                         var body = {};
                         body.api_key = flickrKey;
                         body.api_secret = flickrSecret;
@@ -451,8 +451,8 @@
 
                 function goFlickr() {
                     $(function () {
-                        flickrKey = $('#flickrApiKey').val();
-                        flickrSecret = $('#flickrApiSecret').val();
+                        var flickrKey = $('#flickrApiKey').val();
+                        var flickrSecret = $('#flickrApiSecret').val();
                         var body = {};
                         body.api_key = flickrKey;
                         body.api_secret = flickrSecret;
@@ -464,7 +464,7 @@
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
                                 if (codeHttp === "success") {
-                                    msg = "Go and set the flickr token after authorization " + responsedata.url_authorization;
+                                    var msg = "Go and set the flickr token after authorization " + responsedata.url_authorization;
                                     alert(msg);
                                 }
                             }
@@ -474,9 +474,9 @@
 
                 function saveAndImportGoogleAccount() {
                     $(function () {
-                        googleUserId = $('#googleUserId').val();
-                        googleId = $('#googleId').val();
-                        googleSecret = $('#googleSecret').val();
+                        var googleUserId = $('#googleUserId').val();
+                        var googleId = $('#googleId').val();
+                        var googleSecret = $('#googleSecret').val();
                         var body = {};
                         body.id = googleId;
                         body.secret = googleSecret;
@@ -524,10 +524,10 @@
                                 values.push($(this).val());
                             }
                         });
-                        albumName = $('#albumNameId').val();
+                        var albumName = $('#albumNameId').val();
                         if (values.length > 0) {
                             if (confirm("You have selected " + values.length + " photos for the pdf. Do you want to create a pdf with only this selection ?") === true) {
-                                for (i = 0; i < values.length; i++) {
+                                for (var i = 0; i < values.length; i++) {
                                     valuesUrl += values[i];
                                     if ((i + 1) < values.length) {
                                         valuesUrl += ",";
@@ -541,7 +541,7 @@
                             }
                         }
 
-                        url = "pdfalbum?albumName=" + albumName;
+                        var url = "pdfalbum?albumName=" + albumName;
                         if (partial) {
                             url += "&photosid=" + valuesUrl;
                         }
@@ -581,8 +581,8 @@
                 function deletePhotosAlbum() {
                     $(function () {
                         var values = [];
-                        albumName = $('#albumNameId').val();
-                        albumDescription = $('#albumDescriptionId').val();
+                        var albumName = $('#albumNameId').val();
+                        var albumDescription = $('#albumDescriptionId').val();
                         $('input.album[type=checkbox]').each(function () {
                             if ($(this).is(":checked") === true) {
                                 values.push($(this).val());
@@ -607,14 +607,12 @@
                             }
                         });
                     });
-                };
-
-
+                }
                 function mergeAlbum() {
                     $(function () {
                         var values = [];
-                        albumName = $('#updateAlbumName').val();
-                        albumDescription = $('#updateAlbumDescription').val();
+                        var albumName = $('#updateAlbumName').val();
+                        var albumDescription = $('#updateAlbumDescription').val();
                         $('input.search[type=checkbox]').each(function () {
                             if ($(this).is(":checked") === true) {
                                 values.push($(this).val());
@@ -639,14 +637,13 @@
                             }
                         });
                     });
-                };
-
+                }
                 $("#updateExistingAlbum").on("show.bs.modal", function (e) {
                     updateAlbumList()
                 });
 
                 $("#updateAlbumList").on("change", function () {
-                    selectedAlbum = $(this).find("option:selected").val();
+                    var selectedAlbum = $(this).find("option:selected").val();
                     $.ajax({
                         dataType: "json",
                         url: "/getalbum?albumName=" + selectedAlbum,
@@ -682,7 +679,7 @@
 
                 function deleteAlbum() {
                     $(function () {
-                        albumName = $('#albumNameId').val();
+                        var albumName = $('#albumNameId').val();
                         var body = {};
                         body.album_name = albumName;
                         var jsondata = JSON.stringify(body);
@@ -703,8 +700,8 @@
 
                 function updateAlbumView() {
                     $(function () {
-                        albumName = $('#albumNameId').val();
-                        albumDescription = $('#albumDescriptionId').val();
+                        var albumName = $('#albumNameId').val();
+                        var albumDescription = $('#albumDescriptionId').val();
                         var body = {};
                         body.album_name = albumName;
                         body.description = albumDescription;
@@ -939,7 +936,7 @@
                         $('#extensionList').each(function () {
                             ExtensionSelected = $(this).val();
                         });
-                        filename = $('#filename').val();
+                        var filename = $('#filename').val();
                         $('#imagesFoundNumber').val('');
                         if (filename !== "") {
                             console.log("Calling /queryfilename?value=" + filename + "&filesize=" + size);
@@ -1015,13 +1012,12 @@
                             url: "/registeredslaves",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
-                                //console.log(jsondata);
-                                $('#machineList').empty();
-                                $('#activeMachineList').empty();
                                 var listContainer = $("#machineList");
+                                listContainer.empty();
                                 var selectPicker = $("#activeMachineList");
+                                selectPicker.empty();
                                 // event.preventDefault();
-                                for (i = 0; i < jsondata.length; i++) {
+                                for (var i = 0; i < jsondata.length; i++) {
                                     console.log("adding " + jsondata[i].ipv4);
                                     listContainer.prepend('<li class="list-group-item">' + jsondata[i].ipv4 + '</li>');
                                     selectPicker.append('<option value="' + jsondata[i].machineId + '">' + jsondata[i].ipv4 + '</option>');
@@ -1061,9 +1057,9 @@
                                         alert(jsondata.error_message);
                                     } else {
                                         if (codeHttp === 'success') {
+                                            var jstree = $('#jstree');
 
-
-                                            $('#jstree').jstree({
+                                            jstree.jstree({
                                                 'core': {
                                                     'check_callback': true
                                                 },
@@ -1076,8 +1072,8 @@
                                                 },
                                                 "plugins": ["checkbox", "search"]
                                             });
-                                            $("#jstree").jstree(true).settings.core.data = jsondata;
-                                            $("#jstree").jstree(true).refresh();
+                                            jstree.jstree(true).settings.core.data = jsondata;
+                                            jstree.jstree(true).refresh();
                                         }
                                     }
                                 }
@@ -1087,11 +1083,12 @@
                 }
 
                 function submitScan() {
-                    var machineid = $('#jstree').jstree(true)._model.data['#'].original.machineid;
+                    var jstree = $('#jstree');
+                    var machineid = jstree.jstree(true)._model.data['#'].original.machineid;
                     console.log(machineid);
-                    var checked = $('#jstree').jstree(true).get_selected();
+                    var checked = jstree.jstree(true).get_selected();
                     var a = [];
-                    for (i = 0; i < checked.length; i++) {
+                    for (var i = 0; i < checked.length; i++) {
                         var o = {};
                         o = checked[i];
                         a[i] = o;
@@ -1107,7 +1104,7 @@
                         type: 'POST',
                         data: jsondata,
                         success: function (responsedata, codeHttp) {
-                            if (codeHttp == "success") {
+                            if (codeHttp === "success") {
                                 alert(responsedata);
                             }
                         }
