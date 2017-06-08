@@ -70,6 +70,8 @@ func main() {
 		http.HandleFunc("/flickrsave", routes.SaveFlickrConfiguration)
 		http.HandleFunc("/flickrloadalbums", routes.LoadFlickrAlbums)
 		http.HandleFunc("/history", routes.GetHistory)
+		http.HandleFunc("/originsstats", routes.GetOriginStats)
+		http.HandleFunc("/locationsstats", routes.GetLocationStats)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

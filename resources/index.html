@@ -183,11 +183,12 @@
             </div>
             <!-- tab to display albums -->
             <div class="tab-pane" id="albums">
-                <button type="button" name="Retreive the albums list" onclick="listAlbums()" value="Retreive the albums list"
-                        class="btn btn-primary start">
-                    <span>Retreive the albums list</span>
-                </button>
                 <div class="form-group">
+                    <button type="button" name="Retreive the albums list" onclick="listAlbums()" value="Retreive the albums list"
+                            class="btn btn-primary start">
+                        <span>Retreive the albums list</span>
+                    </button>
+
                     <span class="glyphicon glyphicon-search"></span>
                     <input class="input-control" type="text" id="keySearch" onkeyup="searchKeyword()" placeholder="Search for albums..">
                     <button type="button" class="btn btn-default" onclick="cleanKeyword()">X</button>

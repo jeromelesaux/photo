@@ -16,7 +16,31 @@ type AlbumMessage struct {
 	Type string   `json:"type,omitempty"`
 }
 
+// structure returns the number of photo by origin (machine or cloud account)
+type OriginStatsMessage struct {
+	// origin stat list
+	Stats map[string]int `json:"stats"`
+}
+
+type LocationStatsMessage struct {
+	Stats []LocationMessage `json:"stat"`
+}
+
+type LocationMessage struct {
+	Longitude float64 `json:"longitude"`
+	Latitude  float64 `json:"latitude"`
+	Count     int     `json:"count"`
+}
+
 // function to get a new pointer of an empty AlbumMessage
 func NewAlbumMessage() *AlbumMessage {
 	return &AlbumMessage{}
+}
+
+func NewOriginStatsMessage() *OriginStatsMessage {
+	return &OriginStatsMessage{Stats: make(map[string]int, 0)}
+}
+
+func NewLocationStatsMessage() *LocationStatsMessage {
+	return &LocationStatsMessage{Stats: make([]LocationMessage, 0)}
 }

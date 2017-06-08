@@ -24,6 +24,40 @@ import (
 	"time"
 )
 
+func GetLocationStats(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling get origin stats.")
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.GetLocationStats()
+	modele.PostActionMessage("get origin stats ended.")
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+
+	JsonAsResponse(w, response)
+}
+
+func GetOriginStats(w http.ResponseWriter, r *http.Request) {
+	modele.PostActionMessage("calling get origin stats.")
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.GetOriginStats()
+	modele.PostActionMessage("get origin stats ended.")
+	if err != nil {
+		JsonAsResponse(w, err)
+		return
+	}
+
+	JsonAsResponse(w, response)
+}
+
 func GetHistory(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, modele.ActionsHistory)
 }
