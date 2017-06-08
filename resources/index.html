@@ -31,10 +31,12 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">News from app.</div>
                     <div class="panel-body">
-                        <button data-toggle="collapse" data-target="#news" class="btn btn-primary">+ v1.0</button>
+                        <button data-toggle="collapse" data-target="#news" class="btn btn-primary">+ v1.0 Beta</button>
                         <div id="news" class="collapse">
                             <ul>
-                                <li>now you can browse your local hard-drives and index all your photo on local or remote machines (need to run the agent on the remote machines).</li>
+                                <li>now you can browse your local hard-drives and index all your photo on local or remote machines (need to run the
+                                    agent on the remote machines).
+                                </li>
                                 <li>you can configure flickr and google photo account and import your albums and photosets.</li>
                                 <li>search with multi criteria such as : exif tags, filename, size and extension image files.</li>
                                 <li>generate a pdf album from all the set or a partial set of your albums.</li>
@@ -52,43 +54,55 @@
                 <form class="form-inline">
                     <div class="form-group">
                         <div class="panel panel-default">
-                            <div class="panel-heading">Search Criteria</div>
-                            <div class="panel-body">
-                                <div class="offset8">Enter extension image file to search : <select class="form-control" id="extensionList"> </select>
-                                    <select class="form-control" id="fileSize">
-                                        <option value="big">big size</option>
-                                        <option value="medium">meduim size</option>
-                                        <option value="little">little size</option>
-                                    </select>
-                                    <br>
-                                    <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue"
-                                                                                                            name="exifTagValue"
-                                                                                                            class="form-control"></div>
-                                    <br>
-                                    <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue"
-                                                                                                              name="exifValue"
-                                                                                                              class="form-control"></div>
-                                    <br>
-                                    <div class="offset8">Enter part of the filename of the image file to search :<input type="text" id="filename"
-                                                                                                                        name="filename"
-                                                                                                                        class="form-control"></div>
-                                    <br>
-                                    <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images"
-                                            class="btn btn-primary start">
-                                        <span>Search Images</span>
-                                    </button>
-                                    <button type="button" name="clean " onclick="clean()" value="clean" class="btn btn-primary start">
-                                        <span>clean</span>
-                                    </button>
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseSearchPanel">Search Criteria</a></div>
+                            <div id="collapseSearchPanel" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <div class="offset8">Enter extension image file to search : <select class="form-control"
+                                                                                                        id="extensionList"> </select>
+                                        <select class="form-control" id="fileSize">
+                                            <option value="big">big size</option>
+                                            <option value="medium">meduim size</option>
+                                            <option value="little">little size</option>
+                                        </select>
+                                        <br>
+                                        <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue"
+                                                                                                                name="exifTagValue"
+                                                                                                                class="form-control"></div>
+                                        <br>
+                                        <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue"
+                                                                                                                  name="exifValue"
+                                                                                                                  class="form-control"></div>
+                                        <br>
+                                        <div class="offset8">Enter part of the filename of the image file to search :<input type="text" id="filename"
+                                                                                                                            name="filename"
+                                                                                                                            class="form-control">
+                                        </div>
+                                        <br>
+                                        <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images"
+                                                class="btn btn-primary start">
+                                            <span>Search Images</span>
+                                        </button>
+                                        <button type="button" name="clean " onclick="clean()" value="clean" class="btn btn-primary start">
+                                            <span>clean</span>
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapsePhotosActionPanel">Actions on photos</a></div>
+                            <div id="collapsePhotosActionPanel" class="panel-collapse collapse">
+                                <div class="panel-body">
                                     <button type="button" name="clean " onclick="cleanDatabase()" value="clean database"
                                             class="btn btn-primary start">
                                         <span>clean database</span>
                                     </button>
-                                    <br>
                                     <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new
                                         album
                                     </button>
-                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#updateExistingAlbum">Update an
+                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#updateExistingAlbum">Update
+                                        an
                                         existing album
                                     </button>
                                 </div>
