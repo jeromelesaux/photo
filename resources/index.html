@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.css">
+
 </head>
 <body>
 <div class="container">
@@ -87,6 +88,19 @@
                                         </button>
 
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseMapPanel">Search on a map</a></div>
+                            <div id="collapseMapPanel" class="panel-collapse collapse">
+                                <div class="panel-body" style="width: 650px">
+                                    <button type="button" name="clean " onclick="loadMapData()" value="Get your photos location"
+                                            class="btn btn-primary start">
+                                        <span>Get your photos location</span>
+                                    </button>
+                                    <div id="map" style="width: 600px; height: 300px;"></div>
+
                                 </div>
                             </div>
                         </div>
@@ -380,9 +394,28 @@
 
                 /* Google Chrome, Safari 6+ & Opera 15+ */
 
-            </style>
+                #map {
+                    width: 100%;
+                }
 
+                #map img,
+                .google-maps img {
+                    max-width: none !important;
+                }
+
+
+            </style>
             <script>
+                var map;
+                $('a[href="#search"]').on('shown.bs.tab', function (e) {
+                    if (map == undefined) {
+                        initMap();
+                    }
+                    var center = map.getCenter();
+                    google.maps.event.trigger(map, "resize");
+                    map.setCenter(center);
+                });
+
                 $(document).ready(function () {
                     getRegisteredMachines();
                     getExtensionList();
@@ -393,6 +426,7 @@
                     })
                 });
 
+
                 $(function () {
                     $(document).ajaxStart(function () {
                         $('#loadingImage').show();
@@ -402,6 +436,33 @@
                         $('#loadingImage').hide();
                     });
                 });
+
+                function initMap() {
+                    var location = new google.maps.LatLng(48.2, 2.2);
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 4,
+                        center: location
+                    });
+                }
+                 function loadMapData() {
+                     $.ajax({
+                         dataType: "json",
+                         url: "locationsstats",
+                         type: 'GET',
+                         success: function (responsedata, codeHttp) {
+                             if (codeHttp === "success") {
+                                 $.each(responsedata.stat, function (i, item) {
+                                     var coord = {lat: item.latitude, lng: item.longitude};
+                                     var marker = new google.maps.Marker({
+                                         position: coord,
+                                         map: map,
+                                         title: "Number of pictures : " + item.count
+                                     });
+                                 });
+                             }
+                         }
+                     });
+                 }
 
 
                 // script javascript to manage selection of the photo
@@ -1147,6 +1208,9 @@
                     });
                     console.log(checked);
                 }
+            </script>
+            <script
+                    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU&v=3" type="text/javascript">
             </script>
         </div>
     </div>
