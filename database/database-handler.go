@@ -226,6 +226,83 @@ func (d *DatabaseHandler) GetOriginStats() (*album.OriginStatsMessage, error) {
 	return o, nil
 }
 
+func (d *DatabaseHandler) GetPhotosFromCoordinates(lat, lng string) ([]*DatabasePhotoRecord, error) {
+	qlatitude, _ := strconv.ParseFloat(lat, 64)
+	qlongitude, _ := strconv.ParseFloat(lng, 64)
+	response := make([]*DatabasePhotoRecord, 0)
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return response, err
+	}
+
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`["all"]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	for id := range queryResult {
+		readBack, err := feeds.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			logger.Debug(readBack)
+			var exif map[string]interface{}
+			if readBack[EXIFTAGS_INDEX] != nil {
+				exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
+				if exif[LONGITUDEGOOGLETAG] != nil && exif[LATITUDEGOOGLETAG] != nil {
+					longitude, _ := strconv.ParseFloat(exif[LONGITUDEGOOGLETAG].(string), 64)
+					latitude, _ := strconv.ParseFloat(exif[LATITUDEGOOGLETAG].(string), 64)
+					if Round(longitude, .5, 2) == qlongitude && Round(latitude, .5, 2) == qlatitude {
+						response = append(response, NewDatabasePhotoResponse(
+							readBack[MD5SUM_INDEX].(string),
+							readBack[FILENAME_INDEX].(string),
+							readBack[FILEPATH_INDEX].(string),
+							readBack[MACHINEID_INDEX].(string),
+							readBack[THUMBNAIL_INDEX].(string),
+							exif))
+					}
+				} else {
+					if exif[LONGITUDEFLICKRTAG] != nil && exif[LATITUDEFLICKRTAG] != nil {
+						var d, m, s float64
+						var latitude, longitude float64
+						_, err := fmt.Sscanf(exif[LATITUDEFLICKRTAG].(string), "%f deg %f' %f", &d, &m, &s)
+						if err != nil {
+							logger.Errorf("Error while parsing flickr Latitude string %s %v ", exif[LATITUDEFLICKRTAG].(string), err)
+						} else {
+							latitude = Round(d+(m/60)+(s/3600), .5, 2)
+						}
+						_, err = fmt.Sscanf(exif[LONGITUDEFLICKRTAG].(string), "%f deg %f' %f", &d, &m, &s)
+						if err != nil {
+							logger.Errorf("Error while parsing flickr Longitude string %s %v", exif[LONGITUDEFLICKRTAG].(string), err)
+						} else {
+							longitude = Round(d+(m/60)+(s/3600), .5, 2)
+						}
+						if Round(longitude, .5, 2) == qlongitude && Round(latitude, .5, 2) == qlatitude {
+							response = append(response, NewDatabasePhotoResponse(
+								readBack[MD5SUM_INDEX].(string),
+								readBack[FILENAME_INDEX].(string),
+								readBack[FILEPATH_INDEX].(string),
+								readBack[MACHINEID_INDEX].(string),
+								readBack[THUMBNAIL_INDEX].(string),
+								exif))
+						}
+
+					}
+				}
+			}
+
+		}
+
+	}
+
+	dbInstance.Close()
+	return response, nil
+}
+
 func (d *DatabaseHandler) GetLocationStats() (*album.LocationStatsMessage, error) {
 	l := album.NewLocationStatsMessage()
 	dbInstance, err := d.openDB()

@@ -24,6 +24,26 @@ import (
 	"time"
 )
 
+func GetPhotosFromLocation(w http.ResponseWriter, r *http.Request) {
+	lat := r.URL.Query().Get("lat")
+	lng := r.URL.Query().Get("lng")
+	modele.PostActionMessage("Get Photos from location with latitude : " + lat + " and longitude : " + lng)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.GetPhotosFromCoordinates(lat, lng)
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	modele.PostActionMessage("Get photos from location ended and found " + strconv.Itoa(len(response)))
+	JsonAsResponse(w, response)
+}
+
 func GetLocationStats(w http.ResponseWriter, r *http.Request) {
 	modele.PostActionMessage("calling get origin stats.")
 	db, err := database.NewDatabaseHandler()

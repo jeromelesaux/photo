@@ -1,5 +1,6 @@
 <html>
 <head>
+    <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
@@ -94,12 +95,12 @@
                         <div class="panel panel-default">
                             <div class="panel-heading"><a data-toggle="collapse" href="#collapseMapPanel">Search on a map</a></div>
                             <div id="collapseMapPanel" class="panel-collapse collapse">
-                                <div class="panel-body" style="width: 650px">
+                                <div class="panel-body" style="width: 750px">
                                     <button type="button" name="clean " onclick="loadMapData()" value="Get your photos location"
                                             class="btn btn-primary start">
                                         <span>Get your photos location</span>
                                     </button>
-                                    <div id="map" style="width: 600px; height: 300px;"></div>
+                                    <div id="map" style="width: 700px; height: 400px;"></div>
 
                                 </div>
                             </div>
@@ -394,26 +395,20 @@
 
                 /* Google Chrome, Safari 6+ & Opera 15+ */
 
-                #map {
-                    width: 100%;
-                }
-
-                #map img,
-                .google-maps img {
-                    max-width: none !important;
-                }
-
 
             </style>
             <script>
                 var map;
                 $('a[href="#search"]').on('shown.bs.tab', function (e) {
                     if (map == undefined) {
+                        console.log("init map");
                         initMap();
                     }
+
                     var center = map.getCenter();
                     google.maps.event.trigger(map, "resize");
                     map.setCenter(center);
+
                 });
 
                 $(document).ready(function () {
@@ -437,32 +432,56 @@
                     });
                 });
 
+                function getPhotosFromCoordinates(lat, lng) {
+                    console.log("latitude : " + lat + " and longitude " + lng);
+                    $.ajax({
+                        dataType: "json",
+                        url: "photosfromlocation?lat="+lat+"&lng="+lng,
+                        type: 'GET',
+                        success: function (jsondata, codeHttp) {
+                            $('#imagesFound').empty();
+                            if (jQuery.isEmptyObject(jsondata)) {
+                                alert("No images found.");
+                            } else {
+                                $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
+                                feedElementbyItems(jsondata, 'imagesFound', 'search', false);
+                            }
+                        }
+                    })
+                }
+
                 function initMap() {
                     var location = new google.maps.LatLng(48.2, 2.2);
                     map = new google.maps.Map(document.getElementById('map'), {
                         zoom: 4,
                         center: location
                     });
+                    setTimeout(function () {
+                        $('.search').append($("#map").css("margin-top", "0px").get(0));
+                    }, 500);
                 }
-                 function loadMapData() {
-                     $.ajax({
-                         dataType: "json",
-                         url: "locationsstats",
-                         type: 'GET',
-                         success: function (responsedata, codeHttp) {
-                             if (codeHttp === "success") {
-                                 $.each(responsedata.stat, function (i, item) {
-                                     var coord = {lat: item.latitude, lng: item.longitude};
-                                     var marker = new google.maps.Marker({
-                                         position: coord,
-                                         map: map,
-                                         title: "Number of pictures : " + item.count
-                                     });
-                                 });
-                             }
-                         }
-                     });
-                 }
+                function loadMapData() {
+                    $.ajax({
+                        dataType: "json",
+                        url: "locationsstats",
+                        type: 'GET',
+                        success: function (responsedata, codeHttp) {
+                            if (codeHttp === "success") {
+                                $.each(responsedata.stat, function (i, item) {
+                                    var coord = {lat: item.latitude, lng: item.longitude};
+                                    var marker = new google.maps.Marker({
+                                        position: coord,
+                                        map: map,
+                                        title: "Number of pictures : " + item.count
+                                    });
+                                    marker.addListener('click',function(event){
+                                        getPhotosFromCoordinates(item.latitude,item.longitude);
+                                    })
+                                });
+                            }
+                        }
+                    });
+                }
 
 
                 // script javascript to manage selection of the photo
@@ -1209,7 +1228,7 @@
                     console.log(checked);
                 }
             </script>
-            <script
+            <script async defer
                     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU&v=3" type="text/javascript">
             </script>
         </div>
