@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.css">
-
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU" type="text/javascript">
+    </script>
 </head>
 <body>
 <div class="container">
@@ -394,21 +396,29 @@
                 }
 
                 /* Google Chrome, Safari 6+ & Opera 15+ */
-
+                #map {
+                    height: 100%;
+                    display: block;
+                }
 
             </style>
             <script>
                 var map;
-                $('a[href="#search"]').on('shown.bs.tab', function (e) {
+                jQuery(window).resize(function() {
                     if (map == undefined) {
-                        console.log("init map");
                         initMap();
                     }
+                });
+                jQuery('#search').on('click',function() {
+                    if (map == undefined) {
+                        initMap();
+                    }
+                });
 
-                    var center = map.getCenter();
-                    google.maps.event.trigger(map, "resize");
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    center = map.getCenter();
+                    google.maps.event.trigger(map, 'resize');         // fixes map display
                     map.setCenter(center);
-
                 });
 
                 $(document).ready(function () {
@@ -436,7 +446,7 @@
                     console.log("latitude : " + lat + " and longitude " + lng);
                     $.ajax({
                         dataType: "json",
-                        url: "photosfromlocation?lat="+lat+"&lng="+lng,
+                        url: "photosfromlocation?lat=" + lat + "&lng=" + lng,
                         type: 'GET',
                         success: function (jsondata, codeHttp) {
                             $('#imagesFound').empty();
@@ -451,14 +461,22 @@
                 }
 
                 function initMap() {
-                    var location = new google.maps.LatLng(48.2, 2.2);
-                    map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: 4,
-                        center: location
-                    });
-                    setTimeout(function () {
-                        $('.search').append($("#map").css("margin-top", "0px").get(0));
-                    }, 500);
+                    $(function () {
+                        document.getElementById('map').style.display = "block";
+                        var location = new google.maps.LatLng(48.2, 2.2);
+                        map = new google.maps.Map(document.getElementById('map'), {
+                            zoom: 2,
+                            center: location,
+                            mapTypeId: google.maps.MapTypeId.ROADMAP
+                        });
+                        setTimeout(function () {
+                            $('.search').append($("#map").css("margin-top", "0px").get(0));
+                        }, 500);
+                        center = map.getCenter();
+                        google.maps.event.trigger(map, 'resize');         // fixes map display
+                        map.setCenter(center);
+                    })
+
                 }
                 function loadMapData() {
                     $.ajax({
@@ -474,8 +492,8 @@
                                         map: map,
                                         title: "Number of pictures : " + item.count
                                     });
-                                    marker.addListener('click',function(event){
-                                        getPhotosFromCoordinates(item.latitude,item.longitude);
+                                    marker.addListener('click', function (event) {
+                                        getPhotosFromCoordinates(item.latitude, item.longitude);
                                     })
                                 });
                             }
@@ -756,6 +774,7 @@
                         });
                     });
                 }
+
                 $("#updateExistingAlbum").on("show.bs.modal", function (e) {
                     updateAlbumList()
                 });
@@ -1228,9 +1247,7 @@
                     console.log(checked);
                 }
             </script>
-            <script async defer
-                    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU&v=3" type="text/javascript">
-            </script>
+
         </div>
     </div>
 </div>
