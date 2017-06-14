@@ -23,6 +23,7 @@ var (
 func CreatePdfAlbum(albumName string, photos []*modele.ExportPdf, imagesPerPage string) []byte {
 	filenames := make([]string, 0)
 	f := gofpdf.New("P", "mm", "A4", "")
+	defer f.Close()
 	switch imagesPerPage {
 	case Images3XPerPages:
 		i := 0
@@ -99,6 +100,7 @@ func CreateFilePdfAlbum(albumName string, photos []*modele.ExportPdf, imagesPerP
 	filesnames := saveImage(photos)
 
 	f := gofpdf.New("P", "mm", "A4", "")
+	defer f.Close()
 	switch imagesPerPage {
 	case Images3XPerPages:
 		i := 0
