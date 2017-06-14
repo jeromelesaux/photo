@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 var _ DatabaseInterface = (*DatabaseHandler)(nil)
@@ -62,6 +63,8 @@ var (
 	LATITUDEFLICKRTAG    = "GPS Latitude"
 	LONGITUDEREFFLICKTAG = "GPS Longitude Ref"
 	LATITUDEREFFLICKTAG  = "GPS Latitude Ref"
+	DATEFLICKRTAG        = "Date and Time (Original)"
+	DATEGOOGLETAG        = "timestamp"
 )
 
 func (d *DatabaseHandler) openDB() (*db.DB, error) {
@@ -176,6 +179,42 @@ func Round(val float64, roundOn float64, places int) (newVal float64) {
 	return
 }
 
+func ToUnixTime(exif map[string]interface{}, groupby string) string {
+	if exif[DATEGOOGLETAG] != nil {
+		v, err := strconv.ParseInt(exif[DATEGOOGLETAG].(string), 10, 64)
+		if err != nil {
+			logger.Errorf("Error while parsing date %s, with error %v", exif[DATEGOOGLETAG].(string), err)
+			return ""
+		}
+		tm := time.Unix((v / 1000), 0)
+		switch groupby {
+		case "month":
+			return time.Date(tm.Year(), tm.Month(), 0, 0, 0, 0, 0, tm.Location()).String()
+		case "year":
+			return time.Date(tm.Year(), 0, 0, 0, 0, 0, 0, tm.Location()).String()
+		default:
+			return ""
+		}
+	} else {
+		if exif[DATEFLICKRTAG] != nil {
+			tm, err := time.Parse("2006:01:02 15:04:05", exif[DATEFLICKRTAG].(string))
+			if err != nil {
+				logger.Errorf("Error while parsing date %s, with error %v", exif[DATEFLICKRTAG].(string), err)
+				return ""
+			}
+			switch groupby {
+			case "month":
+				return time.Date(tm.Year(), tm.Month(), 0, 0, 0, 0, 0, tm.Location()).String()
+			case "year":
+				return time.Date(tm.Year(), 0, 0, 0, 0, 0, 0, tm.Location()).String()
+			default:
+				return ""
+			}
+		}
+	}
+	return ""
+}
+
 func SplitAll(pattern string) []string {
 	var result []string
 	patternupper := strings.ToUpper(pattern)
@@ -259,6 +298,94 @@ func (d *DatabaseHandler) GetOriginStats() (*album.OriginStatsMessage, error) {
 
 	dbInstance.Close()
 	return o, nil
+}
+
+func (d *DatabaseHandler) GetPhotosFromTime(queryDate string, groupby string) ([]*DatabasePhotoRecord, error) {
+	response := make([]*DatabasePhotoRecord, 0)
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return response, err
+	}
+
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`["all"]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	for id := range queryResult {
+		readBack, err := feeds.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			logger.Debug(readBack)
+		}
+		var exif map[string]interface{}
+		if readBack[EXIFTAGS_INDEX] != nil {
+			exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
+			photoDate := ToUnixTime(exif, groupby)
+			if photoDate == queryDate {
+				response = append(response, NewDatabasePhotoResponse(
+					readBack[MD5SUM_INDEX].(string),
+					readBack[FILENAME_INDEX].(string),
+					readBack[FILEPATH_INDEX].(string),
+					readBack[MACHINEID_INDEX].(string),
+					readBack[THUMBNAIL_INDEX].(string),
+					exif))
+			}
+		}
+
+	}
+	return response, nil
+}
+
+func (d *DatabaseHandler) GetTimeStats(groupby string) (*album.TimeStatsMessage, error) {
+	response := album.NewTimeStatsMessage()
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return response, err
+	}
+
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`["all"]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	for id := range queryResult {
+		readBack, err := feeds.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			logger.Debug(readBack)
+		}
+		var exif map[string]interface{}
+		if readBack[EXIFTAGS_INDEX] != nil {
+			exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
+			timeStat := &album.TimeStatMessage{Date: ToUnixTime(exif, groupby), Count: 1}
+			var found = false
+			for _, v := range response.Stats {
+				if v.Date == timeStat.Date {
+					found = true
+					v.Count++
+					break
+				}
+			}
+			if !found {
+				response.Stats = append(response.Stats, timeStat)
+			}
+		}
+
+	}
+
+	dbInstance.Close()
+	return response, nil
 }
 
 func (d *DatabaseHandler) GetPhotosFromCoordinates(lat, lng string) ([]*DatabasePhotoRecord, error) {
@@ -352,7 +479,7 @@ func (d *DatabaseHandler) GetLocationStats() (*album.LocationStatsMessage, error
 				if exif[LONGITUDEGOOGLETAG] != nil && exif[LATITUDEGOOGLETAG] != nil {
 					latitude, longitude := CoordinatesFromExif(exif)
 					if longitude != 0. && latitude != 0. {
-						gps := album.LocationMessage{
+						gps := &album.LocationMessage{
 							Longitude: Round(longitude, .5, 2),
 							Latitude:  Round(latitude, .5, 2)}
 						var found = false
@@ -372,7 +499,7 @@ func (d *DatabaseHandler) GetLocationStats() (*album.LocationStatsMessage, error
 					if exif[LONGITUDEFLICKRTAG] != nil && exif[LATITUDEFLICKRTAG] != nil {
 						latitude, longitude := CoordinatesFromExif(exif)
 						if longitude != 0. && latitude != 0. {
-							gps := album.LocationMessage{Latitude: latitude, Longitude: longitude}
+							gps := &album.LocationMessage{Latitude: latitude, Longitude: longitude}
 							var found = false
 							for i, v := range l.Stats {
 								if v.Longitude == gps.Longitude && v.Latitude == gps.Latitude {

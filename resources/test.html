@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+
+        #map img,
+        .google-maps img {
+            max-width: none !important;
+        }
+
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.css">
+
+</head>
+<body>
+
+<div class="container">
+    <div id="content">
+
+        <div id="loadingImage"
+             style="display: none; position:fixed; z-index: 1104; background:url(ajax-loader.gif) no-repeat center center #D3D3D3; opacity: 0.3; width:100%;height: 100%">
+        </div>
+        <ul class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#home" data-toggle="tab">Wellcome</a></li>
+            <li><a href="#search" data-toggle="tab">Search Photos</a></li>
+            <li><a href="#albums" data-toggle="tab">Manage your albums</a></li>
+            <li><a href="#scantab" data-toggle="tab">Scan Directories</a></li>
+            <li><a href="#configuration" data-toggle="tab">Configure your cloud accounts</a></li>
+            <li><a href="#history" data-toggle="tab">History actions</a></li>
+        </ul>
+        <div id="my-tab-content" class="tab-content">
+            <!-- application configuration -->
+            <div class="tab-pane active" id="home">
+                <div class="panel panel-default">
+                    <div class="panel-heading">News from app.</div>
+                    <div class="panel-body">
+                        <button data-toggle="collapse" data-target="#news" class="btn btn-primary">+ v1.0 Beta</button>
+                        <div id="news" class="collapse">
+                            <ul>
+                                <li>now you can browse your local hard-drives and index all your photo on local or remote machines (need to run the
+                                    agent on the remote machines).
+                                </li>
+                                <li>you can configure flickr and google photo account and import your albums and photosets.</li>
+                                <li>search with multi criteria such as : exif tags, filename, size and extension image files.</li>
+                                <li>generate a pdf album from all the set or a partial set of your albums.</li>
+                                <li>filter on albums names.</li>
+                                <li>get all history of your actions.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="tab-pane" id="search">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseSearchPanel">Search Criteria</a></div>
+                            <div id="collapseSearchPanel" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <div class="offset8">Enter extension image file to search : <select class="form-control"
+                                                                                                        id="extensionList"> </select>
+                                        <select class="form-control" id="fileSize">
+                                            <option value="big">big size</option>
+                                            <option value="medium">meduim size</option>
+                                            <option value="little">little size</option>
+                                        </select>
+                                        <br>
+                                        <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue"
+                                                                                                                name="exifTagValue"
+                                                                                                                class="form-control"></div>
+                                        <br>
+                                        <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue"
+                                                                                                                  name="exifValue"
+                                                                                                                  class="form-control"></div>
+                                        <br>
+                                        <div class="offset8">Enter part of the filename of the image file to search :<input type="text" id="filename"
+                                                                                                                            name="filename"
+                                                                                                                            class="form-control">
+                                        </div>
+                                        <br>
+                                        <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images"
+                                                class="btn btn-primary start">
+                                            <span>Search Images</span>
+                                        </button>
+                                        <button type="button" name="clean " onclick="clean()" value="clean" class="btn btn-primary start">
+                                            <span>clean</span>
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default" id="panelMap">
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseMapPanel">Search on a map</a></div>
+                            <div id="collapseMapPanel" class="panel-collapse collapse">
+                                <div class="panel-body" style="width: 650px">
+                                    <div id="map" style="width: 600px; height: 300px;"></div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapsePhotosActionPanel">Actions on photos</a></div>
+                            <div id="collapsePhotosActionPanel" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <button type="button" name="clean " onclick="cleanDatabase()" value="clean database"
+                                            class="btn btn-primary start">
+                                        <span>clean database</span>
+                                    </button>
+                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new
+                                        album
+                                    </button>
+                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#updateExistingAlbum">Update
+                                        an
+                                        existing album
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Images found.</div>
+                    <div class="panel-body">
+                        <!-- number of images returned by server -->
+                        <div id="imagesFoundNumber"></div>
+                        <!-- gallery of images found and returned by server -->
+                        <div class="row">
+                            <div id="imagesFound">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- modal page to create new album -->
+                <div id="createNewAlbum" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Create new album</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="offset8">Enter the new album new of your photo's selection :<input type="text" id="albumname"
+                                                                                                               name="albumname"
+                                                                                                               class="form-control"></div>
+
+                                <div class="offset8">Enter the album description :<input type="text" id="albumDescription"
+                                                                                         name="albumDescription"
+                                                                                         class="form-control"></div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="createalbum()">Create Album
+                                </button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- modal page to update an album -->
+                <div id="updateExistingAlbum" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Update an existing album</h4>
+                            </div>
+                            <div class="modal-body">
+                                <label for="updateAlbumList">Select an existing Album:</label>
+                                <select class="form-control" id="updateAlbumList">
+                                </select>
+                                <div class="offset8">Album Name :<input type="text" id="updateAlbumName"
+                                                                        name="updateAlbumName"
+                                                                        class="form-control"></div>
+                                <div class="offset8">Album description :<input type="text" id="updateAlbumDescription"
+                                                                               name="updateAlbumDescription"
+                                                                               class="form-control"></div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="mergeAlbum()">Update Album
+                                </button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- tab to display albums -->
+            <div class="tab-pane" id="albums">
+                <div class="form-group">
+                    <button type="button" name="Retreive the albums list" onclick="listAlbums()" value="Retreive the albums list"
+                            class="btn btn-primary start">
+                        <span>Retreive the albums list</span>
+                    </button>
+
+                    <span class="glyphicon glyphicon-search"></span>
+                    <input class="input-control" type="text" id="keySearch" onkeyup="searchKeyword()" placeholder="Search for albums..">
+                    <button type="button" class="btn btn-default" onclick="cleanKeyword()">X</button>
+                    <!--<button type="button" class="btn btn-primary start" onclick="selectGoogleAlbums()">Google Albums</button>-->
+                    <!--<button type="button" class="btn btn-primary start" onclick="selectFlickrAlbums()">Flickr Albums</button>-->
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Albums</div>
+                    <div class="panel-body">
+
+                        <div id="albumListId" class="btn-group">
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">Albums photos</div>
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Album Description</div>
+                            <button type="button" name="Update the album" onclick="updateAlbumView()" value="Update the album"
+                                    class="btn btn-info start">
+                                <span>update the album</span>
+                            </button>
+                            <button type="button" name="Delete the album" onclick="deleteAlbum()" value="Delete the album"
+                                    class="btn btn-info start">
+                                <span>delete the album</span>
+                            </button>
+                            <button type="button" name="Delete the selected photos of the album" onclick="deletePhotosAlbum()"
+                                    value="Delete selected photos from the album"
+                                    class="btn btn-info start">
+                                <span>delete selected photos from the album</span>
+                            </button>
+                            <button type="button" name="Clear photos selection"
+                                    id="uncheckAlbumsSelection"
+                                    value="Clear photos selection"
+                                    class="btn btn-info start">
+                                <span>clear photos selection</span>
+                            </button>
+                            <button type="button" name="Download pdf album" onclick="getPdfAlbum()"
+                                    value="Download pdf album"
+                                    class="btn btn-info start">
+                                <span>Download pdf album</span>
+                            </button>
+                            <div class="panel-body">
+                                <input type="text" id="albumDescriptionId"
+                                       name="albumDescriptionId"
+                                       class="form-control">
+
+                            </div>
+                        </div>
+                        <!-- gallery of the album found and returned by server -->
+                        <div class="row">
+                            <input type="text" id="albumNameId"
+                                   name="albumNameId"
+                                   class="form-control">
+                            <div id="albumImagesFound"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="scantab">
+                <div class="form-group">
+                    <label for="activeMachineList">Select one machine:</label>
+                    <select class="form-control" id="activeMachineList">
+                    </select>
+                </div>
+                <form class="form-inline">
+                    <div class="form-group">
+                        Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue" class="form-control">
+                        <button type="button" name="Search folder" onclick="submitSearch()" value="Search folder" class="btn btn-primary start">
+                            <span>Search Folder</span>
+                        </button>
+                    </div>
+                    <br>
+                    Submit all folders to scan
+                    <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder" class="btn btn-primary start">
+                        <span>Scan Folder</span>
+                    </button>
+                </form>
+                <div>
+                    <input class="search-input form-control">
+                </div>
+                <div id="jstree"></div>
+            </div>
+            <div class="tab-pane" id="configuration">
+                Registered machines :
+                <ul id="machineList" class="list-group"></ul>
+                <button type="button" name="refresh" onclick="refresh()" value="refresh" class="btn btn-primary start">
+                    <span>refresh</span>
+                </button>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Google Account settings</div>
+                    <div class="panel-body">
+                        <!-- gallery of images found and returned by server -->
+                        <div class="row">
+                            <form id="googleConfigurationForm">
+                                Google User ID <input type="text" id="googleUserId" class="form-control">
+                                Google ID<input type="text" id="googleId" class="form-control">
+                                Google Secret Phrase<input type="password" id="googleSecret" class="form-control">
+                            </form>
+                            <button type="button" name="save google account" onclick="saveAndImportGoogleAccount()"
+                                    value="save and import google account"
+                                    class="btn btn-primary start">
+                                <span>Save and import google account</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">Flickr Account settings</div>
+                    <div class="panel-body">
+                        <!-- gallery of images found and returned by server -->
+                        <div class="row">
+                            <form id="flickrConfigurationForm">
+                                Flickr API Key <input type="text" id="flickrApiKey" class="form-control">
+                                Flickr API Secret<input type="password" id="flickrApiSecret" class="form-control">
+                                Flickr Oauth verifier Token :<input type="text" id="flickrToken"
+                                                                    name="flickrToken"
+                                                                    class="form-control">
+                            </form>
+                            <button type="button" class="btn btn-primary start" data-toggle="modal" data-target="#flickrOauthVerifer">
+                                <span>Get flickr token to import albums</span>
+                            </button>
+                            <button type="button" class="btn btn-primary start" data-dismiss="modal" onclick="goImportFlickrAlbum()">
+                                <span>import flickr albums</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- modal page to set flickr account settings -->
+                <div id="flickrOauthVerifer" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Flickr Oauth verifier token</h4>
+                            </div>
+                            <div class="modal-body">
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goFlickr()">Get the flickr token
+                                </button>
+                            </div>
+                            <div class="modal-footer">
+
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="tab-pane" id="history">
+                <div class="panel panel-default">
+                    <div class="panel-heading">application actions history
+                        <button id="refreshTable" class="btn btn-default" onclick="refreshTable()">Refresh data</button>
+                    </div>
+                    <div class="panel-body">
+                        <table data-toggle="table" class="display" data-url="./history" id="tableActionsMessages"
+                               data-sort-name="date" data-sort-order="desc">
+                            <tr>
+                                <td>actions messages</td>
+                            </tr>
+                            <thead>
+                            <tr>
+                                <th data-field="date" data-sortable="true">date</th>
+                                <th data-field="message" data-sortable="false">message</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var map;
+    $('a[href="#search"]').on('shown.bs.tab',function (e) {
+        if( map == undefined) {
+            console.log("init map.");
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: -34.397, lng: 150.644},
+                zoom: 2
+            });
+        }
+        console.log("hello world");
+        var center = map.getCenter();
+        google.maps.event.trigger(map, "resize");
+        map.setCenter(center);
+    });
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: -34.397, lng: 150.644},
+            zoom: 2
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU&callback=initMap"
+        async defer></script>
+</body>
+</html>

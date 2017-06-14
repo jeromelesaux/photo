@@ -24,6 +24,45 @@ import (
 	"time"
 )
 
+func GetPhotosFromTime(w http.ResponseWriter, r *http.Request) {
+	groupby := r.URL.Query().Get("groupby")
+	queryDate := r.URL.Query().Get("date")
+	modele.PostActionMessage("Get Photos from time groupby " + groupby + " for date " + queryDate)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.GetPhotosFromTime(queryDate, groupby)
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	modele.PostActionMessage("Get photos from time ended and found " + strconv.Itoa(len(response)))
+	JsonAsResponse(w, response)
+}
+
+func GetTimeStats(w http.ResponseWriter, r *http.Request) {
+	groupby := r.URL.Query().Get("groupby")
+	modele.PostActionMessage("Get stats Photos from time groupby " + groupby)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.GetTimeStats(groupby)
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	modele.PostActionMessage("Get photos from time ended and found " + strconv.Itoa(len(response.Stats)))
+	JsonAsResponse(w, response)
+}
+
 func GetPhotosFromLocation(w http.ResponseWriter, r *http.Request) {
 	lat := r.URL.Query().Get("lat")
 	lng := r.URL.Query().Get("lng")

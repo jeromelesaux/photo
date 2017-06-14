@@ -22,8 +22,17 @@ type OriginStatsMessage struct {
 	Stats map[string]int `json:"stats"`
 }
 
+type TimeStatsMessage struct {
+	Stats []*TimeStatMessage `json:"stats"`
+}
+
+type TimeStatMessage struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
+}
+
 type LocationStatsMessage struct {
-	Stats []LocationMessage `json:"stat"`
+	Stats []*LocationMessage `json:"stat"`
 }
 
 type LocationMessage struct {
@@ -42,5 +51,9 @@ func NewOriginStatsMessage() *OriginStatsMessage {
 }
 
 func NewLocationStatsMessage() *LocationStatsMessage {
-	return &LocationStatsMessage{Stats: make([]LocationMessage, 0)}
+	return &LocationStatsMessage{Stats: make([]*LocationMessage, 0)}
+}
+
+func NewTimeStatsMessage() *TimeStatsMessage {
+	return &TimeStatsMessage{Stats: make([]*TimeStatMessage, 0)}
 }
