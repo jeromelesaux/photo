@@ -339,6 +339,7 @@ func (d *DatabaseHandler) GetPhotosFromTime(queryDate string, groupby string) ([
 		}
 
 	}
+	dbInstance.Close()
 	return response, nil
 }
 
