@@ -110,8 +110,8 @@
                         <div class="panel panel-default">
                             <div class="panel-heading"><a data-toggle="collapse" href="#collapseTimeLinePanel">Search on a time line</a></div>
                             <div id="collapseTimeLinePanel" class="panel-collapse collapse">
-                                <div class="panel-body" >
-                                    Group your timeline photos by : 
+                                <div class="panel-body" style="width: 750px">
+                                    Group your timeline photos by :
                                     <select class="form-control" id="timeGroupBy">
                                         <option value="month">by month</option>
                                         <option value="year">by year</option>
@@ -121,31 +121,8 @@
                                         <span>Get your photos timeline</span>
                                     </button>
                                     <div style="display:inline-block;width:100%;overflow-y:auto;">
-                                        <ul class="timeline timeline-horizontal">
-                                            <li class="timeline-item">
-                                                <div class="timeline-badge primary"><i class="glyphicon glyphicon-check"></i></div>
-                                                <div class="timeline-panel">
-                                                    <div class="timeline-heading">
-                                                        <h4 class="timeline-title">Mussum ipsum cacilds 1</h4>
-                                                        <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i> 11 hours ago via Twitter</small></p>
-                                                    </div>
-                                                    <div class="timeline-body">
-                                                        <p>Mussum ipsum cacilds, vidis litro abertis. Consetis faiz elementum girarzis, nisi eros gostis.</p>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li class="timeline-item">
-                                                <div class="timeline-badge success"><i class="glyphicon glyphicon-check"></i></div>
-                                                <div class="timeline-panel">
-                                                    <div class="timeline-heading">
-                                                        <h4 class="timeline-title">Mussum ipsum cacilds 2</h4>
-                                                        <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i> 11 hours ago via Twitter</small></p>
-                                                    </div>
-                                                    <div class="timeline-body">
-                                                        <p>Mussum ipsum cacilds, vidis faiz elementum girarzis, nisi eros gostis.</p>
-                                                    </div>
-                                                </div>
-                                            </li>
+                                        <ul class="timeline timeline-horizontal" id="timeline">
+
                                         </ul>
                                     </div>
                                 </div>
@@ -455,6 +432,7 @@
                     padding: 20px;
                     position: relative;
                 }
+
                 .timeline:before {
                     top: 40px;
                     bottom: 0;
@@ -465,18 +443,22 @@
                     left: 50%;
                     margin-left: -1.5px;
                 }
+
                 .timeline .timeline-item {
                     margin-bottom: 20px;
                     position: relative;
                 }
+
                 .timeline .timeline-item:before,
                 .timeline .timeline-item:after {
                     content: "";
                     display: table;
                 }
+
                 .timeline .timeline-item:after {
                     clear: both;
                 }
+
                 .timeline .timeline-item .timeline-badge {
                     color: #fff;
                     width: 54px;
@@ -496,27 +478,34 @@
                     border-bottom-right-radius: 50%;
                     border-bottom-left-radius: 50%;
                 }
+
                 .timeline .timeline-item .timeline-badge i,
                 .timeline .timeline-item .timeline-badge .fa,
                 .timeline .timeline-item .timeline-badge .glyphicon {
                     top: 2px;
                     left: 0px;
                 }
+
                 .timeline .timeline-item .timeline-badge.primary {
                     background-color: #1f9eba;
                 }
+
                 .timeline .timeline-item .timeline-badge.info {
                     background-color: #5bc0de;
                 }
+
                 .timeline .timeline-item .timeline-badge.success {
                     background-color: #59ba1f;
                 }
+
                 .timeline .timeline-item .timeline-badge.warning {
                     background-color: #d1bd10;
                 }
+
                 .timeline .timeline-item .timeline-badge.danger {
                     background-color: #ba1f1f;
                 }
+
                 .timeline .timeline-item .timeline-panel {
                     position: relative;
                     width: 46%;
@@ -529,6 +518,7 @@
                     -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
                     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.175);
                 }
+
                 .timeline .timeline-item .timeline-panel:before {
                     position: absolute;
                     top: 26px;
@@ -540,36 +530,44 @@
                     border-bottom: 16px solid transparent;
                     content: " ";
                 }
+
                 .timeline .timeline-item .timeline-panel .timeline-title {
                     margin-top: 0;
                     color: inherit;
                 }
+
                 .timeline .timeline-item .timeline-panel .timeline-body > p,
                 .timeline .timeline-item .timeline-panel .timeline-body > ul {
                     margin-bottom: 0;
                 }
+
                 .timeline .timeline-item .timeline-panel .timeline-body > p + p {
                     margin-top: 5px;
                 }
+
                 .timeline .timeline-item:last-child:nth-child(even) {
                     float: right;
                 }
+
                 .timeline .timeline-item:nth-child(even) .timeline-panel {
                     float: right;
                     left: 16px;
                 }
+
                 .timeline .timeline-item:nth-child(even) .timeline-panel:before {
                     border-left-width: 0;
                     border-right-width: 14px;
                     left: -14px;
                     right: auto;
                 }
+
                 .timeline-horizontal {
                     list-style: none;
                     position: relative;
                     padding: 20px 0px 20px 0px;
                     display: inline-block;
                 }
+
                 .timeline-horizontal:before {
                     height: 3px;
                     top: auto;
@@ -579,6 +577,7 @@
                     width: 100%;
                     margin-bottom: 20px;
                 }
+
                 .timeline-horizontal .timeline-item {
                     display: table-cell;
                     height: 280px;
@@ -590,6 +589,7 @@
                     margin: 0 auto;
                     vertical-align: bottom;
                 }
+
                 .timeline-horizontal .timeline-item .timeline-panel {
                     top: auto;
                     bottom: 64px;
@@ -600,6 +600,7 @@
                     width: 100%;
                     margin-bottom: 20px;
                 }
+
                 .timeline-horizontal .timeline-item .timeline-panel:before {
                     top: auto;
                     bottom: -16px;
@@ -610,10 +611,12 @@
                     border-bottom: 0 solid #c0c0c0 !important;
                     border-left: 16px solid transparent !important;
                 }
+
                 .timeline-horizontal .timeline-item:before,
                 .timeline-horizontal .timeline-item:after {
                     display: none;
                 }
+
                 .timeline-horizontal .timeline-item .timeline-badge {
                     top: auto;
                     bottom: 0px;
@@ -622,21 +625,23 @@
             </style>
             <script>
                 var map;
-                jQuery(window).resize(function() {
+                jQuery(window).resize(function () {
                     if (map == undefined) {
                         initMap();
                     }
                 });
-                jQuery('#search').on('click',function() {
+                jQuery('#search').on('click', function () {
                     if (map == undefined) {
                         initMap();
                     }
                 });
 
                 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                    center = map.getCenter();
-                    google.maps.event.trigger(map, 'resize');         // fixes map display
-                    map.setCenter(center);
+                    if (map != undefined) {
+                        center = map.getCenter();
+                        google.maps.event.trigger(map, 'resize');         // fixes map display
+                        map.setCenter(center);
+                    }
                 });
 
                 $(document).ready(function () {
@@ -659,6 +664,52 @@
                         $('#loadingImage').hide();
                     });
                 });
+
+                function getPhotosFromTime(groupby,date) {
+                    $.ajax({
+                        dataType: "json",
+                        url: "photosfromtime?groupby=" + groupby + "&date=" + date,
+                        type: 'GET',
+                        success: function (jsondata, codeHttp) {
+                            $('#imagesFound').empty();
+                            if (jQuery.isEmptyObject(jsondata)) {
+                                alert("No images found.");
+                            } else {
+                                $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
+                                feedElementbyItems(jsondata, 'imagesFound', 'search', false);
+                            }
+                        }
+                    })
+                }
+
+                function loadTimelineData() {
+                    var groupby = $('#timeGroupBy').val();
+                    $('#timeline').empty();
+                    $.ajax({
+                        dataType: "json",
+                        url: "timesstats?groupby=" + groupby,
+                        type: 'GET',
+                        success: function (jsondata, codeHttp) {
+                            jsondata.stats.sort(function (a,b){
+                               return Date.parse(a.date) - Date.parse(b.date);
+                            });
+                            $.each(jsondata.stats, function (i, item) {
+                                console.log(item.date +  ":" + item.count );
+                                $('#timeline').append('<li class="timeline-item">' +
+                                    '<div class="timeline-badge primary"><i class="glyphicon glyphicon-check"></i></div>' +
+                                    '<div class="timeline-panel">' +
+                                    '<div class="timeline-heading">' +
+                                    '<h4 class="timeline-title">Number of pictures ' + item.count + '</h4>' +
+                                    '<p><small class="text-muted"><i class="glyphicon glyphicon-time"></i>' + item.date + '</small></p>' +
+                                    '</div>' +
+                                    '<div class="timeline-body">' +
+                                    '<p><button type="button" name="getPhotosGroupBy" onclick="getPhotosFromTime(\'' + groupby + '\',\'' + item.date + '\')" value="Get your photos timeline" class="btn btn-primary start">' +
+                                    '<span>Get your photos for this date</span> </button></p>' +
+                                    '</div></div></li>');
+                            })
+                        }
+                    })
+                }
 
                 function getPhotosFromCoordinates(lat, lng) {
                     console.log("latitude : " + lat + " and longitude " + lng);

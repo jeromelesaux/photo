@@ -189,9 +189,9 @@ func ToUnixTime(exif map[string]interface{}, groupby string) string {
 		tm := time.Unix((v / 1000), 0)
 		switch groupby {
 		case "month":
-			return time.Date(tm.Year(), tm.Month(), 0, 0, 0, 0, 0, tm.Location()).String()
+			return time.Date(tm.Year(), tm.Month(), 0, 0, 0, 0, 0, tm.Location()).Format("2006-01-02")
 		case "year":
-			return time.Date(tm.Year(), 0, 0, 0, 0, 0, 0, tm.Location()).String()
+			return time.Date(tm.Year(), 0, 0, 0, 0, 0, 0, tm.Location()).Format("2006-01-02")
 		default:
 			return ""
 		}
@@ -204,9 +204,9 @@ func ToUnixTime(exif map[string]interface{}, groupby string) string {
 			}
 			switch groupby {
 			case "month":
-				return time.Date(tm.Year(), tm.Month(), 0, 0, 0, 0, 0, tm.Location()).String()
+				return time.Date(tm.Year(), tm.Month(), 0, 0, 0, 0, 0, tm.Location()).Format("2006-01-02")
 			case "year":
-				return time.Date(tm.Year(), 0, 0, 0, 0, 0, 0, tm.Location()).String()
+				return time.Date(tm.Year(), 0, 0, 0, 0, 0, 0, tm.Location()).Format("2006-01-02")
 			default:
 				return ""
 			}
