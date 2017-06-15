@@ -239,8 +239,8 @@
                     <div class="panel-heading">Albums</div>
                     <div class="panel-body">
 
-                        <div id="albumListId" class="btn-group">
-                        </div>
+                        <select id="albumListId" class="form-control">
+                        </select>
                     </div>
                 </div>
                 <br>
@@ -297,7 +297,7 @@
                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                                         <h4 class="modal-title">Choose the photos number per page</h4>
                                     </div>
-                             tail        <div class="modal-body">
+                                    <div class="modal-body">
                                         <select class="form-control" id="photoNumberPerPageInPdf">
                                             <option value="3">3 photos per page</option>
                                             <option value="4">4 photos per page</option>
@@ -691,7 +691,7 @@
                     });
                 });
 
-                function getPhotosFromTime(groupby,date) {
+                function getPhotosFromTime(groupby, date) {
                     $.ajax({
                         dataType: "json",
                         url: "photosfromtime?groupby=" + groupby + "&date=" + date,
@@ -716,11 +716,11 @@
                         url: "timesstats?groupby=" + groupby,
                         type: 'GET',
                         success: function (jsondata, codeHttp) {
-                            jsondata.stats.sort(function (a,b){
-                               return Date.parse(a.date) - Date.parse(b.date);
+                            jsondata.stats.sort(function (a, b) {
+                                return Date.parse(a.date) - Date.parse(b.date);
                             });
                             $.each(jsondata.stats, function (i, item) {
-                                console.log(item.date +  ":" + item.count );
+                                console.log(item.date + ":" + item.count);
                                 $('#timeline').append('<li class="timeline-item">' +
                                     '<div class="timeline-badge primary"><i class="glyphicon glyphicon-check"></i></div>' +
                                     '<div class="timeline-panel">' +
@@ -754,6 +754,11 @@
                         }
                     })
                 }
+
+                $('#albumListId').on('change', function () {
+                    var albumName = $(this).find("option:selected").val();;
+                    getAlbum(albumName);
+                });
 
                 function initMap() {
                     $(function () {
@@ -1272,8 +1277,8 @@
                                     alert("No albums set.");
                                 } else {
                                     $.each(jsondata, function (i, item) {
-                                        $('#albumListId').append('<button type="button" name="' + item +
-                                            '" onclick="getAlbum(\'' + item + '\')" value="' + item + ' " class="btn btn-primary start">' + item + '</button>');
+                                        $('#albumListId').append('<option name="' + item +
+                                            'value="' + item + ' " class="btn">' + item + '</option>');
                                     });
                                 }
                             }
