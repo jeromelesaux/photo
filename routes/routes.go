@@ -387,6 +387,7 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 	var photosid []string
 	albumName := r.URL.Query().Get("albumName")
+	numberPhotosPerPage := r.URL.Query().Get("numberPhotosPerPage")
 	c, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
 		JsonAsResponse(w, "An error occured while generating pdf for album :"+albumName+" "+err.Error())
@@ -432,7 +433,19 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 
 		logger.Info(selected)
 		photosFilenames := webclient.NewRawPhotoClient(selected).GetRemoteRawPhotosAlbum()
-		data := pdf.CreatePdfAlbum(content.AlbumName, photosFilenames, pdf.Images3XPerPages)
+
+		// choose the number of photos per page in the pdf
+		numberPhotosPerPageOption := ""
+		switch numberPhotosPerPage {
+		case "3":
+			numberPhotosPerPageOption = pdf.Images3XPerPages
+		case "4":
+			numberPhotosPerPageOption = pdf.Images4XPerPages
+		default:
+			numberPhotosPerPageOption = pdf.Images3XPerPages
+		}
+
+		data := pdf.CreatePdfAlbum(content.AlbumName, photosFilenames, numberPhotosPerPageOption)
 		modele.PostActionMessage("calling generate pdf album for album : " + albumName + " ended.")
 		BinaryAsResponse(w, data, albumName+".pdf")
 		return

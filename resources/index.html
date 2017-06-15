@@ -269,7 +269,7 @@
                                     class="btn btn-info start">
                                 <span>clear photos selection</span>
                             </button>
-                            <button type="button" name="Download pdf album" onclick="getPdfAlbum()"
+                            <button type="button" name="Download pdf album" data-toggle="modal" data-target="#pdfExportSelectionDialog"
                                     value="Download pdf album"
                                     class="btn btn-info start">
                                 <span>Download pdf album</span>
@@ -287,6 +287,32 @@
                                    name="albumNameId"
                                    class="form-control">
                             <div id="albumImagesFound"></div>
+                        </div>
+
+                        <!-- modal page to set flickr account settings -->
+                        <div id="pdfExportSelectionDialog" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Choose the photos number per page</h4>
+                                    </div>
+                             tail        <div class="modal-body">
+                                        <select class="form-control" id="photoNumberPerPageInPdf">
+                                            <option value="3">3 photos per page</option>
+                                            <option value="4">4 photos per page</option>
+                                        </select>
+                                        <button type="button" name="select and download" onclick="getPdfAlbum()" data-dismiss="modal"
+                                                value="Download pdf album"
+                                                class="btn btn-info start">
+                                            <span>select and download</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -924,6 +950,8 @@
                         var values = [];
                         var valuesUrl = "";
                         var partial = false;
+                        var numberPhotosPerPageSelection = $('#photoNumberPerPageInPdf').val();
+                        console.log(numberPhotosPerPageSelection);
                         $('input.album[type=checkbox]').each(function () {
                             if ($(this).is(":checked") === true) {
                                 values.push($(this).val());
@@ -946,7 +974,7 @@
                             }
                         }
 
-                        var url = "pdfalbum?albumName=" + albumName;
+                        var url = "pdfalbum?albumName=" + albumName + "&numberPhotosPerPage=" + numberPhotosPerPageSelection;
                         if (partial) {
                             url += "&photosid=" + valuesUrl;
                         }
