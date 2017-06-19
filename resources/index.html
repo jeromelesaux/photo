@@ -12,6 +12,12 @@
     <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU" type="text/javascript">
     </script>
+    <style type="text/css">
+
+        #map img{
+            border:none;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -430,25 +436,6 @@
                 </div>
             </div>
             <style type="text/css">
-                img {
-                    filter: gray; /* IE6-9 */
-                    -webkit-filter: grayscale(0); /* Google Chrome, Safari 6+ & Opera 15+ */
-                    -webkit-box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.75);
-                    -moz-box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.75);
-                    box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.75);
-                    margin-bottom: 20px;
-                }
-
-                img:hover {
-                    filter: none; /* IE6-9 */
-                    -webkit-filter: grayscale(0);
-                }
-
-                /* Google Chrome, Safari 6+ & Opera 15+ */
-                #map {
-                    height: 100%;
-                    display: block;
-                }
 
                 /* Timeline css  */
                 /* Timeline */
@@ -794,7 +781,9 @@
                                     });
                                     marker.addListener('click', function (event) {
                                         getPhotosFromCoordinates(item.latitude, item.longitude);
-                                    })
+                                    });
+                                    map.setCenter(marker.getPosition());
+                                    map.setZoom(3);
                                 });
                             }
                         }
@@ -1168,7 +1157,7 @@
                                 $('#' + tagname).append(
                                     '<div class="col-xs-4">' +
                                     '<label class="btn btn-primary img-check">' +
-                                    '<img class="img-responsive " src="data:image/png;base64,' + item.thumbnail + '" alt="' + item.filename + '"/>' +
+                                    '<img class="img-rounded " src="data:image/png;base64,' + item.thumbnail + '" alt="' + item.filename + '"/>' +
                                     '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden ' + classlabel + '" autocomplete="off">' +
                                     '</label>' +
                                     '<button onclick="toggler(\'' + classlabel + item.md5sum + '\')"   class="btn">+</button>' +
@@ -1181,7 +1170,7 @@
                                 $('#' + tagname).append(
                                     '<div class="col-xs-4">' +
                                     '<label class="btn btn-primary img-check">' +
-                                    '<img class="img-responsive " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
+                                    '<img class="img-rounded " src="data:image/png;base64,' + item.image + '" alt="' + item.filename + '"/>' +
                                     '<input type="checkbox" id="' + item.filename + '" value="' + item.md5sum + '" class="hidden ' + classlabel + '" autocomplete="off">' +
                                     '</label>' +
                                     '<button onclick="toggler(\'' + classlabel + item.md5sum + '\')"   class="btn">+</button>' +
