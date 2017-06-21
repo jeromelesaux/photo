@@ -56,3 +56,18 @@ func TestTruncateDateByYear(t *testing.T) {
 		t.Fatal("expected same rounded date and failed")
 	}
 }
+
+func TestCoordinatesFromExif(t *testing.T) {
+	exif := make(map[string]interface{}, 0)
+	exif["Latitude"] = "38, 54, 35.40"
+	exif["Longitude"] = "1, 26, 19.20"
+	exif["North or South Latitude"] = "N"
+	exif["East or West Longitude"] = "E"
+	lat, lng := CoordinatesFromExif(exif)
+	if lat == 0. || lng == 0. {
+		t.Fatalf("Expected 38.54,1.26 and get %f,%f", lat, lng)
+	} else {
+		t.Logf("lat:%f,lng:%f", lat, lng)
+	}
+
+}

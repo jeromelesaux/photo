@@ -1478,10 +1478,10 @@
                                 url: "browse?value=" + folderValue + "&machineId=" + MachineID,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
-                                    console.log(codeHttp);
-                                    if (jsondata.error_message !== null) {
+                                    if (typeof jsondata.error_message != "undefined") {
                                         alert(jsondata.error_message);
                                     } else {
+
                                         if (codeHttp === 'success') {
                                             var jstree = $('#jstree');
 
