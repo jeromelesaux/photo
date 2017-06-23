@@ -120,4 +120,18 @@ type DirectoryItemResponse struct {
 	JstreeAttributes *JSTreeAttribute         `json:"state"`
 }
 
+//func (d *DirectoryItemResponse) Stop() bool {
+//	if d != nil {
+//		parent := d
+//		for parent.Parent != nil {
+//			parent = parent.Parent
+//		}
+//		if (d.Deep - parent.Deep) >= 4 {
+//			return true
+//		}
+//
+//	}
+//	return false
+//}
+
 const VERSION = "1.0Beta"

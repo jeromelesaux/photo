@@ -18,7 +18,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -647,7 +646,7 @@ func Browse(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err := filepath.Walk(directorypath, folder.ScanDirectory(response))
+	response, err := folder.ScanSubDirectory(response, directorypath)
 	if err != nil && err.Error() != "" {
 		response.Message = err.Error()
 		logger.Error(err.Error())
