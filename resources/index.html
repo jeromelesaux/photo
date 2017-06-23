@@ -1266,6 +1266,9 @@
                                 if (jQuery.isEmptyObject(jsondata)) {
                                     alert("No albums set.");
                                 } else {
+                                    jsondata.sort(function(a,b){
+                                       return a.localeCompare(b);
+                                    });
                                     $.each(jsondata, function (i, item) {
                                         $('#albumListId').append('<option name="' + item +
                                             'value="' + item + ' " class="btn">' + item + '</option>');
