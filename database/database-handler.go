@@ -42,7 +42,7 @@ func NewDatabaseHandler() (*DatabaseHandler, error) {
 
 var createDB sync.Once
 
-var (
+const (
 	DBPHOTO_COLLECTION      = "photos_collection"
 	DBALBUM_COLLECTION      = "albums_collection"
 	MACHINEID_INDEX         = "MachineId"
