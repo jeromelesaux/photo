@@ -2,7 +2,7 @@ CC=go
 RM=rm
 MV=mv
 
-
+MAKEFILE_VERSION=1.0
 SOURCEDIR=.
 SOURCES := $(shell find $(SOURCEDIR) -name '*.go' | grep -v '/vendor/')
 
@@ -31,8 +31,14 @@ LDFLAGS=-ldflags "-s -X main.Version=$(VERSION) -X main.GitHash=$(BUILDHASH) -X 
 
 .DEFAULT_GOAL:= $(EXEC2)
 
+all: kill clean $(EXEC2) execute
 
-$(EXEC2): organize $(SOURCES)  ${EXEC1}
+
+version:
+		@echo "    makefile version : $(MAKEFILE_VERSION)"
+		@echo "    author : jeromelesaux@gmail.com"
+
+$(EXEC2): version organize $(SOURCES) ${EXEC1}
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
 		    	GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
@@ -42,7 +48,7 @@ $(EXEC2): organize $(SOURCES)  ${EXEC1}
 		@echo "    ${EXEC2} generated."
 
 
-$(EXEC1): organize $(SOURCES)
+$(EXEC1): version organize $(SOURCES)
 		@echo "    Compilation des sources ${BUILD_TIME}"
 		@if  [ "arm" = "${GOARCH}" ]; then\
 		    GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
