@@ -75,6 +75,7 @@ func main() {
 		http.HandleFunc("/photosfromlocation", routes.GetPhotosFromLocation)
 		http.HandleFunc("/timesstats", routes.GetTimeStats)
 		http.HandleFunc("/photosfromtime", routes.GetPhotosFromTime)
+		http.HandleFunc("/download", routes.DownloadPhotos)
 		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./resources"))))
 		log.Fatal(http.ListenAndServe(":"+*httpport, nil))
 	} else {

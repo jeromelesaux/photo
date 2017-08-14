@@ -10,12 +10,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.css">
     <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU" type="text/javascript">
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU"
+            type="text/javascript">
     </script>
     <style type="text/css">
 
-        #map img{
-            border:none;
+        #map img {
+            border: none;
         }
     </style>
 </head>
@@ -44,11 +45,16 @@
                         <button data-toggle="collapse" data-target="#news" class="btn btn-primary">+ v1.0 Beta</button>
                         <div id="news" class="collapse">
                             <ul>
-                                <li>now you can browse your local hard-drives and index all your photo on local or remote machines (need to run the
+                                <li>now you can browse your local hard-drives and index all your photo on local or
+                                    remote machines (need to run the
                                     agent on the remote machines).
                                 </li>
-                                <li>you can configure flickr and google photo account and import your albums and photosets.</li>
-                                <li>search with multi criteria such as : exif tags, filename, size and extension image files.</li>
+                                <li>you can configure flickr and google photo account and import your albums and
+                                    photosets.
+                                </li>
+                                <li>search with multi criteria such as : exif tags, filename, size and extension image
+                                    files.
+                                </li>
                                 <li>generate a pdf album from all the set or a partial set of your albums.</li>
                                 <li>filter on albums names.</li>
                                 <li>get all history of your actions.</li>
@@ -65,35 +71,42 @@
                 <form class="form-inline">
                     <div class="form-group">
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseSearchPanel">Search Criteria</a></div>
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseSearchPanel">Search
+                                Criteria</a></div>
                             <div id="collapseSearchPanel" class="panel-collapse collapse">
                                 <div class="panel-body">
-                                    <div class="offset8">Enter extension image file to search : <select class="form-control"
-                                                                                                        id="extensionList"> </select>
+                                    <div class="offset8">Enter extension image file to search : <select
+                                            class="form-control"
+                                            id="extensionList"> </select>
                                         <select class="form-control" id="fileSize">
                                             <option value="big">big size</option>
                                             <option value="medium">meduim size</option>
                                             <option value="little">little size</option>
                                         </select>
                                         <br>
-                                        <div class="offset8">Enter exif tag of the image file to search :<input type="text" id="exifTagValue"
-                                                                                                                name="exifTagValue"
-                                                                                                                class="form-control"></div>
+                                        <div class="offset8">Enter exif tag of the image file to search :<input
+                                                type="text" id="exifTagValue"
+                                                name="exifTagValue"
+                                                class="form-control"></div>
                                         <br>
-                                        <div class="offset8">Enter exif value of the image file to search :<input type="text" id="exifValue"
-                                                                                                                  name="exifValue"
-                                                                                                                  class="form-control"></div>
+                                        <div class="offset8">Enter exif value of the image file to search :<input
+                                                type="text" id="exifValue"
+                                                name="exifValue"
+                                                class="form-control"></div>
                                         <br>
-                                        <div class="offset8">Enter part of the filename of the image file to search :<input type="text" id="filename"
-                                                                                                                            name="filename"
-                                                                                                                            class="form-control">
+                                        <div class="offset8">Enter part of the filename of the image file to search
+                                            :<input type="text" id="filename"
+                                                    name="filename"
+                                                    class="form-control">
                                         </div>
                                         <br>
-                                        <button type="button" name="Find images" onclick="submitImagesSearch()" value="Find images"
+                                        <button type="button" name="Find images" onclick="submitImagesSearch()"
+                                                value="Find images"
                                                 class="btn btn-primary start">
                                             <span>Search Images</span>
                                         </button>
-                                        <button type="button" name="clean " onclick="clean()" value="clean" class="btn btn-primary start">
+                                        <button type="button" name="clean " onclick="clean()" value="clean"
+                                                class="btn btn-primary start">
                                             <span>clean</span>
                                         </button>
 
@@ -102,10 +115,12 @@
                             </div>
                         </div>
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseMapPanel">Search on a map</a></div>
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseMapPanel">Search on a
+                                map</a></div>
                             <div id="collapseMapPanel" class="panel-collapse collapse">
                                 <div class="panel-body" style="width: 750px">
-                                    <button type="button" name="clean " onclick="loadMapData()" value="Get your photos location"
+                                    <button type="button" name="clean " onclick="loadMapData()"
+                                            value="Get your photos location"
                                             class="btn btn-primary start">
                                         <span>Get your photos location</span>
                                     </button>
@@ -114,7 +129,8 @@
                             </div>
                         </div>
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseTimeLinePanel">Search on a time line</a></div>
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseTimeLinePanel">Search on
+                                a time line</a></div>
                             <div id="collapseTimeLinePanel" class="panel-collapse collapse">
                                 <div class="panel-body" style="width: 750px">
                                     Group your timeline photos by :
@@ -122,7 +138,8 @@
                                         <option value="month">by month</option>
                                         <option value="year">by year</option>
                                     </select>
-                                    <button type="button" name="loadDataTimeLine" onclick="loadTimelineData()" value="Get your photos timeline"
+                                    <button type="button" name="loadDataTimeLine" onclick="loadTimelineData()"
+                                            value="Get your photos timeline"
                                             class="btn btn-primary start">
                                         <span>Get your photos timeline</span>
                                     </button>
@@ -136,19 +153,28 @@
 
                         </div>
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapsePhotosActionPanel">Actions on photos</a></div>
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapsePhotosActionPanel">Actions
+                                on photos</a></div>
                             <div id="collapsePhotosActionPanel" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     <button type="button" name="clean " onclick="cleanDatabase()" value="clean database"
                                             class="btn btn-primary start">
                                         <span>clean database</span>
                                     </button>
-                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#createNewAlbum">Create new
+                                    <button type="button" class="btn btn-info start" data-toggle="modal"
+                                            data-target="#createNewAlbum">Create new
                                         album
                                     </button>
-                                    <button type="button" class="btn btn-info start" data-toggle="modal" data-target="#updateExistingAlbum">Update
+                                    <button type="button" class="btn btn-info start" data-toggle="modal"
+                                            data-target="#updateExistingAlbum">Update
                                         an
                                         existing album
+                                    </button>
+                                    <button type="button" name="Download Selection"
+                                            onclick="downloadSelectionFromSearch()"
+                                            value="Download selection"
+                                            class="btn btn-info start">
+                                        <span>Download photo selection</span>
                                     </button>
                                 </div>
                             </div>
@@ -179,17 +205,20 @@
                                 <h4 class="modal-title">Create new album</h4>
                             </div>
                             <div class="modal-body">
-                                <div class="offset8">Enter the new album new of your photo's selection :<input type="text" id="albumname"
-                                                                                                               name="albumname"
-                                                                                                               class="form-control"></div>
+                                <div class="offset8">Enter the new album new of your photo's selection :<input
+                                        type="text" id="albumname"
+                                        name="albumname"
+                                        class="form-control"></div>
 
-                                <div class="offset8">Enter the album description :<input type="text" id="albumDescription"
+                                <div class="offset8">Enter the album description :<input type="text"
+                                                                                         id="albumDescription"
                                                                                          name="albumDescription"
                                                                                          class="form-control"></div>
 
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="createalbum()">Create Album
+                                <button type="button" class="btn btn-default" data-dismiss="modal"
+                                        onclick="createalbum()">Create Album
                                 </button>
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                             </div>
@@ -218,7 +247,8 @@
 
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="mergeAlbum()">Update Album
+                                <button type="button" class="btn btn-default" data-dismiss="modal"
+                                        onclick="mergeAlbum()">Update Album
                                 </button>
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                             </div>
@@ -230,13 +260,15 @@
             <!-- tab to display albums -->
             <div class="tab-pane" id="albums">
                 <div class="form-group">
-                    <button type="button" name="Retrieve the albums list" onclick="listAlbums()" value="Retrieve the albums list"
+                    <button type="button" name="Retrieve the albums list" onclick="listAlbums()"
+                            value="Retrieve the albums list"
                             class="btn btn-primary start">
                         <span>Retrieve the albums list</span>
                     </button>
 
                     <span class="glyphicon glyphicon-search"></span>
-                    <input class="input-control" type="text" id="keySearch" onkeyup="searchKeyword()" placeholder="Search for albums..">
+                    <input class="input-control" type="text" id="keySearch" onkeyup="searchKeyword()"
+                           placeholder="Search for albums..">
                     <button type="button" class="btn btn-default" onclick="cleanKeyword()">X</button>
                     <!--<button type="button" class="btn btn-primary start" onclick="selectGoogleAlbums()">Google Albums</button>-->
                     <!--<button type="button" class="btn btn-primary start" onclick="selectFlickrAlbums()">Flickr Albums</button>-->
@@ -245,7 +277,7 @@
                     <div class="panel-heading">Albums</div>
                     <div class="panel-body">
 
-                        <select id="albumListId" class="form-control" >
+                        <select id="albumListId" class="form-control">
                         </select>
                     </div>
                 </div>
@@ -256,15 +288,18 @@
                     <div class="panel-body">
                         <div class="panel panel-default" style="width: 600px;">
                             <div class="panel-heading">Album Description</div>
-                            <button type="button" name="Update the album" onclick="updateAlbumView()" value="Update the album"
+                            <button type="button" name="Update the album" onclick="updateAlbumView()"
+                                    value="Update the album"
                                     class="btn btn-info start">
                                 <span>update the album</span>
                             </button>
-                            <button type="button" name="Delete the album" onclick="deleteAlbum()" value="Delete the album"
+                            <button type="button" name="Delete the album" onclick="deleteAlbum()"
+                                    value="Delete the album"
                                     class="btn btn-info start">
                                 <span>delete the album</span>
                             </button>
-                            <button type="button" name="Delete the selected photos of the album" onclick="deletePhotosAlbum()"
+                            <button type="button" name="Delete the selected photos of the album"
+                                    onclick="deletePhotosAlbum()"
                                     value="Delete selected photos from the album"
                                     class="btn btn-info start">
                                 <span>delete selected photos from the album</span>
@@ -275,10 +310,16 @@
                                     class="btn btn-info start">
                                 <span>clear photos selection</span>
                             </button>
-                            <button type="button" name="Download pdf album" data-toggle="modal" data-target="#pdfExportSelectionDialog"
+                            <button type="button" name="Download pdf album" data-toggle="modal"
+                                    data-target="#pdfExportSelectionDialog"
                                     value="Download pdf album"
                                     class="btn btn-info start">
                                 <span>Download pdf album</span>
+                            </button>
+                            <button type="button" name="Download content album" onclick="downloadSelectionFromAlbum()"
+                                    value="Download Content album"
+                                    class="btn btn-info start">
+                                <span>Download Content album</span>
                             </button>
                             <div class="panel-body">
                                 <input type="text" id="albumDescriptionId"
@@ -308,14 +349,16 @@
                                             <option value="3">3 photos per page</option>
                                             <option value="4">4 photos per page</option>
                                         </select>
-                                        <button type="button" name="select and download" onclick="getPdfAlbum()" data-dismiss="modal"
+                                        <button type="button" name="select and download" onclick="getPdfAlbum()"
+                                                data-dismiss="modal"
                                                 value="Download pdf album"
                                                 class="btn btn-info start">
                                             <span>select and download</span>
                                         </button>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -331,14 +374,17 @@
                 </div>
                 <form class="form-inline">
                     <div class="form-group">
-                        Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue" class="form-control">
-                        <button type="button" name="Search folder" onclick="submitSearch()" value="Search folder" class="btn btn-primary start">
+                        Search the folders to index and scan : <input type="text" id="folderValue" name="folderValue"
+                                                                      class="form-control">
+                        <button type="button" name="Search folder" onclick="submitSearch()" value="Search folder"
+                                class="btn btn-primary start">
                             <span>Search Folder</span>
                         </button>
                     </div>
                     <br>
                     Submit all folders to scan
-                    <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder" class="btn btn-primary start">
+                    <button type="button" name="Scan folder" onclick="submitScan()" value="Scan folder"
+                            class="btn btn-primary start">
                         <span>Scan Folder</span>
                     </button>
                 </form>
@@ -383,10 +429,12 @@
                                                                     name="flickrToken"
                                                                     class="form-control">
                             </form>
-                            <button type="button" class="btn btn-primary start" data-toggle="modal" data-target="#flickrOauthVerifer">
+                            <button type="button" class="btn btn-primary start" data-toggle="modal"
+                                    data-target="#flickrOauthVerifer">
                                 <span>Get flickr token to import albums</span>
                             </button>
-                            <button type="button" class="btn btn-primary start" data-dismiss="modal" onclick="goImportFlickrAlbum()">
+                            <button type="button" class="btn btn-primary start" data-dismiss="modal"
+                                    onclick="goImportFlickrAlbum()">
                                 <span>import flickr albums</span>
                             </button>
                         </div>
@@ -402,7 +450,8 @@
                                 <h4 class="modal-title">Flickr Oauth verifier token</h4>
                             </div>
                             <div class="modal-body">
-                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goFlickr()">Get the flickr token
+                                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="goFlickr()">
+                                    Get the flickr token
                                 </button>
                             </div>
                             <div class="modal-footer">
@@ -743,7 +792,7 @@
                 }
 
                 $('#albumListId').on('change', function () {
-                    var albumName = $(this).find("option:selected").val();;
+                    var albumName = $(this).find("option:selected").val();
                     getAlbum(albumName);
                 });
 
@@ -765,6 +814,7 @@
                     })
 
                 }
+
                 function loadMapData() {
                     $.ajax({
                         dataType: "json",
@@ -1036,6 +1086,7 @@
                         });
                     });
                 }
+
                 function mergeAlbum() {
                     $(function () {
                         var values = [];
@@ -1085,6 +1136,55 @@
                     });
                 });
 
+                function downloadSelection(fileOutput, values) {
+                    $(function () {
+                        url = "/download?md5sums=";
+                        for (i = 0; i < (values.length - 1); i++) {
+                            url += values[i] + ","
+                        }
+                        url += values[i]
+                        console.log(url);
+                        var xhr = new XMLHttpRequest();
+                        xhr.responseType = 'blob';
+                        xhr.onload = function () {
+                            var a = document.createElement('a');
+                            a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+                            a.download = fileOutput; // Set the file name.
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+                            delete a;
+                        };
+                        xhr.open('GET', url);
+                        xhr.send();
+
+                    })
+                }
+
+                function downloadSelectionFromSearch() {
+                    var values = [];
+                    $('input.search[type=checkbox]').each(function () {
+                        if ($(this).is(":checked") === true) {
+                            values.push($(this).val());
+                        }
+                    });
+                    downloadSelection("content.zip",values);
+                }
+
+                function downloadSelectionFromAlbum() {
+                    var values = [];
+                    $('input.album[type=checkbox]').each(function () {
+                        if ($(this).is(":checked") === true) {
+                            values.push($(this).val());
+                        }
+                    });
+                    if (values.length == 0 ) {
+                        $('input.album[type=checkbox]').each(function () {
+                            values.push($(this).val());
+                        });
+                    }
+                    downloadSelection("album-content.zip", values);
+                }
                 function updateAlbumList() {
                     $(function () {
                         $.ajax({
@@ -1163,7 +1263,7 @@
                                     '</label>' +
                                     '<button onclick="toggler(\'' + classlabel + item.md5sum + '\')"   class="btn">+</button>' +
                                     '<div id="#' + classlabel + item.md5sum + '" style="display: none;">' +
-                                    '<br><a href="'  +item.filepath + '" target="_blank">Get original</a>'+
+                                    '<br><a href="' + item.filepath + '" target="_blank">Get original</a>' +
                                     '<br>' + item.filename + '<br>' + displayExifTags(item.exiftags) +
                                     '</div>' +
                                     '</div>'
@@ -1177,7 +1277,7 @@
                                     '</label>' +
                                     '<button onclick="toggler(\'' + classlabel + item.md5sum + '\')"   class="btn">+</button>' +
                                     '<div id="#' + classlabel + item.md5sum + '" style="display: none;">' +
-                                    '<br><a href="'  +item.filepath + '" target="_blank">Get original</a>'+
+                                    '<br><a href="' + item.filepath + '" target="_blank">Get original</a>' +
                                     '<br>' + item.filename + '<br>' + displayExifTags(item.exiftags) +
                                     '</div>' +
                                     '</div>'
@@ -1268,8 +1368,8 @@
                                 if (jQuery.isEmptyObject(jsondata)) {
                                     alert("No albums set.");
                                 } else {
-                                    jsondata.sort(function(a,b){
-                                       return a.localeCompare(b);
+                                    jsondata.sort(function (a, b) {
+                                        return a.localeCompare(b);
                                     });
                                     $.each(jsondata, function (i, item) {
                                         $('#albumListId').append('<option name="' + item +

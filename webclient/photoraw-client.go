@@ -13,29 +13,38 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
 )
 
 type RawPhotoClient struct {
-	rawPhotoChan chan *modele.ExportPdf
+	rawPhotoChan chan *modele.ExportRawPhoto
 	Album        *database.DatabaseAlbumRecord
 }
 
 func NewRawPhotoClient(albumRecord *database.DatabaseAlbumRecord) *RawPhotoClient {
 	return &RawPhotoClient{
-		rawPhotoChan: make(chan *modele.ExportPdf, 4),
+		rawPhotoChan: make(chan *modele.ExportRawPhoto, 4),
 		Album:        albumRecord,
 	}
 }
 
-func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []*modele.ExportPdf {
+func NewRawPhotoClientWithData(records []*database.DatabasePhotoRecord) *RawPhotoClient {
+	return &RawPhotoClient{
+		rawPhotoChan: make(chan *modele.ExportRawPhoto, 4),
+		Album:        database.NewDataseAlbumRecordWithData(records),
+	}
+}
+
+func (p *RawPhotoClient) GetRemoteRawPhotosAlbum(saveIntoAFile bool) []*modele.ExportRawPhoto {
 	var startTime time.Time
-	photosFilenames := make([]*modele.ExportPdf, 0)
+	photosFilenames := make([]*modele.ExportRawPhoto, 0)
 
 	defer func() {
 		endTime := time.Now()
@@ -62,11 +71,11 @@ func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []*modele.ExportPdf {
 		wg.Add(1)
 		switch record.MachineId {
 		case modele.ORIGIN_GOOGLE:
-			go p.CallGetRemoteRawPhoto(record.Filepath, wg, true)
+			go p.CallGetRemoteRawPhoto(record.Filepath, wg, saveIntoAFile)
 		case modele.ORIGIN_FLICKR:
-			go p.CallGetRemoteRawPhoto(record.Filepath, wg, true)
+			go p.CallGetRemoteRawPhoto(record.Filepath, wg, saveIntoAFile)
 		default:
-			go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg, true)
+			go p.CallGetRawPhoto(record.MachineId, record.Filepath, wg, saveIntoAFile)
 		}
 	}
 
@@ -76,7 +85,7 @@ func (p *RawPhotoClient) GetRemoteRawPhotosAlbum() []*modele.ExportPdf {
 	return photosFilenames
 }
 
-func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitGroup, returnFilenameSaved bool) {
+func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitGroup, saveIntoAFile bool) {
 	var startTime time.Time
 	defer func() {
 		endTime := time.Now()
@@ -90,14 +99,14 @@ func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitG
 	request, err := http.NewRequest("GET", remotePath, nil)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- &modele.ExportPdf{}
+		p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		return
 	}
 	logger.Info("Calling uri : " + remotePath)
 	response, err := client.Do(request)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- &modele.ExportPdf{}
+		p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		return
 	}
 	defer func() {
@@ -105,40 +114,51 @@ func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitG
 			response.Body.Close()
 		}
 	}()
-	img, _, err := image.Decode(response.Body)
+
+	//_,params,err := mime.ParseMediaType(response.Header.Get("Content-Disposition"))
+	//if err != nil {
+	//	logger.Errorf("Cannot parse media type from header with error %v",err)
+	//}
+	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		logger.Error("error with : " + err.Error() + " for uri:" + remotePath)
-		p.rawPhotoChan <- &modele.ExportPdf{}
+		p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		return
 	}
 
-	buf := new(bytes.Buffer)
-	if err := png.Encode(buf, img); err != nil {
-		logger.Errorf("Cannot convert to png file : %v", err)
-	}
+	if saveIntoAFile {
 
-	if returnFilenameSaved {
+		readerContent := bytes.NewBuffer(content)
+		img, _, err := image.Decode(readerContent)
+		if err != nil {
+			logger.Error("error with : " + err.Error() + " for uri:" + remotePath + " cannot decode image.")
+			p.rawPhotoChan <- &modele.ExportRawPhoto{}
+			return
+		}
+
 		rand.Seed(time.Now().UTC().UnixNano())
 		filename := fmt.Sprintf("img_%d.jpg", rand.Int())
 		f, err := os.Create(filename)
 		if err != nil {
 			logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
-			p.rawPhotoChan <- &modele.ExportPdf{}
+			p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		} else {
 			defer f.Close()
 			if err := jpeg.Encode(f, img, &jpeg.Options{Quality: 99}); err != nil {
 				logger.Infof("error in encoding temporary file %s with error %v", filename, err.Error())
 			}
 
-			e := &modele.ExportPdf{Filename: filename,
-				Orientation: exifhandler.Orientation(img),
+			e := &modele.ExportRawPhoto{Filename: filename,
+				Orientation: exifhandler.OrientationFromImg(img),
 			}
 			p.rawPhotoChan <- e
 		}
 	} else {
 
-		e := &modele.ExportPdf{Base64Content: base64.StdEncoding.EncodeToString(buf.Bytes()),
-			Orientation: exifhandler.Orientation(img),
+		e := &modele.ExportRawPhoto{
+			Filename:      path.Base(remotePath),
+			Base64Content: base64.StdEncoding.EncodeToString(content),
+			Orientation:   "",
 		}
 		p.rawPhotoChan <- e
 	}
@@ -146,7 +166,7 @@ func (p *RawPhotoClient) CallGetRemoteRawPhoto(remotePath string, wg *sync.WaitG
 
 }
 
-func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.WaitGroup, returnFilenameSaved bool) {
+func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.WaitGroup, saveIntoAFile bool) {
 	var startTime time.Time
 	defer func() {
 		endTime := time.Now()
@@ -159,7 +179,7 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	slave := slaves.Slaves[machineid]
 	if slave == nil {
 		logger.Error("Slave for machineId:" + machineid + " not found. Skiped")
-		p.rawPhotoChan <- &modele.ExportPdf{}
+		p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		return
 	}
 	client := &http.Client{}
@@ -167,14 +187,14 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	request, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- &modele.ExportPdf{}
+		p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		return
 	}
 	logger.Info("Calling uri : " + uri)
 	response, err := client.Do(request)
 	if err != nil {
 		logger.Error("error with : " + err.Error())
-		p.rawPhotoChan <- &modele.ExportPdf{}
+		p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		return
 	}
 	defer func() {
@@ -186,10 +206,10 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	logger.Info(response.Body)
 	if err := json.NewDecoder(response.Body).Decode(content); err != nil {
 		logger.Error("error with : " + err.Error() + " for uri:" + uri)
-		p.rawPhotoChan <- &modele.ExportPdf{}
+		p.rawPhotoChan <- &modele.ExportRawPhoto{}
 		return
 	}
-	if returnFilenameSaved {
+	if saveIntoAFile {
 		rand.Seed(time.Now().UTC().UnixNano())
 		filename := fmt.Sprintf("img_%d.jpg", rand.Int())
 		f, err := os.Create(filename)
@@ -202,21 +222,23 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 			if err != nil {
 				logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
 				os.Remove(filename)
-				p.rawPhotoChan <- &modele.ExportPdf{}
+				p.rawPhotoChan <- &modele.ExportRawPhoto{}
 			} else {
 				if err := jpeg.Encode(f, img, &jpeg.Options{Quality: 99}); err != nil {
 					logger.Infof("error in encoding temporary file %s with error %v", filename, err.Error())
 				}
-				e := &modele.ExportPdf{Filename: filename,
-					Orientation: exifhandler.Orientation(img),
+				e := &modele.ExportRawPhoto{Filename: filename,
+					Orientation: exifhandler.OrientationFromImg(img),
 				}
 				p.rawPhotoChan <- e
 			}
 		}
 
 	} else {
-		e := &modele.ExportPdf{Base64Content: content.Data,
-			Orientation: content.Orientation,
+		e := &modele.ExportRawPhoto{
+			Filename:      path.Base(remotePath),
+			Base64Content: content.Data,
+			Orientation:   content.Orientation,
 		}
 		p.rawPhotoChan <- e
 	}

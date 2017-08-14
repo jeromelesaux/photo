@@ -20,7 +20,7 @@ var (
 	Images4XPerPages = "Images4XPerPages"
 )
 
-func CreatePdfAlbum(albumName string, photos []*modele.ExportPdf, imagesPerPage string) []byte {
+func CreatePdfAlbum(albumName string, photos []*modele.ExportRawPhoto, imagesPerPage string) []byte {
 	filenames := make([]string, 0)
 	f := gofpdf.New("P", "mm", "A4", "")
 	defer f.Close()
@@ -96,7 +96,7 @@ func CreatePdfAlbum(albumName string, photos []*modele.ExportPdf, imagesPerPage 
 	return b.Bytes()
 }
 
-func CreateFilePdfAlbum(albumName string, photos []*modele.ExportPdf, imagesPerPage string) string {
+func CreateFilePdfAlbum(albumName string, photos []*modele.ExportRawPhoto, imagesPerPage string) string {
 	filesnames := saveImage(photos)
 
 	f := gofpdf.New("P", "mm", "A4", "")
@@ -171,7 +171,7 @@ func removeImages(files []string) {
 
 }
 
-func saveImage(photos []*modele.ExportPdf) []string {
+func saveImage(photos []*modele.ExportRawPhoto) []string {
 	files := make([]string, 0)
 	rand.Seed(time.Now().UTC().UnixNano())
 	for index, content := range photos {

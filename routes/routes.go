@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"archive/zip"
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	logger "github.com/Sirupsen/logrus"
 	"github.com/jeromelesaux/photo/album"
@@ -22,6 +25,51 @@ import (
 	"strings"
 	"time"
 )
+
+func DownloadPhotos(w http.ResponseWriter, r *http.Request) {
+	p := r.URL.Query().Get("md5sums")
+	photosId := strings.Split(p, ",")
+	modele.PostActionMessage("Download files starts.")
+	defer modele.PostActionMessage("Download files ended.")
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.GetPhotosUrl(photosId)
+	if err != nil {
+		modele.PostActionMessage(err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+
+	photos := webclient.NewRawPhotoClientWithData(response).GetRemoteRawPhotosAlbum(false)
+	b := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(b)
+	for _, d := range photos {
+		content, err := base64.StdEncoding.DecodeString(d.Base64Content)
+		if err != nil {
+			modele.PostActionMessage("Error while getting content from photo " + d.Filename + " with error " + err.Error())
+			continue
+		}
+
+		f, err := zipWriter.Create(d.Filename)
+		if err != nil {
+			modele.PostActionMessage("Error while creating zip header for photo " + d.Filename + " with error " + err.Error())
+			continue
+		}
+		logger.Infof("%s size is %d original is %d", d.Filename, len(content), len(d.Base64Content))
+		_, err = f.Write(content)
+		if err != nil {
+			modele.PostActionMessage("Error while copying zip content for photo " + d.Filename + " with error " + err.Error())
+			continue
+		}
+	}
+	zipWriter.Close()
+	logger.Infof("content length %d", len(b.Bytes()))
+	BinaryAsResponse(w, b.Bytes(), "content.zip")
+}
 
 func GetPhotosFromTime(w http.ResponseWriter, r *http.Request) {
 	groupby := r.URL.Query().Get("groupby")
@@ -431,7 +479,7 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 		}
 
 		logger.Info(selected)
-		photosFilenames := webclient.NewRawPhotoClient(selected).GetRemoteRawPhotosAlbum()
+		photosFilenames := webclient.NewRawPhotoClient(selected).GetRemoteRawPhotosAlbum(true)
 
 		// choose the number of photos per page in the pdf
 		numberPhotosPerPageOption := ""

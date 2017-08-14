@@ -63,7 +63,7 @@ func NewPhotoInformations() *PhotoInformations {
 type RawPhoto struct {
 	Name        string `json:"name,omitempty"`
 	Data        string `json:"data,omitempty"`
-	Orientation string `json:"orientation,omiptempty"`
+	Orientation string `json:"orientation,omitempty"`
 }
 
 type PhotoResponse struct {
@@ -79,7 +79,7 @@ var (
 	Portrait  = "Portrait"
 )
 
-type ExportPdf struct {
+type ExportRawPhoto struct {
 	Filename      string `json:"filename"`
 	Base64Content string `json:"base64_content"`
 	Orientation   string `json:"orientation"`

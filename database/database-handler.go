@@ -329,6 +329,43 @@ func (d *DatabaseHandler) GetOriginStats() (*album.OriginStatsMessage, error) {
 	return o, nil
 }
 
+func (d *DatabaseHandler) GetPhotosUrl(md5sums []string) ([]*DatabasePhotoRecord, error) {
+	response := make([]*DatabasePhotoRecord, 0)
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return response, err
+	}
+	defer dbInstance.Close()
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+
+	for _, m := range md5sums {
+		queryResult := make(map[int]struct{})
+		var query interface{}
+		json.Unmarshal([]byte(`[{"eq": "`+m+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
+		logger.Info(query)
+		if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
+			logger.Error("Error while querying with error :" + err.Error())
+		}
+		for id := range queryResult {
+			readBack, err := feeds.Read(id)
+			if err != nil {
+				logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " by md5sum with error : " + err.Error())
+			} else {
+				logger.Debug(readBack)
+			}
+			response = append(response, NewDatabasePhotoResponse(
+				readBack[MD5SUM_INDEX].(string),
+				readBack[FILENAME_INDEX].(string),
+				readBack[FILEPATH_INDEX].(string),
+				readBack[MACHINEID_INDEX].(string),
+				"",
+				nil))
+		}
+	}
+	return Reduce(response, ""), nil
+}
+
 func (d *DatabaseHandler) GetPhotosFromTime(queryDate string, groupby string) ([]*DatabasePhotoRecord, error) {
 	response := make([]*DatabasePhotoRecord, 0)
 	dbInstance, err := d.openDB()

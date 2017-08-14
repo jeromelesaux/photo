@@ -40,6 +40,11 @@ func NewDatabaseAlbumRecord() *DatabaseAlbumRecord {
 	return &DatabaseAlbumRecord{Records: make([]*DatabasePhotoRecord, 0)}
 }
 
+func NewDataseAlbumRecordWithData(data []*DatabasePhotoRecord) *DatabaseAlbumRecord {
+	return &DatabaseAlbumRecord{Records: data}
+
+}
+
 // functions returns a new pointer of databasePhotoRecord
 // with all data set from arguments of the function
 func NewDatabasePhotoResponse(md5sum string, filename string, filepath string, machineid string, thumbnail string, exiftags map[string]interface{}) *DatabasePhotoRecord {
