@@ -109,25 +109,21 @@ func (col *Col) Insert(doc map[string]interface{}) (id int, err error) {
 	partNum := id % col.db.numParts
 	col.db.schemaLock.RLock()
 	part := col.parts[partNum]
+
 	// Put document data into collection
-	part.Lock.Lock()
-	if _, err = part.Insert(id, []byte(docJS)); err != nil {
-		part.Lock.Unlock()
+	part.DataLock.Lock()
+	_, err = part.Insert(id, []byte(docJS))
+	part.DataLock.Unlock()
+	if err != nil {
 		col.db.schemaLock.RUnlock()
 		return
 	}
-	// If another thread is updating the document in the meanwhile, let it take over index maintenance
-	if err = part.LockUpdate(id); err != nil {
-		part.Lock.Unlock()
-		col.db.schemaLock.RUnlock()
-		return id, nil
-	}
-	part.Lock.Unlock()
+
+	part.LockUpdate(id)
 	// Index the document
 	col.indexDoc(id, doc)
-	part.Lock.Lock()
 	part.UnlockUpdate(id)
-	part.Lock.Unlock()
+
 	col.db.schemaLock.RUnlock()
 	return
 }
@@ -137,15 +133,17 @@ func (col *Col) read(id int, placeSchemaLock bool) (doc map[string]interface{}, 
 		col.db.schemaLock.RLock()
 	}
 	part := col.parts[id%col.db.numParts]
-	part.Lock.RLock()
+
+	part.DataLock.RLock()
 	docB, err := part.Read(id)
-	part.Lock.RUnlock()
+	part.DataLock.RUnlock()
 	if err != nil {
 		if placeSchemaLock {
 			col.db.schemaLock.RUnlock()
 		}
 		return
 	}
+
 	err = json.Unmarshal(docB, &doc)
 	if placeSchemaLock {
 		col.db.schemaLock.RUnlock()
@@ -169,40 +167,141 @@ func (col *Col) Update(id int, doc map[string]interface{}) error {
 	}
 	col.db.schemaLock.RLock()
 	part := col.parts[id%col.db.numParts]
-	part.Lock.Lock()
+
 	// Place lock, read back original document and update
-	if err := part.LockUpdate(id); err != nil {
-		part.Lock.Unlock()
+	part.DataLock.Lock()
+	originalB, err := part.Read(id)
+	if err != nil {
+		part.DataLock.Unlock()
 		col.db.schemaLock.RUnlock()
 		return err
 	}
+	err = part.Update(id, []byte(docJS))
+	part.DataLock.Unlock()
+	if err != nil {
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+
+	// Done with the collection data, next is to maintain indexed values
+	var original map[string]interface{}
+	json.Unmarshal(originalB, &original)
+	part.LockUpdate(id)
+	if original != nil {
+		col.unindexDoc(id, original)
+	} else {
+		tdlog.Noticef("Will not attempt to unindex document %d during update", id)
+	}
+	col.indexDoc(id, doc)
+	// Done with the index
+	part.UnlockUpdate(id)
+
+	col.db.schemaLock.RUnlock()
+	return nil
+}
+
+// UpdateBytesFunc will update a document bytes.
+// update func will get current document bytes and should return bytes of updated document;
+// updated document should be valid JSON;
+// provided buffer could be modified (reused for returned value);
+// non-nil error will be propagated back and returned from UpdateBytesFunc.
+func (col *Col) UpdateBytesFunc(id int, update func(origDoc []byte) (newDoc []byte, err error)) error {
+	col.db.schemaLock.RLock()
+	part := col.parts[id%col.db.numParts]
+
+	// Place lock, read back original document and update
+	part.DataLock.Lock()
 	originalB, err := part.Read(id)
 	if err != nil {
-		part.UnlockUpdate(id)
-		part.Lock.Unlock()
+		part.DataLock.Unlock()
 		col.db.schemaLock.RUnlock()
 		return err
 	}
 	var original map[string]interface{}
-	if err = json.Unmarshal(originalB, &original); err != nil {
-		tdlog.Noticef("Will not attempt to unindex document %d during update", id)
-	}
-	if err = part.Update(id, []byte(docJS)); err != nil {
-		part.UnlockUpdate(id)
-		part.Lock.Unlock()
+	json.Unmarshal(originalB, &original) // Unmarshal originalB before passing it to update
+	docB, err := update(originalB)
+	if err != nil {
+		part.DataLock.Unlock()
 		col.db.schemaLock.RUnlock()
 		return err
 	}
+	var doc map[string]interface{} // check if docB are valid JSON before Update
+	if err = json.Unmarshal(docB, &doc); err != nil {
+		part.DataLock.Unlock()
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+	err = part.Update(id, docB)
+	part.DataLock.Unlock()
+	if err != nil {
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+
 	// Done with the collection data, next is to maintain indexed values
-	part.Lock.Unlock()
+	part.LockUpdate(id)
 	if original != nil {
 		col.unindexDoc(id, original)
+	} else {
+		tdlog.Noticef("Will not attempt to unindex document %d during update", id)
 	}
 	col.indexDoc(id, doc)
-	// Done with the document
-	part.Lock.Lock()
+	// Done with the index
 	part.UnlockUpdate(id)
-	part.Lock.Unlock()
+
+	col.db.schemaLock.RUnlock()
+	return nil
+}
+
+// UpdateFunc will update a document.
+// update func will get current document and should return updated document;
+// provided document should NOT be modified;
+// non-nil error will be propagated back and returned from UpdateFunc.
+func (col *Col) UpdateFunc(id int, update func(origDoc map[string]interface{}) (newDoc map[string]interface{}, err error)) error {
+	col.db.schemaLock.RLock()
+	part := col.parts[id%col.db.numParts]
+
+	// Place lock, read back original document and update
+	part.DataLock.Lock()
+	originalB, err := part.Read(id)
+	if err != nil {
+		part.DataLock.Unlock()
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+	var original map[string]interface{}
+	err = json.Unmarshal(originalB, &original)
+	if err != nil {
+		part.DataLock.Unlock()
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+	doc, err := update(original)
+	if err != nil {
+		part.DataLock.Unlock()
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+	docJS, err := json.Marshal(doc)
+	if err != nil {
+		part.DataLock.Unlock()
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+	err = part.Update(id, []byte(docJS))
+	part.DataLock.Unlock()
+	if err != nil {
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+
+	// Done with the collection data, next is to maintain indexed values
+	part.LockUpdate(id)
+	col.unindexDoc(id, original)
+	col.indexDoc(id, doc)
+	// Done with the document
+	part.UnlockUpdate(id)
+
 	col.db.schemaLock.RUnlock()
 	return nil
 }
@@ -211,38 +310,33 @@ func (col *Col) Update(id int, doc map[string]interface{}) error {
 func (col *Col) Delete(id int) error {
 	col.db.schemaLock.RLock()
 	part := col.parts[id%col.db.numParts]
-	part.Lock.Lock()
+
 	// Place lock, read back original document and delete document
-	if err := part.LockUpdate(id); err != nil {
-		part.Lock.Unlock()
-		col.db.schemaLock.RUnlock()
-		return err
-	}
+	part.DataLock.Lock()
 	originalB, err := part.Read(id)
 	if err != nil {
-		part.UnlockUpdate(id)
-		part.Lock.Unlock()
+		part.DataLock.Unlock()
 		col.db.schemaLock.RUnlock()
 		return err
 	}
+	err = part.Delete(id)
+	part.DataLock.Unlock()
+	if err != nil {
+		col.db.schemaLock.RUnlock()
+		return err
+	}
+
+	// Done with the collection data, next is to remove indexed values
 	var original map[string]interface{}
-	if err = json.Unmarshal(originalB, &original); err != nil {
+	err = json.Unmarshal(originalB, &original)
+	if err == nil {
+		part.LockUpdate(id)
+		col.unindexDoc(id, original)
+		part.UnlockUpdate(id)
+	} else {
 		tdlog.Noticef("Will not attempt to unindex document %d during delete", id)
 	}
-	if err = part.Delete(id); err != nil {
-		part.UnlockUpdate(id)
-		part.Lock.Unlock()
-		col.db.schemaLock.RUnlock()
-		return err
-	}
-	// Done with the collection data, next is to remove indexed values
-	part.Lock.Unlock()
-	if original != nil {
-		col.unindexDoc(id, original)
-	}
-	part.Lock.Lock()
-	part.UnlockUpdate(id)
-	part.Lock.Unlock()
+
 	col.db.schemaLock.RUnlock()
 	return nil
 }

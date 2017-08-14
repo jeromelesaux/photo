@@ -6,6 +6,7 @@ I sincerely appreciate the following individuals and organizations for their con
 - Adrian Lanzafame
 - Alexandre Stein
 - Allendar
+- arch3y
 - Bryce Nyeggen
 - Cristian Echeverria
 - David Corona
@@ -14,6 +15,7 @@ I sincerely appreciate the following individuals and organizations for their con
 - Freiheit.com
 - Gert Cuykens
 - "IFQ"
+- Komosa
 - Mauro Toffanin
 - Nick Prestra
 - NoahShen
@@ -21,6 +23,8 @@ I sincerely appreciate the following individuals and organizations for their con
 - Osman Bineev
 - Ross Albertson
 - Stefan Richter
+- Suhail Abood
+- tjackiw
 - Thiago Jackiw
 - Tom D
 - Xin Wang "TonyW"

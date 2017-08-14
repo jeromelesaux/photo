@@ -1,11 +1,11 @@
-package logrus_logstash
+package logrustash
 
 import (
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Formatter generates json in logstash format.
