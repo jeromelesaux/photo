@@ -572,7 +572,17 @@ func (d *DatabaseHandler) GetAlbumList() []string {
 		if err != nil {
 			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
 		} else {
-			albumsNames = append(albumsNames, readBack[ALBUM_INDEX].(string))
+			name := readBack[ALBUM_INDEX].(string)
+			alreadyInSlice := false
+			for _, v := range albumsNames {
+				if v == name {
+					alreadyInSlice = true
+					break
+				}
+			}
+			if !alreadyInSlice {
+				albumsNames = append(albumsNames, name)
+			}
 		}
 	}
 	return albumsNames
