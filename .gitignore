@@ -7,3 +7,11 @@
 /.idea/encodings.xml
 /.idea/libraries/GOPATH__photo_.xml
 /photo.iml
+*.iml
+*.pdf
+*.log
+.idea
+database_photo.db
+photo-controller
+photo-exif
+*.json
