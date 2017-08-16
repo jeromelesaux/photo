@@ -1168,7 +1168,12 @@
                             values.push($(this).val());
                         }
                     });
-                    downloadSelection("content.zip",values);
+                    if (values.length == 0) {
+                        $('input.search[type=checkbox]').each(function () {
+                            values.push($(this).val());
+                        });
+                    }
+                    downloadSelection("content.zip", values);
                 }
 
                 function downloadSelectionFromAlbum() {
@@ -1178,13 +1183,14 @@
                             values.push($(this).val());
                         }
                     });
-                    if (values.length == 0 ) {
+                    if (values.length == 0) {
                         $('input.album[type=checkbox]').each(function () {
                             values.push($(this).val());
                         });
                     }
                     downloadSelection("album-content.zip", values);
                 }
+
                 function updateAlbumList() {
                     $(function () {
                         $.ajax({
