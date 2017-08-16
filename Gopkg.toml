@@ -46,7 +46,7 @@
   version = "0.8.0"
 
 [[constraint]]
-  branch = "oauth2"
+  branch = "queryparams"
   name = "github.com/tgulacsi/picago"
 
 [[constraint]]

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	logger "github.com/Sirupsen/logrus"
 	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/flickr.v2"
 	"github.com/jeromelesaux/photo/modele"
 	"gopkg.in/masci/flickr.v2"
-	"gopkg.in/masci/flickr.v2/photos"
 	"gopkg.in/masci/flickr.v2/photosets"
 	"os"
 	"sync"
@@ -134,7 +134,7 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 				p := modele.NewPhotoInformations()
 				p.Filename = photo.Title
 				p.Md5Sum = photo.Id
-				photoInfoResponse, err := photos.GetInfo(f.Client, photo.Id, f.ApiSecret)
+				photoInfoResponse, err := flickr_v2.GetInfo(f.Client, photo.Id, f.ApiSecret)
 				if err != nil {
 					logger.Errorf("Error while getting photo information %s with error %v", photo.Id, err)
 				} else {
@@ -156,7 +156,7 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 func (f *Flickr) GetThumbnailAndOriginal(id string) (string, string) {
 	var originalUrl string
 	var thumbnail string
-	response, err := photos.GetSizes(f.Client, id)
+	response, err := flickr_v2.GetSizes(f.Client, id)
 	if err != nil {
 		logger.Errorf("Error while getting thumbnail with error %v for id photo %s", err, id)
 		return thumbnail, originalUrl
@@ -178,11 +178,11 @@ func (f *Flickr) GetThumbnailAndOriginal(id string) (string, string) {
 	return thumbnail, originalUrl
 }
 
-func (f *Flickr) GetExif(pinfo photos.PhotoInfo) []photos.Exif {
-	response, err := photos.GetExifs(f.Client, pinfo.Id, pinfo.Secret)
+func (f *Flickr) GetExif(pinfo flickr_v2.PhotoInfo) []flickr_v2.Exif {
+	response, err := flickr_v2.GetExifs(f.Client, pinfo.Id, pinfo.Secret)
 	if err != nil {
 		logger.Errorf("Error while getting flickr exif information on photo id %s with error %v", pinfo.Id, err)
-		return make([]photos.Exif, 0)
+		return make([]flickr_v2.Exif, 0)
 	}
 	return response.PhotoExif.Exifs
 }

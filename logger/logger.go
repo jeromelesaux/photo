@@ -20,7 +20,7 @@ func InitLog(logLevel, formatter string) error {
 
 	switch formatter {
 	case LogStashFormatter:
-		logrus.SetFormatter(&logrus_logstash.LogstashFormatter{
+		logrus.SetFormatter(&logrustash.LogstashFormatter{
 			TimestampFormat: time.RFC3339,
 		})
 	default:

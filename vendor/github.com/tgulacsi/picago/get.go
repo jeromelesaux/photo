@@ -179,13 +179,80 @@ func (e *Entry) album() Album {
 	return a
 }
 
-func GetPhotos(client *http.Client, userID, albumID string) ([]Photo, error) {
+type QueryParams struct {
+	Access   Visibility
+	BBox     BoundingBox
+	Location string
+	Text     string
+	Tag      string
+}
+
+// String returns an url-encode representation of QueryParams.
+func (c QueryParams) String() string {
+	v := make(neturl.Values, 5)
+	if c.Access != DefaultVisible {
+		v.Set("access", c.Access.String())
+	}
+	if c.Text != "" {
+		v.Set("q", c.Text)
+	}
+	if c.Tag != "" {
+		v.Set("tag", c.Tag)
+	}
+	if c.Location != "" {
+		v.Set("l", c.Location)
+	}
+	bb := c.BBox
+	if !(bb.West == 0 && bb.South == 0 && bb.East == 0 && bb.North == 0) {
+		v.Set("bbox", fmt.Sprintf("%f,%f,%f,%f", bb.West, bb.South, bb.East, bb.North))
+	}
+	if len(v) == 0 {
+		return ""
+	}
+	return v.Encode()
+}
+
+type Visibility uint8
+
+const (
+	DefaultVisible = Visibility(iota)
+	AllVisible
+	PrivateVisible
+	PublicVisible
+	UserVisible
+)
+
+func (v Visibility) String() string {
+	switch v {
+	case AllVisible:
+		return "all"
+	case PrivateVisible:
+		return "private"
+	case PublicVisible:
+		return "public"
+	case UserVisible:
+		return "visible"
+	default:
+		return ""
+	}
+}
+
+type BoundingBox struct {
+	West, South, East, North float64
+}
+
+// GetPhotosSpec allows specifying parameters for the query, as in
+// https://developers.google.com/picasa-web/docs/2.0/reference#Parameters
+func GetPhotosSpec(client *http.Client, userID, albumID string, config QueryParams) ([]Photo, error) {
 	if userID == "" {
 		userID = "default"
 	}
 	url := strings.Replace(photoURL, "{userID}", userID, 1)
 	url = strings.Replace(url, "{albumID}", albumID, 1)
-
+	q := config.String()
+	if q != "" {
+		url += "&" + q
+	}
 	var photos []Photo
 	var err error
 	hasMore, startIndex := true, 1
@@ -197,6 +264,11 @@ func GetPhotos(client *http.Client, userID, albumID string) ([]Photo, error) {
 		startIndex = len(photos) + 1
 	}
 	return photos, err
+}
+
+// GetPhotos returns a list of photos from the user's specified album.
+func GetPhotos(client *http.Client, userID, albumID string) ([]Photo, error) {
+	return GetPhotosSpec(client, userID, albumID, QueryParams{})
 }
 
 func getPhotos(photos []Photo, client *http.Client, url string, startIndex int) ([]Photo, bool, error) {
@@ -229,21 +301,19 @@ func getPhotos(photos []Photo, client *http.Client, url string, startIndex int) 
 
 func (e *Entry) photo() (p Photo, err error) {
 	var lat, long float64
-	if e.Point != "0.0 0.0" { // ignore special case
-		i := strings.Index(e.Point, " ")
-		if i >= 1 {
-			lat, err = strconv.ParseFloat(e.Point[:i], 64)
-			if err != nil {
-				return p, fmt.Errorf("cannot parse %q as latitude: %v", e.Point[:i], err)
-			}
-			long, err = strconv.ParseFloat(e.Point[i+1:], 64)
-			if err != nil {
-				return p, fmt.Errorf("cannot parse %q as longitude: %v", e.Point[i+1:], err)
-			}
+	i := strings.Index(e.Point, " ")
+	if i >= 1 {
+		lat, err = strconv.ParseFloat(e.Point[:i], 64)
+		if err != nil {
+			return p, fmt.Errorf("cannot parse %q as latitude: %v", e.Point[:i], err)
 		}
-		if e.Point != "" && lat == 0 && long == 0 {
-			return p, fmt.Errorf("point=%q but couldn't parse it as lat/long", e.Point)
+		long, err = strconv.ParseFloat(e.Point[i+1:], 64)
+		if err != nil {
+			return p, fmt.Errorf("cannot parse %q as longitude: %v", e.Point[i+1:], err)
 		}
+	}
+	if e.Point != "" && lat == 0 && long == 0 {
+		return p, fmt.Errorf("point=%q but couldn't parse it as lat/long", e.Point)
 	}
 	p = Photo{
 		ID:          e.ID,
@@ -256,9 +326,6 @@ func (e *Entry) photo() (p Photo, err error) {
 		Latitude:    lat,
 		Longitude:   long,
 	}
-	// Sanitise Filename in case of slashes in filename (sometimes present in google photos)
-	p.Filename = strings.Split(p.Filename, "/")[len(strings.Split(p.Filename, "/"))-1]
-
 	for _, link := range e.Links {
 		if link.Rel == "alternate" && link.Type == "text/html" {
 			p.PageURL = link.URL
