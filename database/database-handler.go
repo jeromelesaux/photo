@@ -75,6 +75,7 @@ const (
 	LATITUDEREFEXIFTOOLTAG  = "North or South Latitude"
 	DATEFLICKRTAG           = "Date and Time (Original)"
 	DATEGOOGLETAG           = "timestamp"
+	ALBUM_TAGS              = "Album tags"
 )
 
 func (d *DatabaseHandler) openDB() (*db.DB, error) {
@@ -164,12 +165,15 @@ func (d *DatabaseHandler) createIndexes() error {
 		logger.Error("Error while indexing Type with error : " + err.Error())
 	}
 	if err = feeds.Index([]string{FILENAME_INDEX, FILEPATH_INDEX, FILETYPE_INDEX}); err != nil {
-		logger.Error("Error while indexing Filename,Filepath,Type with error : " + err.Error())
+		logger.Errorf("Error while indexing Filename,Filepath,Type with error : %v", err.Error())
 	}
 
 	feeds = dbInstance.Use(DBALBUM_COLLECTION)
 	if err = feeds.Index([]string{ALBUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Album with error : " + err.Error())
+	}
+	if err = feeds.Index([]string{ALBUM_INDEX, ALBUM_TAGS}); err != nil {
+		logger.Errorf("Error while indexing Albums tags with error %v", err)
 	}
 
 	return nil
@@ -644,6 +648,14 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 		} else {
 			logger.Infof("description : %s", readBack[ALBUM_DESCRIPTION].(string))
 			collection.Description = readBack[ALBUM_DESCRIPTION].(string)
+			if readBack[ALBUM_TAGS] != nil {
+
+				tags := readBack[ALBUM_TAGS].([]interface{})
+				for _, v := range tags {
+					collection.Tags = append(collection.Tags, v.(string))
+					logger.Infof("Tag :%s", v.(string))
+				}
+			}
 			for _, md5sum := range readBack[ALBUM_ITEMS].([]interface{}) {
 				queryResultImg := make(map[int]struct{})
 				var queryImg interface{}
@@ -722,6 +734,7 @@ func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
 				ALBUM_INDEX:       response.AlbumName,
 				ALBUM_ITEMS:       photosToKeep,
 				ALBUM_DESCRIPTION: response.Description,
+				ALBUM_TAGS:        response.Tags,
 			})
 			if err != nil {
 				logger.Error("Cannot insert data in database with error : " + err.Error())
@@ -735,7 +748,7 @@ func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
 }
 
 func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
-	// manage the album update
+
 	exists, err := d.AlbumExists(response.AlbumName)
 	if err != nil {
 		return err
@@ -758,9 +771,10 @@ func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 			ALBUM_INDEX:       response.AlbumName,
 			ALBUM_ITEMS:       response.Md5sums,
 			ALBUM_DESCRIPTION: response.Description,
+			ALBUM_TAGS:        response.Tags,
 		})
 		if err != nil {
-			logger.Error("Cannot insert album %s in database with error : %v", response.AlbumName, err)
+			logger.Errorf("Cannot insert album %s in database with error : %v", response.AlbumName, err)
 		} else {
 			logger.Infof("DB return id %d for album:%s\n", id, response.AlbumName)
 		}
@@ -847,6 +861,7 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 				ALBUM_INDEX:       response.AlbumName,
 				ALBUM_ITEMS:       md5sumsMerged,
 				ALBUM_DESCRIPTION: response.Description,
+				ALBUM_TAGS:        response.Tags,
 			})
 			if err != nil {
 				logger.Error("Cannot insert data in database with error : " + err.Error())
@@ -1184,6 +1199,7 @@ func ReduceAlbumMessage(album *DatabaseAlbumRecord, size string) *DatabaseAlbumR
 	finalResponses := NewDatabaseAlbumRecord()
 	finalResponses.AlbumName = album.AlbumName
 	finalResponses.Description = album.Description
+	finalResponses.Tags = album.Tags
 	for _, response := range album.Records {
 		alreadyStored := false
 		for _, r := range finalResponses.Records {

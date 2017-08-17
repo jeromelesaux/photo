@@ -37,11 +37,11 @@ type DatabaseAlbumRecord struct {
 
 // functions returns a new pointer of databaseAlbumRecord
 func NewDatabaseAlbumRecord() *DatabaseAlbumRecord {
-	return &DatabaseAlbumRecord{Records: make([]*DatabasePhotoRecord, 0)}
+	return &DatabaseAlbumRecord{Records: make([]*DatabasePhotoRecord, 0), Tags: make([]string, 0)}
 }
 
 func NewDataseAlbumRecordWithData(data []*DatabasePhotoRecord) *DatabaseAlbumRecord {
-	return &DatabaseAlbumRecord{Records: data}
+	return &DatabaseAlbumRecord{Records: data, Tags: make([]string, 0)}
 
 }
 

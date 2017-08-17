@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.css">
+    <script src="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css">
     <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU"
             type="text/javascript">
@@ -71,7 +73,7 @@
                 <form class="form-inline">
                     <div class="form-group">
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseSearchPanel">Search
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseSearchPanel">+ Search
                                 Criteria</a></div>
                             <div id="collapseSearchPanel" class="panel-collapse collapse">
                                 <div class="panel-body">
@@ -115,7 +117,7 @@
                             </div>
                         </div>
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseMapPanel">Search on a
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseMapPanel">+ Search on a
                                 map</a></div>
                             <div id="collapseMapPanel" class="panel-collapse collapse">
                                 <div class="panel-body" style="width: 750px">
@@ -129,7 +131,7 @@
                             </div>
                         </div>
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseTimeLinePanel">Search on
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapseTimeLinePanel">+ Search on
                                 a time line</a></div>
                             <div id="collapseTimeLinePanel" class="panel-collapse collapse">
                                 <div class="panel-body" style="width: 750px">
@@ -153,7 +155,7 @@
 
                         </div>
                         <div class="panel panel-default">
-                            <div class="panel-heading"><a data-toggle="collapse" href="#collapsePhotosActionPanel">Actions
+                            <div class="panel-heading"><a data-toggle="collapse" href="#collapsePhotosActionPanel">+ Actions
                                 on photos</a></div>
                             <div id="collapsePhotosActionPanel" class="panel-collapse collapse">
                                 <div class="panel-body">
@@ -283,13 +285,13 @@
                 </div>
                 <br>
 
-                <div class="panel panel-default">
-                    <div class="panel-heading">Albums photos</div>
-                    <div class="panel-body">
-                        <div class="panel panel-default" style="width: 600px;">
-                            <div class="panel-heading">Album Description</div>
+                <div class="panel panel-default" style="width: 600px;">
+                    <div class="panel-heading"><a data-toggle="collapse" href="#collapseAlbumsPhotosActionsPanel">+ Albums photos actions</a></div>
+                    <div id="collapseAlbumsPhotosActionsPanel" class="panel-collapse collapse">
+                        <div class="panel-body">
+
                             <button type="button" name="Update the album" onclick="updateAlbumView()"
-                                    value="Update the album"
+                                    value="Update the album informations"
                                     class="btn btn-info start">
                                 <span>update the album</span>
                             </button>
@@ -321,20 +323,31 @@
                                     class="btn btn-info start">
                                 <span>Download Content album</span>
                             </button>
-                            <div class="panel-body">
-                                <input type="text" id="albumDescriptionId"
-                                       name="albumDescriptionId"
-                                       class="form-control">
-
-                            </div>
-                        </div>
-                        <!-- gallery of the album found and returned by server -->
-                        <div class="row">
-                            <input type="text" id="albumNameId"
+                            <br>
+                            Album's name <input type="text" id="albumNameId"
                                    name="albumNameId"
                                    class="form-control">
-                            <div id="albumImagesFound"></div>
+
+                            Description <input type="text" id="albumDescriptionId"
+                                   name="albumDescriptionId"
+                                   class="form-control">
+
+                            <br>
+                            <input type="text" id="albumTagsId"
+                                   data-role="tagsinput"
+                                    value="">
                         </div>
+
+                    </div>
+
+                    <!-- gallery of the album found and returned by server -->
+                    <div class="row">
+
+                        <div id="albumImagesFound"></div>
+                    </div>
+
+
+                    <div class="panel panel-default">
 
                         <!-- modal page to set flickr account settings -->
                         <div id="pdfExportSelectionDialog" class="modal fade" role="dialog">
@@ -1237,9 +1250,11 @@
                     $(function () {
                         var albumName = $('#albumNameId').val();
                         var albumDescription = $('#albumDescriptionId').val();
+                        var tags = $('#albumTagsId').tagsinput('items');
                         var body = {};
                         body.album_name = albumName;
                         body.description = albumDescription;
+                        body.tags = tags;
                         var jsondata = JSON.stringify(body);
                         //  console.log(jsondata);
                         $.ajax({
@@ -1250,6 +1265,9 @@
                             success: function (responsedata, codeHttp) {
                                 if (codeHttp === "success") {
                                     alert(responsedata);
+                                }
+                                else {
+                                    alert("error while saving the album");
                                 }
                             }
                         });
@@ -1296,6 +1314,7 @@
                 function getAlbum(albumName) {
                     $(function () {
                         $('#albumImagesFound').empty();
+                        $('#albumTagsId').tagsinput('removeAll');
                         $.ajax({
                             dataType: "json",
                             url: "/getalbum?albumName=" + albumName,
@@ -1303,6 +1322,8 @@
                             success: function (jsondata, codeHttp) {
                                 $('#albumNameId').val(jsondata.album_name);
                                 $('#albumDescriptionId').val(jsondata.description);
+                                $('#albumTagsId').tagsinput('add',jsondata.tags.join(", "));
+                                console.log(jsondata.tags.join(", "));
                                 feedElementbyItems(jsondata.records, 'albumImagesFound', 'album', true);
                             }
                         });
