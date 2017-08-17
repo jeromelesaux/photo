@@ -40,7 +40,13 @@ func NewDatabaseHandler() (*DatabaseHandler, error) {
 	return databaseTiedotHandler, err
 }
 
-var createDB sync.Once
+var (
+	createDB                    sync.Once
+	AlbumAlreadyExists          = errors.New("Album already exists in database.")
+	ErrorWhileRetreivingAlbum   = errors.New("Error while retreiving album in database.")
+	PictureAlreadyExists        = errors.New("Picture already exists in database.")
+	ErrorWhileRetreivingPicture = errors.New("Error while retreiving picture in database.")
+)
 
 const (
 	DBPHOTO_COLLECTION      = "photos_collection"
@@ -588,6 +594,29 @@ func (d *DatabaseHandler) GetAlbumList() []string {
 	return albumsNames
 }
 
+func (d *DatabaseHandler) AlbumExists(albumName string) (bool, error) {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return true, AlbumAlreadyExists
+	}
+	defer dbInstance.Close()
+	feedsAlbum := dbInstance.Use(DBPHOTO_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+
+	json.Unmarshal([]byte(`[{"eq": "`+albumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	if len(queryResult) == 0 {
+		return false, nil
+	} else {
+		return true, nil
+	}
+}
+
 func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 	collection := NewDatabaseAlbumRecord()
 	collection.AlbumName = albumName
@@ -706,6 +735,12 @@ func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
 }
 
 func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
+	// manage the album update
+	exists, err := d.AlbumExists(response.AlbumName)
+	if err != nil {
+		return err
+	}
+
 	dbInstance, err := d.openDB()
 	if err != nil {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
@@ -714,15 +749,21 @@ func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 	defer dbInstance.Close()
 
 	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
-	id, err := feedsAlbum.Insert(map[string]interface{}{
-		ALBUM_INDEX:       response.AlbumName,
-		ALBUM_ITEMS:       response.Md5sums,
-		ALBUM_DESCRIPTION: response.Description,
-	})
-	if err != nil {
-		logger.Error("Cannot insert data in database with error : " + err.Error())
+
+	if exists {
+		return d.UpdateAlbum(response)
 	} else {
-		logger.Infof("DB return id %d for album:%s\n", id, response.AlbumName)
+
+		id, err := feedsAlbum.Insert(map[string]interface{}{
+			ALBUM_INDEX:       response.AlbumName,
+			ALBUM_ITEMS:       response.Md5sums,
+			ALBUM_DESCRIPTION: response.Description,
+		})
+		if err != nil {
+			logger.Error("Cannot insert album %s in database with error : %v", response.AlbumName, err)
+		} else {
+			logger.Infof("DB return id %d for album:%s\n", id, response.AlbumName)
+		}
 	}
 
 	return err
@@ -817,7 +858,30 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 	return err
 }
 
+func (d *DatabaseHandler) PictureExists(md5sum string) (bool, error) {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return true, PictureAlreadyExists
+	}
+	defer dbInstance.Close()
+	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`[{"eq": "`+md5sum+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
+	if err = db.EvalQuery(query, feedsCollection, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+		return true, ErrorWhileRetreivingPicture
+	}
+	if len(queryResult) == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
+
 	dbInstance, err := d.openDB()
 	if err != nil {
 		logger.Error("Error while opening database during insert operation with error " + err.Error())
@@ -827,20 +891,29 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 
 	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 	for _, item := range response.Photos {
-		id, err := feeds.Insert(map[string]interface{}{
-			MACHINEID_INDEX: response.MachineId,
-			FILENAME_INDEX:  item.Filename,
-			FILENAMES_INDEX: SplitAll(item.Filename),
-			FILEPATH_INDEX:  item.Filepath,
-			FILEPATHS_INDEX: SplitAll(item.Filepath),
-			MD5SUM_INDEX:    item.Md5Sum,
-			EXIFTAGS_INDEX:  item.Tags,
-			THUMBNAIL_INDEX: item.Thumbnail,
-			FILETYPE_INDEX:  strings.ToLower(filepath.Ext(item.Filename))})
-		if err != nil {
-			logger.Error("Cannot insert data in database with error : " + err.Error())
+		exists, err := d.PictureExists(item.Md5Sum)
+		if !exists && err == nil {
+			id, err := feeds.Insert(map[string]interface{}{
+				MACHINEID_INDEX: response.MachineId,
+				FILENAME_INDEX:  item.Filename,
+				FILENAMES_INDEX: SplitAll(item.Filename),
+				FILEPATH_INDEX:  item.Filepath,
+				FILEPATHS_INDEX: SplitAll(item.Filepath),
+				MD5SUM_INDEX:    item.Md5Sum,
+				EXIFTAGS_INDEX:  item.Tags,
+				THUMBNAIL_INDEX: item.Thumbnail,
+				FILETYPE_INDEX:  strings.ToLower(filepath.Ext(item.Filename))})
+			if err != nil {
+				logger.Error("Cannot insert data in database with error : " + err.Error())
+			} else {
+				logger.Infof("DB return id %d for filepath:%s\n", id, item.Filepath)
+			}
 		} else {
-			logger.Infof("DB return id %d for filepath:%s\n", id, item.Filepath)
+			if err == nil {
+				logger.Infof("This picture %s already exists in database skipped.", item.Md5Sum)
+			} else {
+				logger.Infof("Error for %s with error %v", item.Md5Sum, err)
+			}
 		}
 
 	}
