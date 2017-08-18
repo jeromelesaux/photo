@@ -77,42 +77,79 @@
                                 Criteria</a></div>
                             <div id="collapseSearchPanel" class="panel-collapse collapse">
                                 <div class="panel-body">
-                                    <div class="offset8">Enter extension image file to search : <select
-                                            class="form-control"
-                                            id="extensionList"> </select>
-                                        <select class="form-control" id="fileSize">
-                                            <option value="big">big size</option>
-                                            <option value="medium">meduim size</option>
-                                            <option value="little">little size</option>
-                                        </select>
-                                        <br>
-                                        <div class="offset8">Enter exif tag of the image file to search :<input
-                                                type="text" id="exifTagValue"
-                                                name="exifTagValue"
-                                                class="form-control"></div>
-                                        <br>
-                                        <div class="offset8">Enter exif value of the image file to search :<input
-                                                type="text" id="exifValue"
-                                                name="exifValue"
-                                                class="form-control"></div>
-                                        <br>
-                                        <div class="offset8">Enter part of the filename of the image file to search
-                                            :<input type="text" id="filename"
-                                                    name="filename"
-                                                    class="form-control">
-                                        </div>
-                                        <br>
-                                        <button type="button" name="Find images" onclick="submitImagesSearch()"
-                                                value="Find images"
-                                                class="btn btn-primary start">
-                                            <span>Search Images</span>
-                                        </button>
-                                        <button type="button" name="clean " onclick="clean()" value="clean"
-                                                class="btn btn-primary start">
-                                            <span>clean</span>
-                                        </button>
+                                    <table class="table">
+                                        <tbody>
+                                        <tr>
+                                            <td>Enter extension image file to search :</td>
+                                            <td>
+                                                <select
+                                                        class="form-control"
+                                                        id="extensionList"> </select>
+                                            </td>
+                                            <td>
+                                                <select class="form-control" id="fileSize">
+                                                    <option value="big">big size</option>
+                                                    <option value="medium">meduim size</option>
+                                                    <option value="little">little size</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Enter exif tag of the image file to search :</td>
+                                            <td>
+                                                <input
+                                                        type="text" id="exifTagValue"
+                                                        name="exifTagValue"
+                                                        class="form-control">
+                                            </td>
+                                        </tr>
 
-                                    </div>
+                                        <tr>
+                                            <td>Enter exif value of the image file to search :</td>
+                                            <td>
+                                                <input
+                                                        type="text" id="exifValue"
+                                                        name="exifValue"
+                                                        class="form-control">
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>Enter part of the filename of the image file to search
+                                                :
+                                            </td>
+                                            <td>
+                                                <input type="text" id="filename"
+                                                       name="filename"
+                                                       class="form-control">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Enter a tag to search
+                                                :
+                                            </td>
+                                            <td><input type="text" id="tag"
+                                                       name="tag"
+                                                       class="form-control">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <button type="button" name="Find images" onclick="submitImagesSearch()"
+                                                        value="Find images"
+                                                        class="btn btn-primary start">
+                                                    <span>Search Images</span>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <button type="button" name="clean " onclick="clean()" value="clean"
+                                                        class="btn btn-primary start">
+                                                    <span>clean</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -325,17 +362,17 @@
                             </button>
                             <br>
                             Album's name <input type="text" id="albumNameId"
-                                   name="albumNameId"
-                                   class="form-control">
+                                                name="albumNameId"
+                                                class="form-control">
 
                             Description <input type="text" id="albumDescriptionId"
-                                   name="albumDescriptionId"
-                                   class="form-control">
+                                               name="albumDescriptionId"
+                                               class="form-control">
 
                             <br>
                             <input type="text" id="albumTagsId"
                                    data-role="tagsinput"
-                                    value="">
+                                   value="">
                         </div>
 
                     </div>
@@ -1322,7 +1359,7 @@
                             success: function (jsondata, codeHttp) {
                                 $('#albumNameId').val(jsondata.album_name);
                                 $('#albumDescriptionId').val(jsondata.description);
-                                $('#albumTagsId').tagsinput('add',jsondata.tags.join(", "));
+                                $('#albumTagsId').tagsinput('add', jsondata.tags.join(", "));
                                 console.log(jsondata.tags.join(", "));
                                 feedElementbyItems(jsondata.records, 'albumImagesFound', 'album', true);
                             }
@@ -1458,6 +1495,7 @@
                         $('#exifTagValue').val('');
                         $('#exifValue').val('');
                         $('#filename').val('');
+                        $('#tag').val('');
                     })
                 }
 
@@ -1494,35 +1532,37 @@
                         var exifTag = $('#exifTagValue').val();
                         var exifValue = $('#exifValue').val();
                         var size = $('#fileSize').val();
+                        var tag = $('#tag').val();
                         $('#extensionList').each(function () {
                             ExtensionSelected = $(this).val();
                         });
                         var filename = $('#filename').val();
 
-                        if (filename !== "") {
-                            console.log("Calling /queryfilename?value=" + filename + "&filesize=" + size);
+                        if (tag != "") {
+                              console.log("Calling /tag?value=" + tag);
                             $.ajax({
                                 dataType: "json",
-                                url: "/queryfilename?value=" + filename + "&filesize=" + size,
+                                url: "/tag?value=" + tag,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
-                                    //  console.log(jsondata);
+                                    console.log(jsondata);
 
                                     $('#imagesFound').empty();
                                     if (jQuery.isEmptyObject(jsondata)) {
                                         alert("No images found.");
                                     } else {
                                         $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
-                                        feedElementbyItems(jsondata, 'imagesFound', 'search', false);
+                                        feedElementbyItems(jsondata, 'imagesFound', 'search', true);
                                     }
                                 }
                             })
                         } else {
-                            if (exifTag === "" && exifValue === "" && ExtensionSelected !== "") {
-                                console.log("Calling /queryextension?value=" + ExtensionSelected + "&filesize=" + size);
+
+                            if (filename !== "") {
+                                console.log("Calling /queryfilename?value=" + filename + "&filesize=" + size);
                                 $.ajax({
                                     dataType: "json",
-                                    url: "/queryextension?value=" + ExtensionSelected + "&filesize=" + size,
+                                    url: "/queryfilename?value=" + filename + "&filesize=" + size,
                                     type: 'GET',
                                     success: function (jsondata, codeHttp) {
                                         //  console.log(jsondata);
@@ -1537,21 +1577,41 @@
                                     }
                                 })
                             } else {
-                                console.log("Calling /queryexif?value=" + exifValue + "&exif=" + exifTag);
-                                $.ajax({
-                                    dataType: "json",
-                                    url: "/queryexif?value=" + exifValue + "&exif=" + exifTag + "&filesize=" + size,
-                                    type: 'GET',
-                                    success: function (jsondata, codeHttp) {
-                                        $('#imagesFound').empty();
-                                        if (jQuery.isEmptyObject(jsondata)) {
-                                            alert("No images found.");
-                                        } else {
-                                            $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
-                                            feedElementbyItems(jsondata, 'imagesFound', 'search', false);
+                                if (exifTag === "" && exifValue === "" && ExtensionSelected !== "") {
+                                    console.log("Calling /queryextension?value=" + ExtensionSelected + "&filesize=" + size);
+                                    $.ajax({
+                                        dataType: "json",
+                                        url: "/queryextension?value=" + ExtensionSelected + "&filesize=" + size,
+                                        type: 'GET',
+                                        success: function (jsondata, codeHttp) {
+                                            //  console.log(jsondata);
+
+                                            $('#imagesFound').empty();
+                                            if (jQuery.isEmptyObject(jsondata)) {
+                                                alert("No images found.");
+                                            } else {
+                                                $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
+                                                feedElementbyItems(jsondata, 'imagesFound', 'search', false);
+                                            }
                                         }
-                                    }
-                                })
+                                    })
+                                } else {
+                                    console.log("Calling /queryexif?value=" + exifValue + "&exif=" + exifTag);
+                                    $.ajax({
+                                        dataType: "json",
+                                        url: "/queryexif?value=" + exifValue + "&exif=" + exifTag + "&filesize=" + size,
+                                        type: 'GET',
+                                        success: function (jsondata, codeHttp) {
+                                            $('#imagesFound').empty();
+                                            if (jQuery.isEmptyObject(jsondata)) {
+                                                alert("No images found.");
+                                            } else {
+                                                $('#imagesFoundNumber').html("Found " + jsondata.length + " images.");
+                                                feedElementbyItems(jsondata, 'imagesFound', 'search', false);
+                                            }
+                                        }
+                                    })
+                                }
                             }
                         }
                     });

@@ -26,6 +26,28 @@ import (
 	"time"
 )
 
+func GetPhotosByTag(w http.ResponseWriter, r *http.Request) {
+	starttime := time.Now()
+	tag := r.URL.Query().Get("value")
+
+	modele.PostActionMessage("calling query tag with value : " + tag)
+	db, err := database.NewDatabaseHandler()
+	if err != nil {
+		logger.Error("Error while getting dabatabse with error" + err.Error())
+		JsonAsResponse(w, err)
+		return
+	}
+	response, err := db.QueryByTag(tag)
+	if err != nil {
+		JsonAsResponse(w, err)
+	}
+	logger.Infof("QueryFilename returns %d records", len(response))
+	response = database.Reduce(response, modele.FILESIZE_LITTLE)
+	logger.Info("QueryFilename completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
+	modele.PostActionMessage("calling query tag with value : " + tag + " ended.")
+	JsonAsResponse(w, response)
+}
+
 func DownloadPhotos(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.Query().Get("md5sums")
 	photosId := strings.Split(p, ",")

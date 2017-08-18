@@ -172,6 +172,9 @@ func (d *DatabaseHandler) createIndexes() error {
 	if err = feeds.Index([]string{ALBUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Album with error : " + err.Error())
 	}
+	if err = feeds.Index([]string{ALBUM_TAGS}); err != nil {
+		logger.Errorf("Error while indexing Albums tags with error %v", err)
+	}
 	if err = feeds.Index([]string{ALBUM_INDEX, ALBUM_TAGS}); err != nil {
 		logger.Errorf("Error while indexing Albums tags with error %v", err)
 	}
@@ -307,6 +310,54 @@ func CoordinatesFromExif(exif map[string]interface{}) (float64, float64) {
 		}
 	}
 	return .0, .0
+}
+
+func (d *DatabaseHandler) QueryByTag(tag string) ([]*DatabasePhotoRecord, error) {
+	response := make([]*DatabasePhotoRecord, 0)
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return response, err
+	}
+	defer dbInstance.Close()
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	queryResult := make(map[int]struct{})
+	var query interface{}
+	json.Unmarshal([]byte(`["all"]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feedsAlbum, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+		return response, err
+	}
+
+	tagToFound := strings.TrimSpace(strings.ToUpper(tag))
+
+	for id := range queryResult {
+		readBack, err := feedsAlbum.Read(id)
+		if err != nil {
+			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+		} else {
+			tagExists := false
+			logger.Infof("Album name : %v Tags :%v", readBack[ALBUM_INDEX], readBack[ALBUM_TAGS])
+			if readBack[ALBUM_TAGS] != nil {
+				for _, t := range readBack[ALBUM_TAGS].([]interface{}) {
+					if strings.TrimSpace(strings.ToUpper(t.(string))) == tagToFound {
+						tagExists = true
+						break
+					}
+				}
+			}
+			if tagExists {
+				albumName := readBack[ALBUM_INDEX].(string)
+				albumRecord := d.GetAlbumData(albumName)
+				for _, v := range albumRecord.Records {
+					response = append(response, v)
+				}
+			}
+		}
+	}
+
+	return response, nil
 }
 
 func (d *DatabaseHandler) GetOriginStats() (*album.OriginStatsMessage, error) {
