@@ -1022,6 +1022,17 @@ func (d *DatabaseHandler) CleanDatabase() error {
 		}
 	}
 
+
+	if err := dbInstance.Scrub(DBPHOTO_COLLECTION); err != nil {
+		logger.Errorf("Error while scrubing collection %s with error %v",DBPHOTO_COLLECTION,err)
+		return err
+	}
+
+
+	if err := dbInstance.Scrub(DBALBUM_COLLECTION); err != nil {
+		return err
+	}
+
 	return nil
 }
 
