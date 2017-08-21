@@ -43,9 +43,9 @@ func NewDatabaseHandler() (*DatabaseHandler, error) {
 var (
 	createDB                    sync.Once
 	AlbumAlreadyExists          = errors.New("Album already exists in database.")
-	ErrorWhileRetreivingAlbum   = errors.New("Error while retreiving album in database.")
+	ErrorWhileRetreivingAlbum   = errors.New("Error while retrieving album in database.")
 	PictureAlreadyExists        = errors.New("Picture already exists in database.")
-	ErrorWhileRetreivingPicture = errors.New("Error while retreiving picture in database.")
+	ErrorWhileRetreivingPicture = errors.New("Error while retrieving picture in database.")
 )
 
 const (
@@ -335,7 +335,7 @@ func (d *DatabaseHandler) QueryByTag(tag string) ([]*DatabasePhotoRecord, error)
 	for id := range queryResult {
 		readBack, err := feedsAlbum.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retrieving id %d with error : %v", id, err.Error())
 		} else {
 			tagExists := false
 			logger.Infof("Album name : %v Tags :%v", readBack[ALBUM_INDEX], readBack[ALBUM_TAGS])
@@ -378,7 +378,7 @@ func (d *DatabaseHandler) GetOriginStats() (*album.OriginStatsMessage, error) {
 	for id := range queryResult {
 		readBack, err := feedsCollection.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retrieving id %d with error : %v", id, err.Error())
 		} else {
 			var machineOrigin = readBack[MACHINEID_INDEX].(string)
 			o.Stats[machineOrigin]++
@@ -411,7 +411,7 @@ func (d *DatabaseHandler) GetPhotosUrl(md5sums []string) ([]*DatabasePhotoRecord
 		for id := range queryResult {
 			readBack, err := feeds.Read(id)
 			if err != nil {
-				logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " by md5sum with error : " + err.Error())
+				logger.Errorf("Error while retrieving id %d by md5sum with error : %v", id, err.Error())
 			} else {
 				logger.Debug(readBack)
 			}
@@ -446,7 +446,7 @@ func (d *DatabaseHandler) GetPhotosFromTime(queryDate string, groupby string) ([
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retrieving id %d with error : %v", id, err.Error())
 		} else {
 			logger.Debug(readBack)
 		}
@@ -489,7 +489,7 @@ func (d *DatabaseHandler) GetTimeStats(groupby string) (*album.TimeStatsMessage,
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d with error : %v", id, err.Error())
 		} else {
 			logger.Debug(readBack)
 		}
@@ -537,7 +537,7 @@ func (d *DatabaseHandler) GetPhotosFromCoordinates(lat, lng string) ([]*Database
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d with error : %v", id, err.Error())
 		} else {
 			logger.Debug(readBack)
 			var exif map[string]interface{}
@@ -580,7 +580,7 @@ func (d *DatabaseHandler) GetLocationStats() (*album.LocationStatsMessage, error
 	for id := range queryResult {
 		readBack, err := feedsPhotos.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d with error : %v", id, err.Error())
 		} else {
 			var exif map[string]interface{}
 			if readBack[EXIFTAGS_INDEX] != nil {
@@ -631,7 +631,7 @@ func (d *DatabaseHandler) GetAlbumList() []string {
 	for id := range queryResult {
 		readBack, err := feedsAlbum.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d with error : %v", id, err.Error())
 		} else {
 			name := readBack[ALBUM_INDEX].(string)
 			alreadyInSlice := false
@@ -695,7 +695,7 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 	for id := range queryResult {
 		readBack, err := feedsAlbum.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d  with error : %v", id, err.Error())
 		} else {
 			logger.Infof("description : %s", readBack[ALBUM_DESCRIPTION].(string))
 			collection.Description = readBack[ALBUM_DESCRIPTION].(string)
@@ -718,7 +718,7 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 				for id := range queryResultImg {
 					readBack, err := feedsCollection.Read(id)
 					if err != nil {
-						logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+						logger.Errorf("Error while retreiveing id %d with error : %v ", id, err.Error())
 					} else {
 						logger.Debug(readBack)
 						var exif map[string]interface{}
@@ -767,7 +767,7 @@ func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
 		var readback map[string]interface{}
 		readback, err = feedsAlbum.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id  %d with error : %v", id, err.Error())
 		} else {
 			for _, item := range readback[ALBUM_ITEMS].([]interface{}) {
 				mustBeDeleted := false
@@ -894,7 +894,7 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 		var readback map[string]interface{}
 		readback, err = feedsAlbum.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d with error : %v", id, err.Error())
 		} else {
 			for _, item := range readback[ALBUM_ITEMS].([]interface{}) {
 				existing := false
@@ -987,6 +987,109 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 	return nil
 }
 
+func (d *DatabaseHandler) removeDuplicateAlbums() error {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return err
+	}
+	defer dbInstance.Close()
+	// suppress album more than 1
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	var queryAlbum interface{}
+	json.Unmarshal([]byte(`["all"]`), &queryAlbum)
+	queryResultAlbum := make(map[int]struct{})
+	logger.Info(queryAlbum)
+	if err := db.EvalQuery(queryAlbum, feedsAlbum, &queryResultAlbum); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	// suppress pictures more than 1
+	for id := range queryResultAlbum {
+		readBack, err := feedsAlbum.Read(id)
+		if err != nil {
+			logger.Errorf("Error while retrieving id %d  with error : ", id, err.Error())
+		}
+		albumName := readBack[ALBUM_INDEX]
+		if albumName != nil {
+			var subquery interface{}
+			json.Unmarshal([]byte(`[{"eq": "`+albumName.(string)+`", "in": ["`+ALBUM_INDEX+`"]}]`), &subquery)
+			subqueryResult := make(map[int]struct{})
+			if err := db.EvalQuery(subquery, feedsAlbum, &queryResultAlbum); err != nil {
+				logger.Error("Error while querying with error :" + err.Error())
+			}
+			if len(subqueryResult) > 1 {
+				index := 0
+				for id := range subqueryResult {
+					readBack, err := feedsAlbum.Read(id)
+					if err != nil {
+						logger.Errorf("Error while retrieving id %d  with error : %v ", id, err.Error())
+					} else {
+						if index == 0 {
+							logger.Infof("Keeping album %d %s", id, readBack[ALBUM_INDEX])
+						} else {
+							logger.Infof("Deleting album %d %s", id, readBack[ALBUM_INDEX])
+							feedsAlbum.Delete(id)
+						}
+					}
+					index++
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (d *DatabaseHandler) removeDuplicatePhotos() error {
+	dbInstance, err := d.openDB()
+	if err != nil {
+		logger.Error("Error while opening database during insert operation with error " + err.Error())
+		return err
+	}
+	defer dbInstance.Close()
+	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	var query interface{}
+	queryResult := make(map[int]struct{})
+	json.Unmarshal([]byte(`["all"]`), &query)
+	logger.Info(query)
+	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
+		logger.Error("Error while querying with error :" + err.Error())
+	}
+	// suppress pictures more than 1
+	for id := range queryResult {
+		readBack, err := feeds.Read(id)
+		if err != nil {
+			logger.Errorf("Error while retreiveing id %d  with error : ", id, err.Error())
+		}
+		md5sum := readBack[MD5SUM_INDEX]
+		if md5sum != nil {
+			var subquery interface{}
+			json.Unmarshal([]byte(`[{"eq": "`+md5sum.(string)+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &subquery)
+			subqueryResult := make(map[int]struct{})
+			if err := db.EvalQuery(subquery, feeds, &subqueryResult); err != nil {
+				logger.Error("Error while querying with error :" + err.Error())
+			}
+			if len(subqueryResult) > 1 {
+				index := 0
+				for id := range subqueryResult {
+					readBack, err := feeds.Read(id)
+					if err != nil {
+						logger.Errorf("Error while retreiveing id %d  with error : ", id, err.Error())
+					} else {
+						if index == 0 {
+							logger.Infof("Keeping image %d %s", id, readBack[MD5SUM_INDEX])
+						} else {
+							logger.Infof("Deleting image %d %s", id, readBack[MD5SUM_INDEX])
+							feeds.Delete(id)
+						}
+					}
+					index++
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (d *DatabaseHandler) CleanDatabase() error {
 	slaves := slavehandler.GetSlaves()
 	dbInstance, err := d.openDB()
@@ -996,10 +1099,10 @@ func (d *DatabaseHandler) CleanDatabase() error {
 	}
 	defer dbInstance.Close()
 	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
-
-	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
+	queryResult := make(map[int]struct{})
+
 	logger.Info(query)
 	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
@@ -1007,7 +1110,7 @@ func (d *DatabaseHandler) CleanDatabase() error {
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d with error : %v", id, err.Error())
 		} else {
 			if readBack[MACHINEID_INDEX] == "" {
 				logger.Infof("Removing %d", id)
@@ -1022,12 +1125,18 @@ func (d *DatabaseHandler) CleanDatabase() error {
 		}
 	}
 
-
-	if err := dbInstance.Scrub(DBPHOTO_COLLECTION); err != nil {
-		logger.Errorf("Error while scrubing collection %s with error %v",DBPHOTO_COLLECTION,err)
-		return err
+	if err := d.removeDuplicatePhotos(); err != nil {
+		logger.Errorf("Error while removing duplicates photos with error %v", err)
 	}
 
+	if err := d.removeDuplicateAlbums(); err != nil {
+		logger.Errorf("Error while removing duplicates albums with error %v", err)
+	}
+
+	if err := dbInstance.Scrub(DBPHOTO_COLLECTION); err != nil {
+		logger.Errorf("Error while scrubbing collection %s with error %v", DBPHOTO_COLLECTION, err)
+		return err
+	}
 
 	if err := dbInstance.Scrub(DBALBUM_COLLECTION); err != nil {
 		return err
@@ -1055,7 +1164,7 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoRecord, error) {
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retreiveing id %d with error : %v", id, err.Error())
 		} else {
 			logger.Debug(readBack)
 			var exif map[string]interface{}
@@ -1095,11 +1204,11 @@ func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRecord
 	if err := db.EvalQuery(query, feeds, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
 	}
-	logger.Infof("request returns %d results for extenstion %s\n", len(queryResult), pattern)
+	logger.Infof("request returns %d results for extension %s\n", len(queryResult), pattern)
 	for id := range queryResult {
 		readBack, err := feeds.Read(id)
 		if err != nil {
-			logger.Error("Error while retreiveing id " + strconv.Itoa(id) + " with error : " + err.Error())
+			logger.Errorf("Error while retrieving id %d with error : %v", id, err.Error())
 		} else {
 			//logger.LogLn(readBack)
 			var exif map[string]interface{}

@@ -625,11 +625,14 @@ func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	if err := db.CleanDatabase(); err != nil {
-		JsonAsResponse(w, err)
-		return
-	}
-	modele.PostActionMessage("calling clean database ended.")
+	go func() {
+		if err := db.CleanDatabase(); err != nil {
+			modele.PostActionMessage("clean database error with error " + err.Error())
+			return
+		}
+		modele.PostActionMessage("calling clean database ended.")
+	}()
+	modele.PostActionMessage("calling clean database working.")
 	JsonAsResponse(w, "ok")
 }
 
