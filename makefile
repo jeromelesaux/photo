@@ -37,6 +37,7 @@ all: kill clean $(EXEC2) execute
 version:
 		@echo "    makefile version : $(MAKEFILE_VERSION)"
 		@echo "    author : jeromelesaux@gmail.com"
+		@echo "    build hash : ${BUILDHASH}"
 
 $(EXEC2): version organize $(SOURCES) ${EXEC1}
 		@echo "    Compilation des sources ${BUILD_TIME}"

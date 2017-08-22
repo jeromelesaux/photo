@@ -37,10 +37,21 @@ func main() {
 		Photos:  make([]*modele.PhotoInformations, 0),
 	}
 	flag.Parse()
+
+	if len(flag.Args()) == 0 {
+		timeStmp, err := strconv.Atoi(BuildStmp)
+		if err != nil {
+			timeStmp = 0
+		}
+		appVersion := "Version " + Version + ", build on " + time.Unix(int64(timeStmp), 0).String() + ", git hash " + GitHash
+		fmt.Println(appVersion)
+		flag.PrintDefaults()
+		return
+	}
 	if *logFormat != "" {
 		if *logLevel != "" {
 			if err := logger.InitLog(*logLevel, *logFormat); err != nil {
-				fmt.Println("Error of th log initialisation: " + err.Error())
+				fmt.Println("Error of the log initialisation: " + err.Error())
 			}
 		} else {
 			if err := logger.InitLog(*logLevel, *logFormat); err != nil {
@@ -85,14 +96,6 @@ func main() {
 				http.HandleFunc("/thumbnail", routes.GetThumbnail)
 				http.HandleFunc("/photo", routes.GetPhoto)
 				log.Fatal(http.ListenAndServe(":"+*httpport, nil))
-			} else {
-				timeStmp, err := strconv.Atoi(BuildStmp)
-				if err != nil {
-					timeStmp = 0
-				}
-				appVersion := "Version " + Version + ", build on " + time.Unix(int64(timeStmp), 0).String() + ", git hash " + GitHash
-				fmt.Println(appVersion)
-				flag.PrintDefaults()
 			}
 		}
 	}
