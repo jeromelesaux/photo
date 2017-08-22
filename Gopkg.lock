@@ -44,12 +44,6 @@
   version = "v0.8.0"
 
 [[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "a3f95b5c423586578a4e099b11a46c2479628cac"
-  version = "1.0.2"
-
-[[projects]]
   branch = "queryparams"
   name = "github.com/tgulacsi/picago"
   packages = ["."]
