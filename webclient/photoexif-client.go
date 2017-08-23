@@ -209,6 +209,38 @@ func (p *PhotoExifClient) GetThumbnails(responses []*database.DatabasePhotoRecor
 	return finalResponses
 }
 
+func (p *PhotoExifClient) GetOriginal(slave *slavehandler.Slave, path string) (error, *modele.RawPhoto) {
+	var startTime time.Time
+	image := &modele.RawPhoto{}
+	defer func() {
+		endTime := time.Now()
+		computeDuration := endTime.Sub(startTime)
+		logger.Infof("Job done in %f seconds\n", computeDuration.Minutes())
+
+	}()
+	startTime = time.Now()
+	client := &http.Client{}
+	uri := fmt.Sprintf("%s:%d/photo?filepath=%s", slave.Url, slave.Port, path)
+	request, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		logger.Error("error with : " + err.Error())
+		return err, &modele.RawPhoto{}
+	}
+	logger.Info("Calling uri : " + uri)
+	response, err := client.Do(request)
+	if err != nil {
+		logger.Error("error with : " + err.Error())
+		return err, &modele.RawPhoto{}
+	}
+	defer response.Body.Close()
+	if err := json.NewDecoder(response.Body).Decode(image); err != nil {
+		logger.Error("error with : " + err.Error())
+		return nil, &modele.RawPhoto{}
+	}
+
+	return nil, image
+}
+
 func (p *PhotoExifClient) GetThumbnail(slave *slavehandler.Slave, path string) (error, string) {
 	var startTime time.Time
 	var image string

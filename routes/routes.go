@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -645,6 +646,31 @@ func GetPhoto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	JsonAsResponse(w, &modele.RawPhoto{Name: filePath, Data: content, Orientation: orientation})
+}
+
+func GetLocalPhoto(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	machineid := r.URL.Query().Get("machineid")
+	if slave := slavehandler.GetSlaves().Slaves[machineid]; slave != nil {
+		client := webclient.NewPhotoExifClient()
+		err, raw := client.GetOriginal(slave, filePath)
+		if err != nil {
+			logger.Errorf("Error while getting file %s from machine id %s with error %v", filePath, machineid, err)
+			JsonAsResponse(w, err)
+			return
+		}
+		b, err := base64.StdEncoding.DecodeString(raw.Data)
+		if err != nil {
+			logger.Errorf("Error while decoding file %s from machine id %s with error %v", filePath, machineid, err)
+			JsonAsResponse(w, err)
+			return
+		}
+		BinaryAsResponse(w, b, filepath.Base(filePath))
+		return
+	}
+
+	JsonAsResponse(w, "no registered machine found for "+machineid)
+	return
 }
 
 // route thumbnail  of the filpath (encoded in url)

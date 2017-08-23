@@ -415,10 +415,15 @@ func (d *DatabaseHandler) GetPhotosUrl(md5sums []string) ([]*DatabasePhotoRecord
 			} else {
 				logger.Debug(readBack)
 			}
+			origin := readBack[MACHINEID_INDEX].(string)
+			filepath := readBack[FILEPATH_INDEX].(string)
+			if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+				filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", readBack[FILEPATH_INDEX].(string), origin)
+			}
 			response = append(response, NewDatabasePhotoResponse(
 				readBack[MD5SUM_INDEX].(string),
 				readBack[FILENAME_INDEX].(string),
-				readBack[FILEPATH_INDEX].(string),
+				filepath,
 				readBack[MACHINEID_INDEX].(string),
 				"",
 				nil))
@@ -455,10 +460,15 @@ func (d *DatabaseHandler) GetPhotosFromTime(queryDate string, groupby string) ([
 			exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
 			photoDate := ToUnixTime(exif, groupby)
 			if photoDate == queryDate {
+				origin := readBack[MACHINEID_INDEX].(string)
+				filepath := readBack[FILEPATH_INDEX].(string)
+				if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+					filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", readBack[FILEPATH_INDEX].(string), origin)
+				}
 				response = append(response, NewDatabasePhotoResponse(
 					readBack[MD5SUM_INDEX].(string),
 					readBack[FILENAME_INDEX].(string),
-					readBack[FILEPATH_INDEX].(string),
+					filepath,
 					readBack[MACHINEID_INDEX].(string),
 					readBack[THUMBNAIL_INDEX].(string),
 					exif))
@@ -545,10 +555,15 @@ func (d *DatabaseHandler) GetPhotosFromCoordinates(lat, lng string) ([]*Database
 				exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
 				latitude, longitude := CoordinatesFromExif(exif)
 				if Round(longitude, .5, 2) == qlongitude && Round(latitude, .5, 2) == qlatitude {
+					origin := readBack[MACHINEID_INDEX].(string)
+					filepath := readBack[FILEPATH_INDEX].(string)
+					if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+						filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", readBack[FILEPATH_INDEX].(string), origin)
+					}
 					response = append(response, NewDatabasePhotoResponse(
 						readBack[MD5SUM_INDEX].(string),
 						readBack[FILENAME_INDEX].(string),
-						readBack[FILEPATH_INDEX].(string),
+						filepath,
 						readBack[MACHINEID_INDEX].(string),
 						readBack[THUMBNAIL_INDEX].(string),
 						exif))
@@ -725,12 +740,17 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 						if readBack[EXIFTAGS_INDEX] != nil {
 							exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
 						}
+						origin := readBack[MACHINEID_INDEX].(string)
+						filepath := readBack[FILEPATH_INDEX].(string)
+						if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+							filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", readBack[FILEPATH_INDEX].(string), origin)
+						}
 						collection.Records = append(collection.Records,
 							&DatabasePhotoRecord{
 								MachineId: readBack[MACHINEID_INDEX].(string),
 								Md5sum:    readBack[MD5SUM_INDEX].(string),
 								Filename:  readBack[FILENAME_INDEX].(string),
-								Filepath:  readBack[FILEPATH_INDEX].(string),
+								Filepath:  filepath,
 								Thumbnail: readBack[THUMBNAIL_INDEX].(string),
 								ExifTags:  exif,
 							})
@@ -1171,10 +1191,15 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoRecord, error) {
 			if readBack[EXIFTAGS_INDEX] != nil {
 				exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
 			}
+			origin := readBack[MACHINEID_INDEX].(string)
+			filepath := readBack[FILEPATH_INDEX].(string)
+			if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+				filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", readBack[FILEPATH_INDEX].(string), origin)
+			}
 			response = append(response, NewDatabasePhotoResponse(
 				readBack[MD5SUM_INDEX].(string),
 				readBack[FILENAME_INDEX].(string),
-				readBack[FILEPATH_INDEX].(string),
+				filepath,
 				readBack[MACHINEID_INDEX].(string),
 				readBack[THUMBNAIL_INDEX].(string),
 				exif))
@@ -1215,10 +1240,15 @@ func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRecord
 			if readBack[EXIFTAGS_INDEX] != nil {
 				exif = readBack[EXIFTAGS_INDEX].(map[string]interface{})
 			}
+			origin := readBack[MACHINEID_INDEX].(string)
+			filepath := readBack[FILEPATH_INDEX].(string)
+			if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+				filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", readBack[FILEPATH_INDEX].(string), origin)
+			}
 			response = append(response, NewDatabasePhotoResponse(
 				readBack[MD5SUM_INDEX].(string),
 				readBack[FILENAME_INDEX].(string),
-				readBack[FILEPATH_INDEX].(string),
+				filepath,
 				readBack[MACHINEID_INDEX].(string),
 				readBack[THUMBNAIL_INDEX].(string),
 				exif))
@@ -1255,10 +1285,15 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord,
 					if a[EXIFTAGS_INDEX] != nil {
 						exif = a[EXIFTAGS_INDEX].(map[string]interface{})
 					}
+					origin := a[MACHINEID_INDEX].(string)
+					filepath := a[FILEPATH_INDEX].(string)
+					if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+						filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", a[FILEPATH_INDEX].(string), origin)
+					}
 					response = append(response, NewDatabasePhotoResponse(
 						a[MD5SUM_INDEX].(string),
 						a[FILENAME_INDEX].(string),
-						a[FILEPATH_INDEX].(string),
+						filepath,
 						a[MACHINEID_INDEX].(string),
 						a[THUMBNAIL_INDEX].(string),
 						exif))
@@ -1273,10 +1308,15 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord,
 					if a[EXIFTAGS_INDEX] != nil {
 						exif = a[EXIFTAGS_INDEX].(map[string]interface{})
 					}
+					origin := a[MACHINEID_INDEX].(string)
+					filepath := a[FILEPATH_INDEX].(string)
+					if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+						filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", a[FILEPATH_INDEX].(string), origin)
+					}
 					response = append(response, NewDatabasePhotoResponse(
 						a[MD5SUM_INDEX].(string),
 						a[FILENAME_INDEX].(string),
-						a[FILEPATH_INDEX].(string),
+						filepath,
 						a[MACHINEID_INDEX].(string),
 						a[THUMBNAIL_INDEX].(string),
 						exif))
@@ -1316,10 +1356,15 @@ func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*Datab
 						if a[EXIFTAGS_INDEX] != nil {
 							exif = a[EXIFTAGS_INDEX].(map[string]interface{})
 						}
+						origin := a[MACHINEID_INDEX].(string)
+						filepath := a[FILEPATH_INDEX].(string)
+						if origin != modele.ORIGIN_FLICKR && origin != modele.ORIGIN_GOOGLE {
+							filepath = fmt.Sprintf("/photo?filepath=%s&machineid=%s", a[FILEPATH_INDEX].(string), origin)
+						}
 						response = append(response, NewDatabasePhotoResponse(
 							a[MD5SUM_INDEX].(string),
 							a[FILENAME_INDEX].(string),
-							a[FILEPATH_INDEX].(string),
+							filepath,
 							a[MACHINEID_INDEX].(string),
 							a[THUMBNAIL_INDEX].(string),
 							exif))
