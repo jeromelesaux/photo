@@ -645,7 +645,7 @@ func GetPhoto(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	JsonAsResponse(w, &modele.RawPhoto{Name: filePath, Data: content, Orientation: orientation})
+	JsonAsResponse(w, &modele.ExportRawPhoto{Filename: filePath, Base64Content: content, Orientation: orientation})
 }
 
 func GetLocalPhoto(w http.ResponseWriter, r *http.Request) {
@@ -659,7 +659,7 @@ func GetLocalPhoto(w http.ResponseWriter, r *http.Request) {
 			JsonAsResponse(w, err)
 			return
 		}
-		b, err := base64.StdEncoding.DecodeString(raw.Data)
+		b, err := base64.StdEncoding.DecodeString(raw.Base64Content)
 		if err != nil {
 			logger.Errorf("Error while decoding file %s from machine id %s with error %v", filePath, machineid, err)
 			JsonAsResponse(w, err)

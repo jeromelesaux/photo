@@ -60,12 +60,6 @@ func NewPhotoInformations() *PhotoInformations {
 	}
 }
 
-type RawPhoto struct {
-	Name        string `json:"name,omitempty"`
-	Data        string `json:"data,omitempty"`
-	Orientation string `json:"orientation,omitempty"`
-}
-
 type PhotoResponse struct {
 	Message   string               `json:"error_message,omitempty"`
 	Origin    string               `json:"origin,omitempty"`

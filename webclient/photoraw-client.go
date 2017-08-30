@@ -202,7 +202,7 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 			response.Body.Close()
 		}
 	}()
-	content := &modele.RawPhoto{}
+	content := &modele.ExportRawPhoto{}
 	logger.Info(response.Body)
 	if err := json.NewDecoder(response.Body).Decode(content); err != nil {
 		logger.Error("error with : " + err.Error() + " for uri:" + uri)
@@ -217,7 +217,7 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 			logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
 		} else {
 			defer f.Close()
-			reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(content.Data))
+			reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(content.Base64Content))
 			img, err := png.Decode(reader)
 			if err != nil {
 				logger.Infof("error in creating temporary file %s with error %v", filename, err.Error())
@@ -237,7 +237,7 @@ func (p *RawPhotoClient) CallGetRawPhoto(machineid, remotePath string, wg *sync.
 	} else {
 		e := &modele.ExportRawPhoto{
 			Filename:      path.Base(remotePath),
-			Base64Content: content.Data,
+			Base64Content: content.Base64Content,
 			Orientation:   content.Orientation,
 		}
 		p.rawPhotoChan <- e
