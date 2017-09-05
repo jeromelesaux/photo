@@ -70,7 +70,7 @@ type PhotoResponse struct {
 
 var (
 	Landscape = "landscape"
-	Portrait  = "Portrait"
+	Portrait  = "portrait"
 )
 
 type ExportRawPhoto struct {
