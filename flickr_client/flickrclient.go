@@ -105,6 +105,11 @@ func (f *Flickr) GetUrlRequestToken() string {
 
 func (f *Flickr) GetData() []*modele.PhotoResponse {
 	responses := make([]*modele.PhotoResponse, 0)
+	if f.FlickrToken == "" {
+		logger.Errorf("flicker token is empty import skipped.")
+		return responses
+	}
+
 	accessTok, err := flickr.GetAccessToken(f.Client, f.RequestTok, f.FlickrToken)
 	if err != nil {
 		logger.Errorf("error while getting access token from flickr with error %v", err)
