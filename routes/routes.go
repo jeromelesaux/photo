@@ -246,17 +246,20 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 
 	// import data from google account
 	go func() {
+		flickrChan := make(chan *modele.PhotoResponse)
 		flickrClient := flickr_client.GetCurrentFlickrClient()
 		logger.Info(flickrconf)
 		logger.Info(flickrClient)
 		flickrClient.FlickrToken = flickrconf.FlickrToken
-		data := flickrClient.GetData()
+		go func() {
+			flickrClient.GetData(flickrChan)
+		}()
 		db, err := database.NewDatabaseHandler()
 		if err != nil {
 			logger.Errorf("cannot connect to database with error %v", err)
 			return
 		}
-		for _, response := range data {
+		for response := range flickrChan {
 			if err := db.InsertNewData(response); err != nil {
 				logger.Errorf("cannot import google data into database with error %v", err)
 			}
@@ -271,6 +274,7 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 				logger.Errorf("cannot import google data into database with error %v", err)
 			}
 		}
+
 		logger.Info("Import flickr albums finished")
 		modele.PostActionMessage("calling load flickr albums ended.")
 	}()
@@ -324,13 +328,16 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 			logger.Errorf("cannot connect to google photo account with error %v", err)
 			return
 		}
-		data := googleConf.GetData()
+		googlePhotoChan := make(chan *modele.PhotoResponse)
+		go func() {
+			googleConf.GetData(googlePhotoChan)
+		}()
 		db, err := database.NewDatabaseHandler()
 		if err != nil {
 			logger.Errorf("cannot connect to database with error %v", err)
 			return
 		}
-		for _, response := range data {
+		for response := range googlePhotoChan {
 			if err := db.InsertNewData(response); err != nil {
 				logger.Errorf("cannot import google data into database with error %v", err)
 			}

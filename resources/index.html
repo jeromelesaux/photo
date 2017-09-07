@@ -957,6 +957,11 @@
                         var flickrKey = $('#flickrApiKey').val();
                         var flickrSecret = $('#flickrApiSecret').val();
                         var flickrToken = $('#flickrToken').val();
+
+                        if (flickrToken==null || flickrToken =="") {
+                            alert("the flickr token must not be empty, please enter the token.");
+                            return;
+                        }
                         var body = {};
                         body.api_key = flickrKey;
                         body.api_secret = flickrSecret;

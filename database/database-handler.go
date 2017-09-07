@@ -141,41 +141,41 @@ func (d *DatabaseHandler) createIndexes() error {
 	}
 	defer dbInstance.Close()
 
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feedsPhoto := dbInstance.Use(DBPHOTO_COLLECTION)
 
-	if err = feeds.Index([]string{MACHINEID_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{MACHINEID_INDEX}); err != nil {
 		logger.Error("Error while indexing MachineId with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{FILENAME_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{FILENAME_INDEX}); err != nil {
 		logger.Error("Error while indexing Filename with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{FILENAMES_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{FILENAMES_INDEX}); err != nil {
 		logger.Error("Error while indexing Filenames with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{FILEPATHS_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{FILEPATHS_INDEX}); err != nil {
 		logger.Error("Error while indexing Filepaths with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{FILEPATH_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{FILEPATH_INDEX}); err != nil {
 		logger.Error("Error while indexing Filepath with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{MD5SUM_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{MD5SUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Md5sum with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{FILETYPE_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{FILETYPE_INDEX}); err != nil {
 		logger.Error("Error while indexing Type with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{FILENAME_INDEX, FILEPATH_INDEX, FILETYPE_INDEX}); err != nil {
+	if err = feedsPhoto.Index([]string{FILENAME_INDEX, FILEPATH_INDEX, FILETYPE_INDEX}); err != nil {
 		logger.Errorf("Error while indexing Filename,Filepath,Type with error : %v", err.Error())
 	}
 
-	feeds = dbInstance.Use(DBALBUM_COLLECTION)
-	if err = feeds.Index([]string{ALBUM_INDEX}); err != nil {
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	if err = feedsAlbum.Index([]string{ALBUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Album with error : " + err.Error())
 	}
-	if err = feeds.Index([]string{ALBUM_TAGS}); err != nil {
+	if err = feedsAlbum.Index([]string{ALBUM_TAGS}); err != nil {
 		logger.Errorf("Error while indexing Albums tags with error %v", err)
 	}
-	if err = feeds.Index([]string{ALBUM_INDEX, ALBUM_TAGS}); err != nil {
+	if err = feedsAlbum.Index([]string{ALBUM_INDEX, ALBUM_TAGS}); err != nil {
 		logger.Errorf("Error while indexing Albums tags with error %v", err)
 	}
 
@@ -671,7 +671,7 @@ func (d *DatabaseHandler) AlbumExists(albumName string) (bool, error) {
 		return true, AlbumAlreadyExists
 	}
 	defer dbInstance.Close()
-	feedsAlbum := dbInstance.Use(DBPHOTO_COLLECTION)
+	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 

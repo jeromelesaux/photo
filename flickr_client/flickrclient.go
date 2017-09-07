@@ -10,6 +10,7 @@ import (
 	"gopkg.in/masci/flickr.v2/photosets"
 	"os"
 	"sync"
+	"time"
 )
 
 var currentFlickrClient *Flickr
@@ -103,24 +104,31 @@ func (f *Flickr) GetUrlRequestToken() string {
 	return f.UrlAuthorization
 }
 
-func (f *Flickr) GetData() []*modele.PhotoResponse {
-	responses := make([]*modele.PhotoResponse, 0)
+func (f *Flickr) GetData(flickrChan chan *modele.PhotoResponse) {
+	starttime := time.Now()
+	defer func() {
+		close(flickrChan)
+		logger.Infof("flickr import ended in %.2f seconds .", time.Now().Sub(starttime).Seconds())
+	}()
 	if f.FlickrToken == "" {
 		logger.Errorf("flicker token is empty import skipped.")
-		return responses
+		flickrChan <- &modele.PhotoResponse{}
+		return
 	}
 
 	accessTok, err := flickr.GetAccessToken(f.Client, f.RequestTok, f.FlickrToken)
 	if err != nil {
 		logger.Errorf("error while getting access token from flickr with error %v", err)
-		return responses
+		flickrChan <- &modele.PhotoResponse{}
+		return
 	}
 	f.Client.OAuthToken = accessTok.OAuthToken
 	f.Client.OAuthTokenSecret = accessTok.OAuthTokenSecret
 	photosetsResponse, err := photosets.GetList(f.Client, true, f.Client.Id, 1)
 	if err != nil {
 		logger.Errorf("error while getting photosets list from flickr with error %v", err)
-		return responses
+		flickrChan <- &modele.PhotoResponse{}
+		return
 	}
 	for _, photoset := range photosetsResponse.Photosets.Items {
 		logger.Infof("Getting the flickr album %s", photoset.Id)
@@ -136,6 +144,7 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 		} else {
 			logger.Infof("Flickr album %s get %d photos.", photoset.Id, len(photoListResponse.Photoset.Photos))
 			for _, photo := range photoListResponse.Photoset.Photos {
+
 				p := modele.NewPhotoInformations()
 				p.Filename = photo.Title
 				p.Md5Sum = photo.Id
@@ -144,6 +153,7 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 					logger.Errorf("Error while getting photo information %s with error %v", photo.Id, err)
 				} else {
 					p.Thumbnail, p.Filepath = f.GetThumbnailAndOriginal(photo.Id)
+					logger.Infof("Get the picture %s", p.Filepath)
 				}
 				exifs := f.GetExif(photoInfoResponse.Photo)
 				for _, exif := range exifs {
@@ -152,10 +162,11 @@ func (f *Flickr) GetData() []*modele.PhotoResponse {
 				response.Photos = append(response.Photos, p)
 			}
 		}
-		responses = append(responses, response)
+		flickrChan <- &modele.PhotoResponse{}
 
 	}
-	return responses
+
+	return
 }
 
 func (f *Flickr) GetThumbnailAndOriginal(id string) (string, string) {

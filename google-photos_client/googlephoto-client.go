@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type GooglePhotoClient struct {
@@ -79,9 +80,12 @@ func (g *GooglePhotoClient) Connect() error {
 	}
 }
 
-func (g *GooglePhotoClient) GetData() []*modele.PhotoResponse {
-	responses := make([]*modele.PhotoResponse, 0)
-
+func (g *GooglePhotoClient) GetData(googlePhotoChan chan *modele.PhotoResponse) {
+	starttime := time.Now()
+	defer func() {
+		close(googlePhotoChan)
+		logger.Infof("flickr import ended in %.2f seconds .", time.Now().Sub(starttime).Seconds())
+	}()
 	albums, err := picago.GetAlbums(g.client, g.UserID)
 	if err != nil {
 		logger.Errorf("error listing albums: %v", err)
@@ -102,6 +106,7 @@ func (g *GooglePhotoClient) GetData() []*modele.PhotoResponse {
 		logger.Info(album.Name + " contains " + strconv.Itoa(len(photos)) + " photos.")
 
 		for _, photo := range photos {
+			logger.Infof("Get the picture %s", photo.URL)
 			p := modele.NewPhotoInformations()
 			p.Filename = photo.Filename
 			p.Md5Sum = photo.Exif.UID
@@ -127,7 +132,8 @@ func (g *GooglePhotoClient) GetData() []*modele.PhotoResponse {
 			response.Photos = append(response.Photos, p)
 
 		}
-		responses = append(responses, response)
+		googlePhotoChan <- response
 	}
-	return responses
+
+	return
 }
