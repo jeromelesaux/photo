@@ -780,7 +780,7 @@
                 function getPhotosFromTime(groupby, date) {
                     $.ajax({
                         dataType: "json",
-                        url: "photosfromtime?groupby=" + groupby + "&date=" + date,
+                        url: "./photosfromtime?groupby=" + groupby + "&date=" + date,
                         type: 'GET',
                         success: function (jsondata, codeHttp) {
                             $('#imagesFound').empty();
@@ -799,7 +799,7 @@
                     $('#timeline').empty();
                     $.ajax({
                         dataType: "json",
-                        url: "timesstats?groupby=" + groupby,
+                        url: "./timesstats?groupby=" + groupby,
                         type: 'GET',
                         success: function (jsondata, codeHttp) {
                             jsondata.stats.sort(function (a, b) {
@@ -827,7 +827,7 @@
                     console.log("latitude : " + lat + " and longitude " + lng);
                     $.ajax({
                         dataType: "json",
-                        url: "photosfromlocation?lat=" + lat + "&lng=" + lng,
+                        url: "./photosfromlocation?lat=" + lat + "&lng=" + lng,
                         type: 'GET',
                         success: function (jsondata, codeHttp) {
                             $('#imagesFound').empty();
@@ -868,7 +868,7 @@
                 function loadMapData() {
                     $.ajax({
                         dataType: "json",
-                        url: "locationsstats",
+                        url: "./locationsstats",
                         type: 'GET',
                         success: function (responsedata, codeHttp) {
                             if (codeHttp === "success") {
@@ -939,7 +939,7 @@
                     $(function () {
                         $.ajax({
                             dataType: "json",
-                            url: "flickrload",
+                            url: "./flickrload",
                             type: 'GET',
                             success: function (responsedata, codeHttp) {
                                 if (codeHttp === "success") {
@@ -969,7 +969,7 @@
                         var jsondata = JSON.stringify(body);
                         $.ajax({
                             dataType: "json",
-                            url: "flickrloadalbums",
+                            url: "./flickrloadalbums",
                             type: 'POST',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -991,7 +991,7 @@
                         var jsondata = JSON.stringify(body);
                         $.ajax({
                             dataType: "json",
-                            url: "flickrsave",
+                            url: "./flickrsave",
                             type: 'POST',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -1017,7 +1017,7 @@
                         console.log(jsondata);
                         $.ajax({
                             dataType: "json",
-                            url: "googlesave",
+                            url: "./googlesave",
                             type: 'POST',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -1033,7 +1033,7 @@
                     $(function () {
                         $.ajax({
                             dataType: "json",
-                            url: "googleload",
+                            url: "./googleload",
                             type: 'GET',
                             success: function (responsedata, codeHttp) {
                                 if (codeHttp === "success") {
@@ -1075,7 +1075,7 @@
                             }
                         }
 
-                        var url = "pdfalbum?albumName=" + albumName + "&numberPhotosPerPage=" + numberPhotosPerPageSelection;
+                        var url = "./pdfalbum?albumName=" + albumName + "&numberPhotosPerPage=" + numberPhotosPerPageSelection;
                         if (partial) {
                             url += "&photosid=" + valuesUrl;
                         }
@@ -1131,7 +1131,7 @@
                         console.log(jsondata);
                         $.ajax({
                             dataType: "json",
-                            url: "deletephotosalbum",
+                            url: "./deletephotosalbum",
                             type: 'DELETE',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -1162,7 +1162,7 @@
                         // console.log(jsondata);
                         $.ajax({
                             dataType: "json",
-                            url: "updatealbum",
+                            url: "./updatealbum",
                             type: 'POST',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -1182,7 +1182,7 @@
                     var selectedAlbum = $(this).find("option:selected").val();
                     $.ajax({
                         dataType: "json",
-                        url: "/getalbum?albumName=" + selectedAlbum,
+                        url: "./getalbum?albumName=" + selectedAlbum,
                         type: 'GET',
                         success: function (jsondata, codeHttp) {
                             // console.log(jsondata);
@@ -1194,7 +1194,7 @@
 
                 function downloadSelection(fileOutput, values) {
                     $(function () {
-                        url = "/download?md5sums=";
+                        url = "./download?md5sums=";
                         for (i = 0; i < (values.length - 1); i++) {
                             url += values[i] + ","
                         }
@@ -1251,7 +1251,7 @@
                     $(function () {
                         $.ajax({
                             dataType: "json",
-                            url: "/albums",
+                            url: "./albums",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
                                 //   console.log(jsondata);
@@ -1277,7 +1277,7 @@
                         //  console.log(jsondata);
                         $.ajax({
                             dataType: "json",
-                            url: "deletealbum",
+                            url: "./deletealbum",
                             type: 'DELETE',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -1302,7 +1302,7 @@
                         //  console.log(jsondata);
                         $.ajax({
                             dataType: "json",
-                            url: "updatealbum",
+                            url: "./updatealbum",
                             type: 'POST',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -1360,7 +1360,7 @@
                         $('#albumTagsId').tagsinput('removeAll');
                         $.ajax({
                             dataType: "json",
-                            url: "/getalbum?albumName=" + albumName,
+                            url: "./getalbum?albumName=" + albumName,
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
                                 $('#albumNameId').val(jsondata.album_name);
@@ -1430,7 +1430,7 @@
                     $(function () {
                         $.ajax({
                             dataType: "json",
-                            url: "/albums",
+                            url: "./albums",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
                                 //  console.log(jsondata);
@@ -1468,7 +1468,7 @@
                         //  console.log(jsondata);
                         $.ajax({
                             dataType: "json",
-                            url: "createalbum",
+                            url: ".createalbum",
                             type: 'POST',
                             data: jsondata,
                             success: function (responsedata, codeHttp) {
@@ -1485,7 +1485,7 @@
                     $(function () {
                         $.ajax({
                             dataType: "json",
-                            url: "/cleandatabase",
+                            url: "./cleandatabase",
                             type: "POST",
                             success: function (jsondata, codeHttp) {
                                 if (codeHttp === "success") {
@@ -1509,7 +1509,7 @@
                     $(function () {
                         $.ajax({
                             dataType: "json",
-                            url: "/getfileextension",
+                            url: "./getfileextension",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
                                 $('#extensionList').empty();
@@ -1565,10 +1565,10 @@
                         } else {
 
                             if (filename !== "") {
-                                console.log("Calling /queryfilename?value=" + filename + "&filesize=" + size);
+                                console.log("Calling ./queryfilename?value=" + filename + "&filesize=" + size);
                                 $.ajax({
                                     dataType: "json",
-                                    url: "/queryfilename?value=" + filename + "&filesize=" + size,
+                                    url: "./queryfilename?value=" + filename + "&filesize=" + size,
                                     type: 'GET',
                                     success: function (jsondata, codeHttp) {
                                         //  console.log(jsondata);
@@ -1584,10 +1584,10 @@
                                 })
                             } else {
                                 if (exifTag === "" && exifValue === "" && ExtensionSelected !== "") {
-                                    console.log("Calling /queryextension?value=" + ExtensionSelected + "&filesize=" + size);
+                                    console.log("Calling ./queryextension?value=" + ExtensionSelected + "&filesize=" + size);
                                     $.ajax({
                                         dataType: "json",
-                                        url: "/queryextension?value=" + ExtensionSelected + "&filesize=" + size,
+                                        url: "./queryextension?value=" + ExtensionSelected + "&filesize=" + size,
                                         type: 'GET',
                                         success: function (jsondata, codeHttp) {
                                             //  console.log(jsondata);
@@ -1602,10 +1602,10 @@
                                         }
                                     })
                                 } else {
-                                    console.log("Calling /queryexif?value=" + exifValue + "&exif=" + exifTag);
+                                    console.log("Calling ./queryexif?value=" + exifValue + "&exif=" + exifTag);
                                     $.ajax({
                                         dataType: "json",
-                                        url: "/queryexif?value=" + exifValue + "&exif=" + exifTag + "&filesize=" + size,
+                                        url: "./queryexif?value=" + exifValue + "&exif=" + exifTag + "&filesize=" + size,
                                         type: 'GET',
                                         success: function (jsondata, codeHttp) {
                                             $('#imagesFound').empty();
@@ -1634,7 +1634,7 @@
                     $(function () {
                         $.ajax({
                             dataType: "json",
-                            url: "/registeredslaves",
+                            url: "./registeredslaves",
                             type: 'GET',
                             success: function (jsondata, codeHttp) {
                                 var listContainer = $("#machineList");
@@ -1674,7 +1674,7 @@
                             console.log(MachineID);
                             $.ajax({
                                 dataType: "json",
-                                url: "browse?value=" + folderValue + "&machineId=" + MachineID,
+                                url: "./browse?value=" + folderValue + "&machineId=" + MachineID,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
                                     if (typeof jsondata.error_message != "undefined") {
@@ -1725,7 +1725,7 @@
                     // console.log(jsondata);
                     $.ajax({
                         dataType: "json",
-                        url: "scan",
+                        url: "./scan",
                         type: 'POST',
                         data: jsondata,
                         success: function (responsedata, codeHttp) {
