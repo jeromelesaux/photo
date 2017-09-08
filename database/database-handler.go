@@ -944,18 +944,13 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 	return err
 }
 
-func (d *DatabaseHandler) PictureExists(md5sum string) (bool, error) {
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return true, PictureAlreadyExists
-	}
-	defer dbInstance.Close()
+func (d *DatabaseHandler) PictureExists(md5sum string, dbInstance *db.DB) (bool, error) {
+
 	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`[{"eq": "`+md5sum+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
-	if err = db.EvalQuery(query, feedsCollection, &queryResult); err != nil {
+	if err := db.EvalQuery(query, feedsCollection, &queryResult); err != nil {
 		logger.Error("Error while querying with error :" + err.Error())
 		return true, ErrorWhileRetreivingPicture
 	}
@@ -977,7 +972,7 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 
 	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
 	for _, item := range response.Photos {
-		exists, err := d.PictureExists(item.Md5Sum)
+		exists, err := d.PictureExists(item.Md5Sum, dbInstance)
 		if !exists && err == nil {
 			id, err := feeds.Insert(map[string]interface{}{
 				MACHINEID_INDEX: response.MachineId,
