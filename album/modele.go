@@ -42,8 +42,13 @@ type LocationMessage struct {
 }
 
 // function to get a new pointer of an empty AlbumMessage
-func NewAlbumMessage() *AlbumMessage {
-	return &AlbumMessage{}
+func NewAlbumMessage(albumName string, md5sums []string) *AlbumMessage {
+	a := &AlbumMessage{
+		AlbumName: albumName,
+		Md5sums:   make([]string, 0),
+	}
+	a.Md5sums = append(a.Md5sums, md5sums...)
+	return a
 }
 
 func NewOriginStatsMessage() *OriginStatsMessage {

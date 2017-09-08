@@ -131,7 +131,7 @@ func (f *Flickr) GetData(flickrChan chan *modele.PhotoResponse) {
 		return
 	}
 	for _, photoset := range photosetsResponse.Photosets.Items {
-		logger.Infof("Getting the flickr album %s", photoset.Id)
+		logger.Infof("Getting the flickr album %s and title %s", photoset.Id, photoset.Title)
 		response := &modele.PhotoResponse{
 			MachineId: modele.ORIGIN_FLICKR,
 			Version:   modele.VERSION,
@@ -162,7 +162,7 @@ func (f *Flickr) GetData(flickrChan chan *modele.PhotoResponse) {
 				response.Photos = append(response.Photos, p)
 			}
 		}
-		flickrChan <- &modele.PhotoResponse{}
+		flickrChan <- response
 
 	}
 

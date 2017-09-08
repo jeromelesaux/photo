@@ -267,9 +267,7 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 			for _, photo := range response.Photos {
 				md5sums = append(md5sums, photo.Md5Sum)
 			}
-			msg := album.NewAlbumMessage()
-			msg.AlbumName = response.Origin
-			msg.Md5sums = md5sums
+			msg := album.NewAlbumMessage(response.Origin, md5sums)
 			if err := db.InsertNewAlbum(msg); err != nil {
 				logger.Errorf("cannot import google data into database with error %v", err)
 			}
@@ -345,9 +343,7 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 			for _, photo := range response.Photos {
 				md5sums = append(md5sums, photo.Md5Sum)
 			}
-			msg := album.NewAlbumMessage()
-			msg.AlbumName = response.Origin
-			msg.Md5sums = md5sums
+			msg := album.NewAlbumMessage(response.Origin, md5sums)
 			if err := db.InsertNewAlbum(msg); err != nil {
 				logger.Errorf("cannot import google data into database with error %v", err)
 			}
@@ -367,7 +363,7 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	albumMessage := album.NewAlbumMessage()
+	albumMessage := &album.AlbumMessage{}
 
 	err := json.NewDecoder(r.Body).Decode(albumMessage)
 	if err != nil {
@@ -401,7 +397,7 @@ func DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	albumMessage := album.NewAlbumMessage()
+	albumMessage := &album.AlbumMessage{}
 
 	err := json.NewDecoder(r.Body).Decode(albumMessage)
 	if err != nil {
@@ -437,7 +433,7 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	albumMessage := album.NewAlbumMessage()
+	albumMessage := &album.AlbumMessage{}
 
 	err := json.NewDecoder(r.Body).Decode(albumMessage)
 	if err != nil {
@@ -539,7 +535,7 @@ func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	albumMessage := album.NewAlbumMessage()
+	albumMessage := &album.AlbumMessage{}
 
 	err := json.NewDecoder(r.Body).Decode(albumMessage)
 	if err != nil {

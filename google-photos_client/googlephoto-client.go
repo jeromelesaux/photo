@@ -84,7 +84,7 @@ func (g *GooglePhotoClient) GetData(googlePhotoChan chan *modele.PhotoResponse) 
 	starttime := time.Now()
 	defer func() {
 		close(googlePhotoChan)
-		logger.Infof("flickr import ended in %.2f seconds .", time.Now().Sub(starttime).Seconds())
+		logger.Infof("google photo import ended in %.2f seconds .", time.Now().Sub(starttime).Seconds())
 	}()
 	albums, err := picago.GetAlbums(g.client, g.UserID)
 	if err != nil {

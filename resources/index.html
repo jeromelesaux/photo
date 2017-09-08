@@ -1545,10 +1545,10 @@
                         var filename = $('#filename').val();
 
                         if (tag != "") {
-                              console.log("Calling /tag?value=" + tag);
+                              console.log("Calling ./tag?value=" + tag);
                             $.ajax({
                                 dataType: "json",
-                                url: "/tag?value=" + tag,
+                                url: "./tag?value=" + tag,
                                 type: 'GET',
                                 success: function (jsondata, codeHttp) {
                                     console.log(jsondata);
