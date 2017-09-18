@@ -21,17 +21,22 @@ import (
 var _ DatabaseInterface = (*DatabaseHandler)(nil)
 
 type DatabaseHandler struct {
+	DBConnection *db.DB
+}
+
+func (d *DatabaseHandler) Close() error {
+	return d.DBConnection.Close()
 }
 
 func NewDatabaseHandler() (*DatabaseHandler, error) {
-	var dbinstance *db.DB
+
 	var err error
 	databaseTiedotHandler := &DatabaseHandler{}
+
+	if err = databaseTiedotHandler.openDB(); err != nil {
+		return databaseTiedotHandler, err
+	}
 	createDB.Do(func() {
-		if dbinstance, err = databaseTiedotHandler.openDB(); err != nil {
-			return
-		}
-		dbinstance.Close()
 		if err = databaseTiedotHandler.createIndexes(); err != nil {
 			return
 		}
@@ -78,24 +83,23 @@ const (
 	ALBUM_TAGS              = "Album tags"
 )
 
-func (d *DatabaseHandler) openDB() (*db.DB, error) {
+func (d *DatabaseHandler) openDB() error {
 	var err error
-	var dbInstance *db.DB
 
 	collectionExists := false
 	albumExists := false
 	databasePath := configurationapp.GetConfiguration().DatabasePath
 	if databasePath == "" {
 		err = errors.New("No database path defined")
-		return dbInstance, err
+		return err
 	}
-	dbInstance, err = db.OpenDB(databasePath)
+	d.DBConnection, err = db.OpenDB(databasePath)
 	if err != nil {
 		logger.Error("Error while creating database with error : " + err.Error())
-		return dbInstance, err
+		return err
 	}
 
-	for _, colname := range dbInstance.AllCols() {
+	for _, colname := range d.DBConnection.AllCols() {
 		if colname == DBPHOTO_COLLECTION {
 			collectionExists = true
 			if albumExists == true {
@@ -110,38 +114,35 @@ func (d *DatabaseHandler) openDB() (*db.DB, error) {
 		}
 	}
 	if !collectionExists {
-		if err = dbInstance.Create(DBPHOTO_COLLECTION); err != nil {
+		if err = d.DBConnection.Create(DBPHOTO_COLLECTION); err != nil {
 			logger.Error("Error while creating collection photos_collection with error : " + err.Error())
-			return dbInstance, err
+			return err
 		} else {
 			logger.Info("Creating collection " + DBPHOTO_COLLECTION)
 		}
 	}
 
 	if !albumExists {
-		if err = dbInstance.Create(DBALBUM_COLLECTION); err != nil {
+		if err = d.DBConnection.Create(DBALBUM_COLLECTION); err != nil {
 			logger.Error("Error while creating album photos_album with error : " + err.Error())
-			return dbInstance, err
+			return err
 		} else {
 			logger.Info("Creating album " + DBALBUM_COLLECTION)
 		}
 	}
 
-	return dbInstance, err
+	return err
 }
 
 func (d *DatabaseHandler) createIndexes() error {
 	var err error
-	var dbInstance *db.DB
 
-	dbInstance, err = d.openDB()
 	if err != nil {
 		logger.Error("Cannot use database with error : " + err.Error())
 		return err
 	}
-	defer dbInstance.Close()
 
-	feedsPhoto := dbInstance.Use(DBPHOTO_COLLECTION)
+	feedsPhoto := d.DBConnection.Use(DBPHOTO_COLLECTION)
 
 	if err = feedsPhoto.Index([]string{MACHINEID_INDEX}); err != nil {
 		logger.Error("Error while indexing MachineId with error : " + err.Error())
@@ -168,7 +169,7 @@ func (d *DatabaseHandler) createIndexes() error {
 		logger.Errorf("Error while indexing Filename,Filepath,Type with error : %v", err.Error())
 	}
 
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	if err = feedsAlbum.Index([]string{ALBUM_INDEX}); err != nil {
 		logger.Error("Error while indexing Album with error : " + err.Error())
 	}
@@ -314,13 +315,8 @@ func CoordinatesFromExif(exif map[string]interface{}) (float64, float64) {
 
 func (d *DatabaseHandler) QueryByTag(tag string) ([]*DatabasePhotoRecord, error) {
 	response := make([]*DatabasePhotoRecord, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
-	defer dbInstance.Close()
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -362,12 +358,8 @@ func (d *DatabaseHandler) QueryByTag(tag string) ([]*DatabasePhotoRecord, error)
 
 func (d *DatabaseHandler) GetOriginStats() (*album.OriginStatsMessage, error) {
 	o := album.NewOriginStatsMessage()
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return o, err
-	}
-	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
+
+	feedsCollection := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -385,20 +377,13 @@ func (d *DatabaseHandler) GetOriginStats() (*album.OriginStatsMessage, error) {
 		}
 
 	}
-
-	dbInstance.Close()
 	return o, nil
 }
 
 func (d *DatabaseHandler) GetPhotosUrl(md5sums []string) ([]*DatabasePhotoRecord, error) {
 	response := make([]*DatabasePhotoRecord, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
-	defer dbInstance.Close()
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 
 	for _, m := range md5sums {
 		queryResult := make(map[int]struct{})
@@ -434,13 +419,8 @@ func (d *DatabaseHandler) GetPhotosUrl(md5sums []string) ([]*DatabasePhotoRecord
 
 func (d *DatabaseHandler) GetPhotosFromTime(queryDate string, groupby string) ([]*DatabasePhotoRecord, error) {
 	response := make([]*DatabasePhotoRecord, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
 
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -476,19 +456,13 @@ func (d *DatabaseHandler) GetPhotosFromTime(queryDate string, groupby string) ([
 		}
 
 	}
-	dbInstance.Close()
 	return response, nil
 }
 
 func (d *DatabaseHandler) GetTimeStats(groupby string) (*album.TimeStatsMessage, error) {
 	response := album.NewTimeStatsMessage()
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
 
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -522,7 +496,6 @@ func (d *DatabaseHandler) GetTimeStats(groupby string) (*album.TimeStatsMessage,
 
 	}
 
-	dbInstance.Close()
 	return response, nil
 }
 
@@ -530,13 +503,8 @@ func (d *DatabaseHandler) GetPhotosFromCoordinates(lat, lng string) ([]*Database
 	qlatitude, _ := strconv.ParseFloat(lat, 64)
 	qlongitude, _ := strconv.ParseFloat(lng, 64)
 	response := make([]*DatabasePhotoRecord, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
 
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -572,19 +540,13 @@ func (d *DatabaseHandler) GetPhotosFromCoordinates(lat, lng string) ([]*Database
 		}
 	}
 
-	dbInstance.Close()
 	return response, nil
 }
 
 func (d *DatabaseHandler) GetLocationStats() (*album.LocationStatsMessage, error) {
 	l := album.NewLocationStatsMessage()
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return l, err
-	}
-	defer dbInstance.Close()
-	feedsPhotos := dbInstance.Use(DBPHOTO_COLLECTION)
+
+	feedsPhotos := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -629,13 +591,8 @@ func (d *DatabaseHandler) GetLocationStats() (*album.LocationStatsMessage, error
 
 func (d *DatabaseHandler) GetAlbumList() []string {
 	albumsNames := make([]string, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return albumsNames
-	}
-	defer dbInstance.Close()
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -665,13 +622,8 @@ func (d *DatabaseHandler) GetAlbumList() []string {
 }
 
 func (d *DatabaseHandler) AlbumExists(albumName string) (bool, error) {
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return true, AlbumAlreadyExists
-	}
-	defer dbInstance.Close()
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 
@@ -690,14 +642,9 @@ func (d *DatabaseHandler) AlbumExists(albumName string) (bool, error) {
 func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 	collection := NewDatabaseAlbumRecord()
 	collection.AlbumName = albumName
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return collection
-	}
-	defer dbInstance.Close()
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
-	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
+
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
+	feedsCollection := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 
@@ -766,14 +713,8 @@ func (d *DatabaseHandler) GetAlbumData(albumName string) *DatabaseAlbumRecord {
 
 func (d *DatabaseHandler) DeletePhotoAlbum(response *album.AlbumMessage) error {
 	var err error
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
 
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 
@@ -825,14 +766,7 @@ func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 		return err
 	}
 
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
-
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 
 	if exists {
 		return d.UpdateAlbum(response)
@@ -855,14 +789,9 @@ func (d *DatabaseHandler) InsertNewAlbum(response *album.AlbumMessage) error {
 }
 
 func (d *DatabaseHandler) DeleteAlbum(response *album.AlbumMessage) error {
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
 
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	var err error
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
@@ -888,16 +817,11 @@ func (d *DatabaseHandler) DeleteAlbum(response *album.AlbumMessage) error {
 }
 
 func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
 
+	var err error
 	md5sumsMerged := make([]string, 0)
 
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`[{"eq": "`+response.AlbumName+`", "in": ["`+ALBUM_INDEX+`"]}]`), &query)
@@ -944,9 +868,9 @@ func (d *DatabaseHandler) UpdateAlbum(response *album.AlbumMessage) error {
 	return err
 }
 
-func (d *DatabaseHandler) PictureExists(md5sum string, dbInstance *db.DB) (bool, error) {
+func (d *DatabaseHandler) PictureExists(md5sum string) (bool, error) {
 
-	feedsCollection := dbInstance.Use(DBPHOTO_COLLECTION)
+	feedsCollection := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`[{"eq": "`+md5sum+`", "in": ["`+MD5SUM_INDEX+`"]}]`), &query)
@@ -963,16 +887,9 @@ func (d *DatabaseHandler) PictureExists(md5sum string, dbInstance *db.DB) (bool,
 
 func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
-
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	for _, item := range response.Photos {
-		exists, err := d.PictureExists(item.Md5Sum, dbInstance)
+		exists, err := d.PictureExists(item.Md5Sum)
 		if !exists && err == nil {
 			id, err := feeds.Insert(map[string]interface{}{
 				MACHINEID_INDEX: response.MachineId,
@@ -1003,14 +920,9 @@ func (d *DatabaseHandler) InsertNewData(response *modele.PhotoResponse) error {
 }
 
 func (d *DatabaseHandler) removeDuplicateAlbums() error {
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
+
 	// suppress album more than 1
-	feedsAlbum := dbInstance.Use(DBALBUM_COLLECTION)
+	feedsAlbum := d.DBConnection.Use(DBALBUM_COLLECTION)
 	var queryAlbum interface{}
 	json.Unmarshal([]byte(`["all"]`), &queryAlbum)
 	queryResultAlbum := make(map[int]struct{})
@@ -1055,13 +967,8 @@ func (d *DatabaseHandler) removeDuplicateAlbums() error {
 }
 
 func (d *DatabaseHandler) removeDuplicatePhotos() error {
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	var query interface{}
 	queryResult := make(map[int]struct{})
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -1107,13 +1014,8 @@ func (d *DatabaseHandler) removeDuplicatePhotos() error {
 
 func (d *DatabaseHandler) CleanDatabase() error {
 	slaves := slavehandler.GetSlaves()
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return err
-	}
-	defer dbInstance.Close()
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
 	queryResult := make(map[int]struct{})
@@ -1148,12 +1050,12 @@ func (d *DatabaseHandler) CleanDatabase() error {
 		logger.Errorf("Error while removing duplicates albums with error %v", err)
 	}
 
-	if err := dbInstance.Scrub(DBPHOTO_COLLECTION); err != nil {
+	if err := d.DBConnection.Scrub(DBPHOTO_COLLECTION); err != nil {
 		logger.Errorf("Error while scrubbing collection %s with error %v", DBPHOTO_COLLECTION, err)
 		return err
 	}
 
-	if err := dbInstance.Scrub(DBALBUM_COLLECTION); err != nil {
+	if err := d.DBConnection.Scrub(DBALBUM_COLLECTION); err != nil {
 		return err
 	}
 
@@ -1162,13 +1064,8 @@ func (d *DatabaseHandler) CleanDatabase() error {
 
 func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoRecord, error) {
 	response := make([]*DatabasePhotoRecord, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
 
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 	json.Unmarshal([]byte(`["all"]`), &query)
@@ -1201,21 +1098,12 @@ func (d *DatabaseHandler) QueryAll() ([]*DatabasePhotoRecord, error) {
 		}
 
 	}
-
-	dbInstance.Close()
 	return response, nil
 }
 
 func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRecord, error) {
 	response := make([]*DatabasePhotoRecord, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
-	defer dbInstance.Close()
-
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	queryResult := make(map[int]struct{})
 	var query interface{}
 
@@ -1257,14 +1145,7 @@ func (d *DatabaseHandler) QueryExtension(pattern string) ([]*DatabasePhotoRecord
 func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord, error) {
 	response := make([]*DatabasePhotoRecord, 0)
 
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
-	defer dbInstance.Close()
-
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
 		var a map[string]interface{}
 		err := json.Unmarshal(docContent, &a)
@@ -1328,14 +1209,7 @@ func (d *DatabaseHandler) QueryFilename(pattern string) ([]*DatabasePhotoRecord,
 func (d *DatabaseHandler) QueryExifTag(pattern string, exiftag string) ([]*DatabasePhotoRecord, error) {
 
 	response := make([]*DatabasePhotoRecord, 0)
-	dbInstance, err := d.openDB()
-	if err != nil {
-		logger.Error("Error while opening database during insert operation with error " + err.Error())
-		return response, err
-	}
-	defer dbInstance.Close()
-
-	feeds := dbInstance.Use(DBPHOTO_COLLECTION)
+	feeds := d.DBConnection.Use(DBPHOTO_COLLECTION)
 	feeds.ForEachDoc(func(id int, docContent []byte) (willMoveOn bool) {
 		var a map[string]interface{}
 		err := json.Unmarshal(docContent, &a)
