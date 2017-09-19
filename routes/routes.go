@@ -38,7 +38,6 @@ func GetPhotosByTag(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.QueryByTag(tag)
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -61,7 +60,6 @@ func DownloadPhotos(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.GetPhotosUrl(photosId)
 	if err != nil {
 		modele.PostActionMessage(err.Error())
@@ -106,7 +104,6 @@ func GetPhotosFromTime(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.GetPhotosFromTime(queryDate, groupby)
 	if err != nil {
 		modele.PostActionMessage(err.Error())
@@ -126,7 +123,6 @@ func GetTimeStats(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.GetTimeStats(groupby)
 	if err != nil {
 		modele.PostActionMessage(err.Error())
@@ -147,7 +143,6 @@ func GetPhotosFromLocation(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.GetPhotosFromCoordinates(lat, lng)
 	if err != nil {
 		modele.PostActionMessage(err.Error())
@@ -165,7 +160,6 @@ func GetLocationStats(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.GetLocationStats()
 	modele.PostActionMessage("get origin stats ended.")
 	if err != nil {
@@ -183,7 +177,6 @@ func GetOriginStats(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.GetOriginStats()
 	modele.PostActionMessage("get origin stats ended.")
 	if err != nil {
@@ -266,7 +259,6 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 			logger.Errorf("cannot connect to database with error %v", err)
 			return
 		}
-		defer db.Close()
 		for response := range flickrChan {
 			if err := db.InsertNewData(response); err != nil {
 				logger.Errorf("cannot import google data into database with error %v", err)
@@ -343,7 +335,6 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 			logger.Errorf("cannot connect to database with error %v", err)
 			return
 		}
-		defer db.Close()
 		for response := range googlePhotoChan {
 			if err := db.InsertNewData(response); err != nil {
 				logger.Errorf("cannot import google data into database with error %v", err)
@@ -390,7 +381,6 @@ func CreateNewPhotoAlbum(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	if err = db.InsertNewAlbum(albumMessage); err != nil {
 		JsonAsResponse(w, err)
 		return
@@ -424,7 +414,6 @@ func DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	if err = db.DeleteAlbum(albumMessage); err != nil {
 
 		JsonAsResponse(w, err)
@@ -460,7 +449,6 @@ func DeletePhotosAlbum(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	if err = db.DeletePhotoAlbum(albumMessage); err != nil {
 		JsonAsResponse(w, err)
 		return
@@ -492,7 +480,6 @@ func GenerateAlbumPdf(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	content := db.GetAlbumData(albumName)
 	if content.AlbumName == albumName && len(content.Records) > 0 {
 		logger.Infof("album %s contents %d photos.", content.AlbumName, len(content.Records))
@@ -565,7 +552,6 @@ func UpdateAlbum(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	if err = db.UpdateAlbum(albumMessage); err != nil {
 		JsonAsResponse(w, err)
 		return
@@ -584,7 +570,6 @@ func ListPhotoAlbums(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	albums := db.GetAlbumList()
 	modele.PostActionMessage("calling get albums list ended.")
 	JsonAsResponse(w, albums)
@@ -600,7 +585,6 @@ func GetAlbumData(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	content := db.GetAlbumData(albumName)
 	modele.PostActionMessage("calling get album content for album : " + albumName + " ended.")
 	JsonAsResponse(w, content)
@@ -646,7 +630,6 @@ func CleanDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go func() {
-		defer db.Close()
 		if err := db.CleanDatabase(); err != nil {
 			modele.PostActionMessage("clean database error with error " + err.Error())
 			return
@@ -850,7 +833,6 @@ func QueryExtension(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.QueryExtension(filename)
 	response = database.Reduce(response, size)
 	logger.Info("QueryExtension completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
@@ -877,7 +859,6 @@ func QueryExif(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.QueryExifTag(pattern, exiftag)
 	response = database.Reduce(response, size)
 	logger.Info("QueryExif completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")
@@ -903,7 +884,6 @@ func QueryFilename(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.QueryFilename(filename)
 	if err != nil {
 		JsonAsResponse(w, err)
@@ -924,7 +904,6 @@ func QueryAll(w http.ResponseWriter, r *http.Request) {
 		JsonAsResponse(w, err)
 		return
 	}
-	defer db.Close()
 	response, err := db.QueryAll()
 
 	logger.Info("QueryAll completed in " + strconv.FormatFloat(time.Now().Sub(starttime).Seconds(), 'g', 2, 64) + " seconds")

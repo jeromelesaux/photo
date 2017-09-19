@@ -86,7 +86,6 @@ func (p *PhotoExifClient) ScanFoldersClient(remotepaths []string, slaveid string
 				if err != nil {
 					return
 				}
-				defer db.Close()
 				err = db.InsertNewData(pr)
 				if err != nil {
 					logger.Error("Error insert data with error" + err.Error())

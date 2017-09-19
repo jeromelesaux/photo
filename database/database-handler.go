@@ -19,6 +19,7 @@ import (
 )
 
 var _ DatabaseInterface = (*DatabaseHandler)(nil)
+var globalDBConnection *db.DB
 
 type DatabaseHandler struct {
 	DBConnection *db.DB
@@ -93,11 +94,14 @@ func (d *DatabaseHandler) openDB() error {
 		err = errors.New("No database path defined")
 		return err
 	}
-	d.DBConnection, err = db.OpenDB(databasePath)
-	if err != nil {
-		logger.Error("Error while creating database with error : " + err.Error())
-		return err
+	if globalDBConnection == nil {
+		globalDBConnection, err = db.OpenDB(databasePath)
+		if err != nil {
+			logger.Error("Error while creating database with error : " + err.Error())
+			return err
+		}
 	}
+	d.DBConnection = globalDBConnection
 
 	for _, colname := range d.DBConnection.AllCols() {
 		if colname == DBPHOTO_COLLECTION {
