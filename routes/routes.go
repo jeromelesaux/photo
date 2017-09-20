@@ -246,7 +246,7 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 
 	// import data from google account
 	go func() {
-		flickrChan := make(chan *modele.PhotoResponse)
+		flickrChan := make(chan *modele.PhotoResponse,1)
 		flickrClient := flickr_client.GetCurrentFlickrClient()
 		logger.Info(flickrconf)
 		logger.Info(flickrClient)
@@ -326,7 +326,7 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 			logger.Errorf("cannot connect to google photo account with error %v", err)
 			return
 		}
-		googlePhotoChan := make(chan *modele.PhotoResponse)
+		googlePhotoChan := make(chan *modele.PhotoResponse,1)
 		go func() {
 			googleConf.GetData(googlePhotoChan)
 		}()
