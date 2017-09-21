@@ -22,7 +22,7 @@ type PhotoExifClient struct {
 }
 
 func NewPhotoExifClient() *PhotoExifClient {
-	return &PhotoExifClient{photoResponseChan: make(chan *modele.PhotoResponse, 5)}
+	return &PhotoExifClient{photoResponseChan: make(chan *modele.PhotoResponse, 1)}
 }
 
 func (p *PhotoExifClient) scanExifClient(remotePath string, salve *slavehandler.Slave) {
