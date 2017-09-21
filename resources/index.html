@@ -11,10 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.css">
     <script src="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap.tagsinput/0.8.0/bootstrap-tagsinput.css">
-    <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU"
-            type="text/javascript">
-    </script>
     <style type="text/css">
 
         #map img {
@@ -740,24 +736,10 @@
                 }
             </style>
             <script>
-                var map;
-                jQuery(window).resize(function () {
-                    if (map == undefined) {
-                        initMap();
-                    }
-                });
-                jQuery('#search').on('click', function () {
-                    if (map == undefined) {
-                        initMap();
-                    }
-                });
+		var map;
 
-                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                    if (map != undefined) {
-                        center = map.getCenter();
-                        google.maps.event.trigger(map, 'resize');         // fixes map display
-                        map.setCenter(center);
-                    }
+                $('#collapseMapPanel').on('shown.bs.collapse', function (e) {
+                    google.maps.event.trigger(map, 'resize');         // fixes map display
                 });
 
                 $(document).ready(function () {
@@ -851,24 +833,14 @@
                 });
 
                 function initMap() {
-                    $(function () {
-                        document.getElementById('map').style.display = "block";
-                        var location = new google.maps.LatLng(48.2, 2.2);
+                        var loc = new google.maps.LatLng(48.2, 2.2);
                         map = new google.maps.Map(document.getElementById('map'), {
                             zoom: 2,
-                            center: location,
+                            center: loc,
                             mapTypeId: google.maps.MapTypeId.ROADMAP
                         });
-                        setTimeout(function () {
-                            $('.search').append($("#map").css("margin-top", "0px").get(0));
-                        }, 500);
-                        center = map.getCenter();
-                        google.maps.event.trigger(map, 'resize');         // fixes map display
-                        map.setCenter(center);
-                    })
-
                 }
-
+                
                 function loadMapData() {
                     $.ajax({
                         dataType: "json",
@@ -1742,6 +1714,10 @@
                 }
             </script>
 
+                <script async defer
+                      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlTq4qvaXnme1o34Q2_Z3rJ6vuNin48FU&callback=initMap"
+                      type="text/javascript">
+                </script>
         </div>
     </div>
 </div>
