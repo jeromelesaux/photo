@@ -1,13 +1,13 @@
 // package managing the images files extensions to scan
-//
 package configurationexif
 
 import (
 	"encoding/json"
-	logger "github.com/Sirupsen/logrus"
 	"os"
 	"strings"
 	"sync"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 var confFileExtensionMut sync.Mutex

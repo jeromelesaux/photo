@@ -3,10 +3,11 @@ package hash
 import (
 	"crypto/md5"
 	"fmt"
-	logger "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"strconv"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 func Md5Sum(filepath string) (string, error) {

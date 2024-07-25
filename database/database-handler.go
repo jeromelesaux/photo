@@ -3,19 +3,20 @@ package database
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/HouzuoGuo/tiedot/db"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/album"
-	"github.com/jeromelesaux/photo/configurationapp"
-	"github.com/jeromelesaux/photo/modele"
-	"github.com/jeromelesaux/photo/slavehandler"
-	"github.com/pkg/errors"
 	"math"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/HouzuoGuo/tiedot/db"
+	"github.com/jeromelesaux/photo/album"
+	"github.com/jeromelesaux/photo/configurationapp"
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jeromelesaux/photo/slavehandler"
+	"github.com/pkg/errors"
+	logger "github.com/sirupsen/logrus"
 )
 
 var _ DatabaseInterface = (*DatabaseHandler)(nil)

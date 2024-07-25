@@ -2,10 +2,11 @@ package logger
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/bshuster-repo/logrus-logstash-hook"
 	"os"
 	"time"
+
+	logrustash "github.com/bshuster-repo/logrus-logstash-hook"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -20,9 +21,7 @@ func InitLog(logLevel, formatter string) error {
 
 	switch formatter {
 	case LogStashFormatter:
-		logrus.SetFormatter(&logrustash.LogstashFormatter{
-			TimestampFormat: time.RFC3339,
-		})
+		logrus.SetFormatter(&logrustash.LogstashFormatter{})
 	default:
 		logrus.SetFormatter(&logrus.TextFormatter{
 			ForceColors:     true,

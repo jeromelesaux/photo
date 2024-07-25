@@ -5,11 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/database"
-	"github.com/jeromelesaux/photo/exifhandler"
-	"github.com/jeromelesaux/photo/modele"
-	"github.com/jeromelesaux/photo/slavehandler"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -21,6 +16,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/jeromelesaux/photo/database"
+	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jeromelesaux/photo/slavehandler"
+	logger "github.com/sirupsen/logrus"
 )
 
 type RawPhotoClient struct {

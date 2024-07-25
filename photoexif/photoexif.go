@@ -4,19 +4,20 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/configurationexif"
-	"github.com/jeromelesaux/photo/exifhandler"
-	"github.com/jeromelesaux/photo/logger"
-	"github.com/jeromelesaux/photo/modele"
-	"github.com/jeromelesaux/photo/routes"
-	"github.com/jeromelesaux/photo/slavehandler"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/jeromelesaux/photo/configurationexif"
+	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/logger"
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jeromelesaux/photo/routes"
+	"github.com/jeromelesaux/photo/slavehandler"
+	"github.com/sirupsen/logrus"
 )
 
 var photopath = flag.String("photopath", "", "photo path to analyze")

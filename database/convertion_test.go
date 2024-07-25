@@ -2,9 +2,10 @@ package database
 
 import (
 	"fmt"
-	logger "github.com/Sirupsen/logrus"
 	"testing"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 func TestSscanf(t *testing.T) {

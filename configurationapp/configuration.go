@@ -1,12 +1,12 @@
 // package for google account and application configuration
-//
 package configurationapp
 
 import (
 	"encoding/json"
-	logger "github.com/Sirupsen/logrus"
 	"os"
 	"sync"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 // global application configuration structure

@@ -1,11 +1,12 @@
 package folder
 
 import (
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/modele"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jeromelesaux/photo/modele"
+	logger "github.com/sirupsen/logrus"
 )
 
 func ScanSubDirectory(r *modele.DirectoryItemResponse, directory string) (*modele.DirectoryItemResponse, error) {

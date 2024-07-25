@@ -1,17 +1,19 @@
 package google_photos_client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/exifhandler"
-	"github.com/jeromelesaux/photo/modele"
-	"github.com/tgulacsi/picago"
 	"net/http"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/modele"
+	logger "github.com/sirupsen/logrus"
+	"github.com/tgulacsi/picago"
 )
 
 type GooglePhotoClient struct {
@@ -69,8 +71,12 @@ func (g *GooglePhotoClient) saveConfigutation() {
 
 }
 
+func (g *GooglePhotoClient) Logerror(i interface{}) error {
+	return nil
+}
+
 func (g *GooglePhotoClient) Connect() error {
-	client, err := picago.NewClient(g.ID, g.Secret, "", tokenCacheFile)
+	client, err := picago.NewClient(context.Background(), g.ID, g.Secret, "", tokenCacheFile, nil)
 	if err != nil {
 		logger.Error("Error while connecting to google photo with error : " + err.Error())
 		return err

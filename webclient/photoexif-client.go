@@ -1,20 +1,22 @@
 package webclient
 
 import (
-	logger "github.com/Sirupsen/logrus"
 	"github.com/jeromelesaux/photo/modele"
+	logger "github.com/sirupsen/logrus"
 
 	"encoding/json"
 	"fmt"
-	"github.com/jeromelesaux/photo/database"
-	"github.com/jeromelesaux/photo/slavehandler"
 	"net/http"
 	"strconv"
 
-	"github.com/jeromelesaux/photo/configurationapp"
-	"github.com/jeromelesaux/photo/configurationexif"
+	"github.com/jeromelesaux/photo/database"
+	"github.com/jeromelesaux/photo/slavehandler"
+
 	"sync"
 	"time"
+
+	"github.com/jeromelesaux/photo/configurationapp"
+	"github.com/jeromelesaux/photo/configurationexif"
 )
 
 type PhotoExifClient struct {

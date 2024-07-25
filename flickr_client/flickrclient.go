@@ -2,15 +2,16 @@ package flickr_client
 
 import (
 	"encoding/json"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/exifhandler"
-	"github.com/jeromelesaux/photo/flickr.v2"
-	"github.com/jeromelesaux/photo/modele"
-	"gopkg.in/masci/flickr.v2"
-	"gopkg.in/masci/flickr.v2/photosets"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/jeromelesaux/photo/exifhandler"
+	flickr_v2 "github.com/jeromelesaux/photo/flickr.v2"
+	"github.com/jeromelesaux/photo/modele"
+	logger "github.com/sirupsen/logrus"
+	"gopkg.in/masci/flickr.v2"
+	"gopkg.in/masci/flickr.v2/photosets"
 )
 
 var currentFlickrClient *Flickr

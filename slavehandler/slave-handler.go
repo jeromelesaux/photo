@@ -3,13 +3,14 @@ package slavehandler
 import (
 	"bytes"
 	"encoding/json"
-	logger "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 type Slave struct {

@@ -4,10 +4,6 @@ package exifhandler
 import (
 	"bytes"
 	"encoding/base64"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/disintegration/imaging"
-	"github.com/jeromelesaux/photo/hash"
-	"github.com/xiam/exif"
 	"image"
 	"image/color"
 	"image/png"
@@ -17,12 +13,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jeromelesaux/photo/configurationexif"
-	"github.com/jeromelesaux/photo/modele"
-	"golang.org/x/image/tiff"
+	"github.com/disintegration/imaging"
+	"github.com/jeromelesaux/photo/hash"
+	logger "github.com/sirupsen/logrus"
+	"github.com/xiam/exif"
+
 	"image/gif"
 	"image/jpeg"
 	"io/ioutil"
+
+	"github.com/jeromelesaux/photo/configurationexif"
+	"github.com/jeromelesaux/photo/modele"
+	"golang.org/x/image/tiff"
 )
 
 // function returns all exifs values ot a local image

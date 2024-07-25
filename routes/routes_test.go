@@ -1,10 +1,11 @@
 package routes
 
 import (
-	"github.com/Sirupsen/logrus"
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 func TestParsingArrayUrl(t *testing.T) {

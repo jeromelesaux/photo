@@ -3,15 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/configurationapp"
-	"github.com/jeromelesaux/photo/modele"
-	"github.com/jeromelesaux/photo/routes"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"strconv"
 	"time"
+
+	"github.com/jeromelesaux/photo/configurationapp"
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jeromelesaux/photo/routes"
+	logger "github.com/sirupsen/logrus"
 )
 
 var httpport = flag.String("httpport", "", "listening at http://localhost:httpport")

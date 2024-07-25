@@ -41,21 +41,13 @@ version:
 
 $(EXEC2): version organize $(SOURCES) ${EXEC1}
 		@echo "    Compilation des sources ${BUILD_TIME}"
-		@if  [ "arm" = "${GOARCH}" ]; then\
-		    	GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
-		else\
-       			GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;\
-        fi
+		CGO_CFLAGS=-I$(shell brew --prefix libexif)/include  CGO_LDFLAGS=-L$(shell brew --prefix libexif)/lib  go build ${LDFLAGS} -o ${EXEC2} $(SOURCEDIR)/photocontroller/photocontroller.go;
 		@echo "    ${EXEC2} generated."
 
 
 $(EXEC1): version organize $(SOURCES)
 		@echo "    Compilation des sources ${BUILD_TIME}"
-		@if  [ "arm" = "${GOARCH}" ]; then\
-		    GOOS=${GOOS} GOARCH=${GOARCH} GOARM=${GOARM} go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
-		else\
-	            GOOS=${GOOS} GOARCH=${GOARCH}  go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;\
-        fi
+		CGO_CFLAGS=-I$(shell brew --prefix libexif)/include  CGO_LDFLAGS=-L$(shell brew --prefix libexif)/lib  go build ${LDFLAGS} -o ${EXEC1} $(SOURCEDIR)/photoexif/photoexif.go;
 		@echo "    ${EXEC1} generated."
 
 test: deps

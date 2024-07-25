@@ -5,19 +5,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/album"
-	"github.com/jeromelesaux/photo/configurationapp"
-	"github.com/jeromelesaux/photo/configurationexif"
-	"github.com/jeromelesaux/photo/database"
-	"github.com/jeromelesaux/photo/exifhandler"
-	"github.com/jeromelesaux/photo/flickr_client"
-	"github.com/jeromelesaux/photo/folder"
-	"github.com/jeromelesaux/photo/google-photos_client"
-	"github.com/jeromelesaux/photo/modele"
-	"github.com/jeromelesaux/photo/pdf"
-	"github.com/jeromelesaux/photo/slavehandler"
-	"github.com/jeromelesaux/photo/webclient"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -25,6 +12,20 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jeromelesaux/photo/album"
+	"github.com/jeromelesaux/photo/configurationapp"
+	"github.com/jeromelesaux/photo/configurationexif"
+	"github.com/jeromelesaux/photo/database"
+	"github.com/jeromelesaux/photo/exifhandler"
+	"github.com/jeromelesaux/photo/flickr_client"
+	"github.com/jeromelesaux/photo/folder"
+	google_photos_client "github.com/jeromelesaux/photo/google-photos_client"
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jeromelesaux/photo/pdf"
+	"github.com/jeromelesaux/photo/slavehandler"
+	"github.com/jeromelesaux/photo/webclient"
+	logger "github.com/sirupsen/logrus"
 )
 
 func GetPhotosByTag(w http.ResponseWriter, r *http.Request) {
@@ -246,7 +247,7 @@ func LoadFlickrAlbums(w http.ResponseWriter, r *http.Request) {
 
 	// import data from google account
 	go func() {
-		flickrChan := make(chan *modele.PhotoResponse,1)
+		flickrChan := make(chan *modele.PhotoResponse, 1)
 		flickrClient := flickr_client.GetCurrentFlickrClient()
 		logger.Info(flickrconf)
 		logger.Info(flickrClient)
@@ -326,7 +327,7 @@ func SaveGoogleConfiguration(w http.ResponseWriter, r *http.Request) {
 			logger.Errorf("cannot connect to google photo account with error %v", err)
 			return
 		}
-		googlePhotoChan := make(chan *modele.PhotoResponse,1)
+		googlePhotoChan := make(chan *modele.PhotoResponse, 1)
 		go func() {
 			googleConf.GetData(googlePhotoChan)
 		}()
@@ -597,7 +598,7 @@ func GetExtensionList(w http.ResponseWriter, r *http.Request) {
 	JsonAsResponse(w, conf)
 }
 
-//  route : purpose get the images files extension supported by the application
+// route : purpose get the images files extension supported by the application
 func ReadExtensionList(w http.ResponseWriter, r *http.Request) {
 	modele.PostActionMessage("calling get extension files")
 	logger.Info("get image files extension list")

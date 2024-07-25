@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	logger "github.com/Sirupsen/logrus"
-	"github.com/jeromelesaux/photo/modele"
-	"github.com/jung-kurt/gofpdf"
 	"image/jpeg"
 	"image/png"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/jeromelesaux/photo/modele"
+	"github.com/jung-kurt/gofpdf"
+	logger "github.com/sirupsen/logrus"
 )
 
 var (
