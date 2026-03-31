@@ -1,6 +1,6 @@
 module github.com/jeromelesaux/photo
 
-go 1.22.5
+go 1.23.0
 
 require (
 	github.com/HouzuoGuo/tiedot v0.0.0-20210905174726-ae1e16866d06
@@ -16,6 +16,6 @@ require (
 )
 
 require (
-	golang.org/x/oauth2 v0.21.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 )
