@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -15,7 +16,6 @@ import (
 	"github.com/jeromelesaux/photo/configurationapp"
 	"github.com/jeromelesaux/photo/modele"
 	"github.com/jeromelesaux/photo/slavehandler"
-	"github.com/pkg/errors"
 	logger "github.com/sirupsen/logrus"
 )
 

@@ -1,4 +1,4 @@
-// package to get exif values from local images
+// Package exifhandler to get exif values from local images
 package exifhandler
 
 import (
@@ -27,7 +27,7 @@ import (
 	"golang.org/x/image/tiff"
 )
 
-// function returns all exifs values ot a local image
+// GetPhotoInformations function returns all exifs values ot a local image
 // filepath is the file path of the image to treat.
 func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
 	abspath, err := filepath.Abs(filePath)
@@ -77,7 +77,7 @@ func GetPhotoInformations(filePath string) (*modele.PhotoInformations, error) {
 
 var Tags = make([]*modele.PhotoInformations, 0)
 
-// function searches and returns all imformations of photos found in this local directory (directorypath)
+// GetPhotosInformations function searches and returns all imformations of photos found in this local directory (directorypath)
 // conf is the structure containing all images suffix to match.
 func GetPhotosInformations(directorypath string, conf configurationexif.FileExtension) ([]*modele.PhotoInformations, error) {
 	Tags = Tags[:0]
@@ -86,7 +86,7 @@ func GetPhotosInformations(directorypath string, conf configurationexif.FileExte
 
 }
 
-// file walker function to match all suffix from fileextention
+// ScanExifFile file walker function to match all suffix from fileextention
 func ScanExifFile(fileExtension configurationexif.FileExtension) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 
@@ -110,7 +110,7 @@ func ScanExifFile(fileExtension configurationexif.FileExtension) filepath.WalkFu
 	}
 }
 
-// function returns the base64 content of the image path
+// GetBase64Photo function returns the base64 content of the image path
 func GetBase64Photo(path string) (string, string, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -126,7 +126,7 @@ func GetBase64Photo(path string) (string, string, error) {
 	return base64.StdEncoding.EncodeToString(buf), Orientation(path), nil
 }
 
-// function returns the base64 thumbnail of the image path
+// GetBase64Thumbnail function returns the base64 thumbnail of the image path
 func GetBase64Thumbnail(path string) (string, error) {
 
 	imgReader, err := imaging.Open(path)
@@ -169,16 +169,17 @@ func GetBase64Thumbnail(path string) (string, error) {
 
 }
 
+// OrientationFromImg returns the orientation portrait or landscape image
 func OrientationFromImg(img image.Image) string {
 	width := img.Bounds().Max.X
 	height := img.Bounds().Max.Y
 	if height > width {
 		return modele.Portrait
-	} else {
-		return modele.Landscape
 	}
+	return modele.Landscape
 }
 
+// Orientation returns the orientation portrait or landscape from file
 func Orientation(filepath string) string {
 	f, err := os.Open(filepath)
 	if err != nil {
@@ -217,14 +218,12 @@ func Orientation(filepath string) string {
 	height := img.Bounds().Max.Y
 	if height > width {
 		return modele.Portrait
-	} else {
-		return modele.Landscape
 	}
-
+	return modele.Landscape
 }
 
-// function returns the base64 content of the image url (web mode)
-func GetBase64ThumbnailUrl(url string) (string, error) {
+// GetBase64ThumbnailURL function returns the base64 content of the image url (web mode)
+func GetBase64ThumbnailURL(url string) (string, error) {
 	client := &http.Client{}
 	response, err := client.Get(url)
 	if err != nil {

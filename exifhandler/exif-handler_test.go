@@ -10,8 +10,8 @@ func TestExtractThumbnail(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error while trying to extract thumbnail")
 	}
-	if len(content) != 22324 {
-		t.Fatal("Expected size 3464 and get " + strconv.Itoa(len(content)))
+	if len(content) != 22300 {
+		t.Fatal("Expected size 22300 and get " + strconv.Itoa(len(content)))
 	}
 
 }

@@ -180,7 +180,7 @@ func (f *Flickr) GetThumbnailAndOriginal(id string) (string, string) {
 	}
 	for _, size := range response.Sizes.Sizes {
 		if size.Label == "Thumbnail" {
-			thumbnail, err = exifhandler.GetBase64ThumbnailUrl(size.Source)
+			thumbnail, err = exifhandler.GetBase64ThumbnailURL(size.Source)
 			if err != nil {
 				logger.Errorf("Error while transform thumbnail from url %s into base64 string with error %v", size.Source, err)
 			}

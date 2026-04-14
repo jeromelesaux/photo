@@ -21,7 +21,7 @@ func InitLog(logLevel, formatter string) error {
 
 	switch formatter {
 	case LogStashFormatter:
-		logrus.SetFormatter(&logrustash.LogstashFormatter{})
+		logrus.SetFormatter(logrustash.DefaultFormatter(logrus.Fields{"type:": "photo"}))
 	default:
 		logrus.SetFormatter(&logrus.TextFormatter{
 			ForceColors:     true,

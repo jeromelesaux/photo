@@ -128,7 +128,7 @@ func (g *GooglePhotoClient) GetData(googlePhotoChan chan *modele.PhotoResponse) 
 				p.Tags["uid"] = photo.Exif.UID
 			}
 			p.Filepath = photo.URL
-			p.Thumbnail, _ = exifhandler.GetBase64ThumbnailUrl(photo.URL)
+			p.Thumbnail, _ = exifhandler.GetBase64ThumbnailURL(photo.URL)
 			p.Tags["with"] = fmt.Sprintf("%d", photo.Width)
 			p.Tags["height"] = fmt.Sprintf("%d", photo.Height)
 			p.Tags["location"] = photo.Location
